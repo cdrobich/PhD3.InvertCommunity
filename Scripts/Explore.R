@@ -134,7 +134,7 @@ alltaxa.13.df <- as.data.frame(alltaxa.13$vectors$arrows*sqrt(alltaxa.13$vectors
 alltaxa.13.df$species <- rownames(alltaxa.13.df)
 
 all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows, (alltaxa.13$vectors)$r, (alltaxa.13$vectors)$pvals)
-write.csv(all.taxa13.df, "Data/NMDS_vectors_axis12.csv")
+write.csv(all.taxa13.df, "Data/NMDS_vectors_axis13.csv")
 
 
 alltaxa.13$vectors$r[alltaxa.13$vectors$r > 0.2] 
