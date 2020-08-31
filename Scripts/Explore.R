@@ -80,6 +80,8 @@ col_order <- c("site", "Treatment", "Year", "TrtYr", "NMDS1", "NMDS2", "NMDS3")
 scores <- scr[, col_order] # add env variables and put them in order
 scores$Year <- as.factor(scores$Year)
 
+write.csv(scores,"Data/NMDS_inverts_scores.csv")
+
 ### Vectors 1, 2 ####
 alltaxa <- envfit(nms.invert, bugs, 
                   permutations = 999, choices = c(1,2)) #looking at what taxa are correlated with axis 1, 2
@@ -88,7 +90,11 @@ alltaxa.df <- as.data.frame(alltaxa$vectors$arrows*sqrt(alltaxa$vectors$r))
 alltaxa.df$species <- rownames(alltaxa.df)
 
 
-alltaxa$vectors$r[alltaxa$vectors$r > 0.2] 
+all.taxa.df <- data.frame((alltaxa$vectors)$arrows, (alltaxa$vectors)$r, (alltaxa$vectors)$pvals)
+write.csv(all.taxa.df, "Data/NMDS_vectors_axis12.csv")
+
+
+alltaxa$vectors$r[alltaxa$vectors$r > 0.2] # selecting Families that are reasonably correlated (>0.2)
 
 #Anthicidae   Erotylidae Cecidomyiida    Sciaridae Chironomidae 
 #0.2527976    0.2553976    0.2508132    0.2029796    0.3025265 
@@ -126,6 +132,9 @@ alltaxa.13 <- envfit(nms.invert, bugs,
 
 alltaxa.13.df <- as.data.frame(alltaxa.13$vectors$arrows*sqrt(alltaxa.13$vectors$r))
 alltaxa.13.df$species <- rownames(alltaxa.13.df)
+
+all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows, (alltaxa.13$vectors)$r, (alltaxa.13$vectors)$pvals)
+write.csv(all.taxa13.df, "Data/NMDS_vectors_axis12.csv")
 
 
 alltaxa.13$vectors$r[alltaxa.13$vectors$r > 0.2] 
