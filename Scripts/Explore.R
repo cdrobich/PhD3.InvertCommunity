@@ -233,5 +233,6 @@ NMDS.inv <- ggarrange(invert.13, invert.12,
           nrow = 2,
           common.legend = TRUE,
           legend = "bottom")
+NMDS.inv
 
 ggsave("Figures/NMDS_invertebrate.jpeg", NMDS.inv)
