@@ -37,9 +37,10 @@ nms.invert
 #Two convergent solutions found after 27 tries
 #Scaling: centring, PC rotation, halfchange scaling 
 #Species: expanded scores based on ‘bugs’
-#layout(matrix(1:2, ncol = 2))
-#plot(nms.invert, main = "Invertebrate NMDS plot"); stressplot(nms.invert, main = "Shepard plot")
-#layout(1)
+
+layout(matrix(1:2, ncol = 2))
+plot(nms.invert, main = "Invertebrate NMDS plot"); stressplot(nms.invert, main = "Shepard plot")
+layout(1)
 
 nms.invert$iters # 85
 
