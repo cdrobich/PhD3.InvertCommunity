@@ -253,3 +253,110 @@ NMDS.inv <- ggarrange(invert.13, invert.12, # put the plot items in
 NMDS.inv
 
 ggsave("Figures/NMDS_invertebrate.jpeg", NMDS.inv) # save that figure to my folder
+
+########## NMDS with Clustering ##########
+# with the grouping variable (4 groups) derived from the ISA and cluster analysis
+
+inverts <- read.csv("Data/Inverts_rel_rares_clustergroups.csv")
+
+str(inverts)
+dim(inverts)
+
+invert <- inverts[, 6:95]# just the Families
+env.group <- inverts[,1:5] # Categorical variables
+
+str(env.group)
+
+env.group$Group4 <- as.factor(env.group$Group4) # adding in the cluster groups
+
+env.group <- env.group %>% 
+  mutate(Group4 = fct_recode(Group4,
+                             "2" = "7",
+                             "3" = "9",
+                             "4" = "10"))
+
+scr$ClusterGroups <- env.group$Group4
+
+col_order <- c("site", "Treatment", "Year", "TrtYr", "ClusterGroups", "NMDS1", "NMDS2", "NMDS3")
+
+scores <- scr[, col_order] # put the categorical values in order
+write.csv(scores,"Data/NMDS_inverts_scores_groups.csv") 
+
+
+# selecting the ISA with p < 0.001 for the NMDS
+colnames(invert)
+ISA <- invert %>% select(Dolichopodid, Hemerobiidae, Anthicidae, Lampyridae,
+                         Limnephilida, Cicadellidae, Coenagrionid, Psocoptera,
+                         Chironomidae)
+                         
+
+colnames(ISA)
+dim(ISA) # 9 columns and 54 sites
+
+# calculate vectors for Indicator Species ####
+
+(ISA.vector.12 <- envfit(nms.invert$points, ISA,
+                     permutations = 999, choices = c(1,2)))                        
+  
+
+ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
+ISA.12$species <- rownames(ISA.12) # add Family as a column
+
+
+(ISA.vector.13 <- envfit(nms.invert$points, ISA,
+                        permutations = 999, choices = c(1,3)))   
+  
+
+ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
+ISA.13$species <- rownames(ISA.13)
+
+###### NMDS with Cluster/ISA groups ###
+
+ISA.invert.12 <- ggplot(data = scores,
+                    aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = scores, aes(x = NMDS1, y = NMDS2, 
+                                colour = Treatment, shape = Treatment), size = 4) + # sites as points
+  stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS2,
+                                  linetype = ClusterGroups, colour = ClusterGroups), size = 1) + # a 95% CI ellipses
+  geom_segment(data = ISA.12, aes(x = 0, xend = MDS1,
+                                  y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_classic() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  #geom_label(data = ISA.12,aes(x=MDS1,y=MDS2,label=species),size=5) +
+  scale_color_manual(values = c("#4d4d4d", "#878787", "black", "#bababa", "#9970ab", "#1b7837", "#2166ac"))
+
+ISA.invert.12
+
+## NMDS Axis 1, 3
+# same as above
+
+ISA.invert.13 <- ggplot(data = scores,
+                        aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = scores, aes(x = NMDS1, y = NMDS3, 
+                                colour = Treatment, shape = Treatment), size = 4) + # sites as points
+  stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS3,
+                                  colour = ClusterGroups, linetype = ClusterGroups), size = 1) + # a 95% CI ellipses
+  geom_segment(data = ISA.13, aes(x = 0, xend = MDS1,
+                                  y = 0, yend = MDS3), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_classic() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  #geom_label(data = ISA.13,aes(x = MDS1,y = MDS3,label = species), size = 5) +
+  scale_color_manual(values = c("#4d4d4d", "#878787", "black", "#bababa", "#9970ab", "#1b7837", "#2166ac")) #first 4 lines, 3 sites
+
+ISA.invert.13
+
+NMDS.inv.ISA <- ggarrange(ISA.invert.13, ISA.invert.12, # put the plot items in
+                      nrow = 2, # I want them on top of each other
+                      common.legend = TRUE, # they have the same legend
+                      legend = "bottom",
+                      widths = 1,
+                      heights = 1) # I want it on the bottom 
+NMDS.inv.ISA
+
+ggsave("Figures/NMDS_invertebrate_ISAgroups.jpeg", NMDS.inv.ISA) 
