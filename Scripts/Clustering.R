@@ -89,8 +89,6 @@ ggsave("Figures/Screeplot_clusters.jpeg", assessment)
 
 ## perMANOVA
 
-?adonis
-
 (per.treat <- adonis(bugs ~ Treatment, data = env,
                     permutations = 999, method = "bray"))
 
@@ -107,13 +105,29 @@ ggsave("Figures/Screeplot_clusters.jpeg", assessment)
 #  Residuals 51   17.7944 0.34891         0.88005           
 # Total     53   20.2199                 1.00000 
 
-per.treat$terms
+
 
 # homogeneity of groups dispersion
 
 groups <- factor(env$Treatment)
 
 (dispersion <- betadisper(bugs.b, groups)) # spatial median default
-anova(dispersion) # no sig diff between groups (p = 0.209)
+
 plot(dispersion)
 boxplot(dispersion) # actually look really good!
+
+install.packages("devtools")
+library(devtools)
+
+?install_github
+install_github("GuillemSalazar/EcolUtils")
+
+library(EcolUtils)
+citation("EcolUtils")
+
+(adonis.pair(bugs.b, groups, nper = 1000, corr.method = "bonferroni"))
+
+#            combination   SumsOfSqs   MeanSqs  F.Model       R2     P.value  P.value.corrected
+#1   Invaded <-> Restored 1.7139459 1.7139459 5.100551 0.13044704 0.000999001       0.002997003
+#2  Invaded <-> Uninvaded 0.5961001 0.5961001 1.655632 0.04643395 0.015984016       0.047952048
+#3 Restored <-> Uninvaded 1.3281515 1.3281515 3.787631 0.10023467 0.000999001       0.002997003
