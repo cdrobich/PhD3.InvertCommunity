@@ -5,7 +5,7 @@ library(ggpubr) # for arranging figures
 
 sol <- read.csv("Data/Inverts_relmax_raresn2.csv")
 
-bugs <- sol[,5:50] # just the Families
+bugs <- sol[,5:94] # just the Families
 env <- sol[,1:4] # Categorical variables
 
 env$TrtYr <- as.factor(env$TrtYr) 
@@ -44,9 +44,9 @@ nms.invert
 #Distance: bray 
 
 #Dimensions: 3 
-#Stress:     0.2042451 
+#Stress:     0.2014694 
 #Stress type 1, weak ties
-#Two convergent solutions found after 27 tries
+#Two convergent solutions found after 99 tries
 #Scaling: centring, PC rotation, halfchange scaling 
 #Species: expanded scores based on ‘bugs’
 
@@ -57,13 +57,15 @@ plot(nms.invert, main = "Invertebrate NMDS plot"); stressplot(nms.invert, main =
 layout(1)
 
 # how many iterations of the NMDS
-nms.invert$iters # 85
+nms.invert$iters # 177
 
 # Goodness of fit
 (g <- goodness(nms.invert)) # smaller the number the better the fit
 sum(g^2)
-nms.invert$stress^2  # 0.0415
+nms.invert$stress^2  # 0.0405
 
+1-nms.invert$stress^2 #0.95941 #analogous to square correlation coefficient
+stressplot(nms.invert) # liinear r2 fit = 0.663, non-metric r2 = 0.959
 
 ## extract the scores for plotting 
 scr <- as.data.frame(scores(nms.invert, display = "sites")) # extract NMDS scores
@@ -93,23 +95,25 @@ write.csv(all.taxa.df, "Data/NMDS_vectors_axis12.csv") # save vector scores as c
 
 alltaxa$vectors$r[alltaxa$vectors$r > 0.2] # selecting vectors (Family) that are reasonably correlated (r2 > 0.2)
 
-#Anthicidae   Erotylidae Cecidomyiida    Sciaridae Chironomidae 
-#0.2527976    0.2553976    0.2508132    0.2029796    0.3025265 
+#Anthicidae Cecidomyiida Chironomidae Dolichopodid  Chloropidae Calliphorida     Caenidae 
+#0.3337981    0.2271789    0.2445567    0.3008572    0.2210373    0.2166783    0.2334909 
 
-#Dolichopodid     Carnidae  Chloropidae Anthomyiidae Calliphorida 
-#0.2821084    0.2510678    0.2039437    0.2640309    0.2126135
+#Ichneumonida Hemerobiidae Coenagrionid   Psocoptera 
+#0.2774507    0.2368039    0.2259413    0.2169072 
+ 
 
 # taking out those correlated ones to add to the figure
 corr.taxa <- bugs %>% select(Anthicidae,
-                             Erotylidae,
                              Cecidomyiida,
-                             Sciaridae,
                              Chironomidae,
                              Dolichopodid,
-                             Carnidae,
                              Chloropidae,
-                             Anthomyiidae,
-                             Calliphorida)
+                             Calliphorida,
+                             Caenidae,
+                             Ichneumonida,
+                             Hemerobiidae,
+                             Coenagrionid,
+                             Psocoptera)
 
 # recalculated it because I am lazy but you could probably pull them from all.taxa.df
 corrtaxa <- envfit(nms.invert$points, corr.taxa, 
@@ -136,20 +140,18 @@ write.csv(all.taxa13.df, "Data/NMDS_vectors_axis13.csv")
 
 alltaxa.13$vectors$r[alltaxa.13$vectors$r > 0.2] 
 
-#Carabidae   Erotylidae   Lampyridae Cecidomyiida Chironomidae Dolichopodid 
-#0.3472899    0.2545980    0.2309457    0.2695790    0.4049056    0.2324400 
-
-#Carnidae 
-#0.2484244 
+#Carabidae  Phalacridae Chironomidae Dolichopodid     Carnidae     Caenidae  Scelionidae Hemerobiidae Leptoceridae 
+#0.2704038    0.2341732    0.3472846    0.2628408    0.2046994    0.2235285    0.2101219    0.2020521    0.2143434
 
 corr.taxa.13 <- bugs %>% select(Carabidae,
-                             Erotylidae,
-                             Cecidomyiida,
-                             Lampyridae,
+                                Phalacridae,
                              Chironomidae,
                              Dolichopodid,
-                             Carnidae)
-
+                             Carnidae,
+                             Caenidae,
+                             Scelionidae,
+                             Hemerobiidae,
+                             Leptoceridae)
 
 
 corrtaxa.13 <- envfit(nms.invert$points, corr.taxa.13, 
@@ -212,6 +214,7 @@ invert.12 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") 
+  #geom_label(data = species.12,aes(x=MDS1,y=MDS2,label=species),size=5)
 
 invert.12
 
@@ -234,6 +237,7 @@ invert.13 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") 
+  #geom_label(data = species.13,aes(x=MDS1,y=MDS3,label=species),size=5)
 
 invert.13
 
@@ -243,7 +247,9 @@ invert.13
 NMDS.inv <- ggarrange(invert.13, invert.12, # put the plot items in
           nrow = 2, # I want them on top of each other
           common.legend = TRUE, # they have the same legend
-          legend = "bottom") # I want it on the bottom 
+          legend = "bottom",
+          widths = 1,
+          heights = 1) # I want it on the bottom 
 NMDS.inv
 
 ggsave("Figures/NMDS_invertebrate.jpeg", NMDS.inv) # save that figure to my folder
