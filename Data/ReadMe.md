@@ -5,5 +5,5 @@
 
 ### Congruence
 
--`benthic_rares_rel.csv`  - vegetation samples from QCC with rares (<= 2) removed and rel. by column max
+- `benthic_rares_rel.csv`  - vegetation samples from QCC with rares (<= 2) removed and rel. by column max
 - `inverts_rel_rares_2018.csv` - emerging inverts from only 2018 to test congruence
