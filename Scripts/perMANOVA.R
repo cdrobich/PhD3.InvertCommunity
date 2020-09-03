@@ -34,6 +34,8 @@ env$Treatment <- as.factor(env$Treatment)
 
 # homogeneity of groups dispersion
 
+bugs.b <- vegdist(bugs, method = "bray")
+
 groups <- factor(env$Treatment)
 
 (dispersion <- betadisper(bugs.b, groups)) # spatial median default
