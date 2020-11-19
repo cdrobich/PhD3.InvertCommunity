@@ -91,7 +91,7 @@ Abundance <- ggplot(inverts, aes(x = Treatment, y = Sum)) +
     geom = "pointrange", size = 1,
     position = position_dodge(0.6)) +
   labs(x = " ",
-       y = "Abundance") +
+       y = "Emergine Invertebrate Abundance") +
   scale_color_manual(values = c("#9970ab", "#1b7837", "#2166ac")) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_y_continuous(breaks = seq(0, 6000, by = 500)) +
@@ -112,7 +112,7 @@ Rich <- ggplot(inverts, aes(x = Treatment, y = Richness)) +
     geom = "pointrange", size = 1,
     position = position_dodge(0.6)) +
   labs(x = " ",
-       y = "Richness (Family)") +
+       y = "Emerging Invertebrate Richness (Family)") +
   ylim(0, 50) +
   scale_color_manual(values = c("#9970ab", "#1b7837", "#2166ac")) +
   theme(panel.border = element_rect(fill = NA)) +
