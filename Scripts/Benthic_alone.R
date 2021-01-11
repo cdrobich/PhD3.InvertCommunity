@@ -228,6 +228,8 @@ library(EcolUtils)
 
 ############ NMDS ############
 
+library(ggrepel)
+
 ## stress plot/ see how many axes make sense
 
 k_vec <- 1:10 #dimensions 1 - 10
@@ -415,24 +417,25 @@ species.12 # reasonably correlated vectors with axis 1,2
 
 invert.12 <- ggplot(data = scores,
                     aes(x = NMDS1, y = NMDS2)) +
-  geom_point(data = scores, aes(x = NMDS1, y = NMDS2, colour = Habitat, shape = Habitat),
+  geom_point(data = scores, 
+             aes(x = NMDS1, y = NMDS2, colour = Habitat, shape = Habitat),
              size = 4) + # sites as points
   stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS2,
                                   linetype = Habitat, colour = Habitat), size = 1) + # a 95% CI ellipses
   geom_segment(data = species.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  #xlim (-1, 1) + # setting the limits so they're symmetrical
-  #ylim (-1, 1) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
-  geom_label(data = species.12,aes(x=MDS1,y=MDS2,label=species),size=5) +
   ylim(-1, 1.5) +
   xlim(-1.45, 1) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  geom_text_repel(data = species.12, 
+                  aes(x = MDS1, y = MDS2, label = species),
+                  color="black",
+                  size = 6)
 
 
 ## NMDS Axis 1, 3
@@ -443,19 +446,26 @@ species.13 # vectors correlated with axis 1, 3
 
 invert.13 <- ggplot(data = scores,
                     aes(x = NMDS1, y = NMDS3)) +
-  geom_point(data = scores, aes(x = NMDS1, y = NMDS3, colour = Habitat, shape = Habitat), size = 4) +
-  stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS3,linetype = Habitat, colour = Habitat), size = 1) +
-  geom_segment(data = species.13, aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
+  geom_point(data = scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 colour = Habitat, shape = Habitat), size = 4) +
+  stat_ellipse(data = scores, 
+               aes(x = NMDS1,y = NMDS3,linetype = Habitat, 
+                   colour = Habitat), size = 1) +
+  geom_segment(data = species.13, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
   theme_minimal() +
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-geom_label(data = species.13,aes(x=MDS1,y=MDS3,label=species),size=5) +
-  scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   theme(legend.position = c(0.9, 0.9)) +
-  xlim(-1.5, 1.0)
+  xlim(-1.5, 1.0) +
+  geom_text_repel(data = species.13, 
+                  aes(x = MDS1, y = MDS3, label = species),
+                  color="black",
+                  size = 6)
 
 invert.13
 
