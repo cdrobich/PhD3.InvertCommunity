@@ -17,12 +17,22 @@ benthic.env <- benthic %>% select(Site.ID:Collection.date)
 ###### Univariate Analyses ###############
 
 richness <- rowSums(benthic.data > 0) # species richness
+rich <- specnumber(benthic.data) # species richness in vegan
 abundance <- rowSums(benthic.data) # abundance
+H <- diversity(benthic.data) # Shannon Weiner
+D1 <- diversity(benthic.data, index = "simpson") #default is base log, but can change it
+J <- H/log(specnumber(benthic.data))
+
 
 # make new little data frame
 benthic.uni<- benthic.env
 benthic.uni$rich <- richness
 benthic.uni$abundance <- abundance
+benthic.uni$H <- H
+benthic.uni$D1 <- D1
+benthic.uni$J <- J
+
+write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
 
 colnames(benthic.uni)
 
@@ -168,6 +178,47 @@ ggplot(benthic.uni, aes(x = rich, y = Habitat, fill = Habitat)) +
   scale_fill_viridis(discrete = TRUE)
 
 
+
+### Additional Diversity Indices ####
+
+(H.vio <- ggplot(data = benthic.uni, 
+                   aes(x = Habitat, y = H, group = Habitat, fill = Habitat)) +
+  geom_violin(trim = FALSE) +
+  theme_classic(base_size = 14) +
+  xlab(" ") +
+  ylab("Shannon Weiner (H)") +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 14)) +
+  scale_fill_viridis(discrete = TRUE))
+
+(D.vio <- ggplot(data = benthic.uni, 
+                 aes(x = Habitat, y = D1, group = Habitat, fill = Habitat)) +
+    geom_violin(trim = FALSE) +
+    theme_classic(base_size = 14) +
+    xlab(" ") +
+    ylab("Simpson's Diversity") +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 14)) +
+    scale_fill_viridis(discrete = TRUE))
+
+(J.vio <- ggplot(data = benthic.uni, 
+                 aes(x = Habitat, y = J, group = Habitat, fill = Habitat)) +
+    geom_violin(trim = FALSE) +
+    theme_classic(base_size = 14) +
+    xlab(" ") +
+    ylab("Pielou's J") +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 14)) +
+    scale_fill_viridis(discrete = TRUE))
+
+
+ggarrange(H.vio, D.vio, J.vio,
+          nrow = 3,
+          labels = "AUTO",
+          hjust = -6)
+
+
+
 ############ Multivariate Analyses ################
 
 benthic.rel <- decostand(benthic.data, "max", 2, na.rm = NULL) # divide by column max
@@ -309,6 +360,7 @@ alltaxa <- envfit(nms.invert, benthic.rel,
                  choices = c(1,2)) #produces a list with r2, p value, and NMDS coordinates
 
 all.taxa.df <- data.frame((alltaxa$vectors)$arrows, (alltaxa$vectors)$r, (alltaxa$vectors)$pvals) #take list and make into dataframe
+
 write.csv(all.taxa.df, "Data/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
 
 
@@ -353,6 +405,7 @@ alltaxa.13 <- envfit(nms.invert, benthic.rel,
 
 
 all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows, (alltaxa.13$vectors)$r, (alltaxa.13$vectors)$pvals)
+
 write.csv(all.taxa13.df, "Data/NMDS_vectors_axis13.csv")
 
 
@@ -428,14 +481,15 @@ invert.12 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  scale_colour_viridis(discrete = TRUE) +
   ylim(-1, 1.5) +
   xlim(-1.45, 1) +
   theme(legend.position = "none") +
   geom_text_repel(data = species.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
-                  size = 6)
+                  size = 6) +
+  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) +
 
 
 ## NMDS Axis 1, 3
@@ -459,13 +513,14 @@ invert.13 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  scale_colour_viridis(discrete = TRUE) +
   theme(legend.position = c(0.9, 0.9)) +
   xlim(-1.5, 1.0) +
   geom_text_repel(data = species.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
-                  size = 6)
+                  size = 6) +
+  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) 
 
 invert.13
 
