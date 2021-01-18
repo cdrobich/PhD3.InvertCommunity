@@ -498,16 +498,16 @@ invert.12 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  ylim(-1, 1.5) +
-  xlim(-1.45, 1) +
   theme(legend.position = "none") +
   geom_text_repel(data = species.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) 
+  scale_shape_manual(values = c(15, 16, 17, 18)) +
+  coord_fixed()
 
+invert.12
 
 ## NMDS Axis 1, 3
 # same as above
@@ -522,7 +522,7 @@ invert.13 <- ggplot(data = scores,
                  colour = Habitat, shape = Habitat), size = 4) +
   stat_ellipse(data = scores, 
                aes(x = NMDS1,y = NMDS3,linetype = Habitat, 
-                   colour = Habitat), size = 1) +
+                   colour = Habitat), size = 1, type = "t") +
   geom_segment(data = species.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
@@ -530,14 +530,14 @@ invert.13 <- ggplot(data = scores,
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  theme(legend.position = c(0.9, 0.9)) +
-  xlim(-1.5, 1.0) +
+  theme(legend.position = c(0.85, 0.9)) +
   geom_text_repel(data = species.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) 
+  scale_shape_manual(values = c(15, 16, 17, 18)) +
+  coord_fixed()
 
 invert.13
 
