@@ -42,6 +42,9 @@ colnames(benthic.uni)
 
 # Univariate Analyses -----------------------------------------------------
 
+benthic.uni <- read.csv("Data/benthic_invertebrates_univariate.csv")
+
+
 abundance.lm <- lm(abundance ~ Habitat, data = benthic.uni)
 Anova(abundance.lm, type = 3)
 
@@ -94,6 +97,15 @@ benthic.uni %>%
 
 # Univariate Figures ------------------------------------------------------
 
+ggplot(data = benthic.uni, 
+       aes(y = abundance, x = Habitat)) +
+  geom_point()
+
+ggplot(data = benthic.uni, 
+       aes(y = rich, x = Habitat)) +
+  geom_point()
+
+
 # Density plots 
 
 abundance <- ggplot(data = benthic.uni, 
@@ -136,6 +148,7 @@ ggarrange(abundance, richness,
 (violin.s <- ggplot(data = benthic.uni, 
        aes(x = Habitat, y = rich, group = Habitat, fill = Habitat)) +
   geom_violin(trim = FALSE, lwd = 1) +
+  geom_point() +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Species Richness") +
@@ -149,6 +162,7 @@ ggarrange(abundance, richness,
 (violin.ab <- ggplot(data = benthic.uni, 
        aes(x = Habitat, y = abundance, group = Habitat, fill = Habitat)) +
   geom_violin(trim = FALSE, lwd = 1) +
+    geom_point() +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Abundance") +
