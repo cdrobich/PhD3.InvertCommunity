@@ -7,6 +7,8 @@ library(car)
 library(viridis) # colours
 
 
+# Load Data ---------------------------------------------------------------
+
 benthic <- read.csv("Data/Benthic_vegetation_QCC.csv") # occurrences = 1 removed
 str(benthic)
 
@@ -14,7 +16,8 @@ benthic.data <- benthic %>% select(Oligochaeta:Hydroptilidae)
 benthic.env <- benthic %>% select(Site.ID:Collection.date)
 
 
-###### Univariate Analyses ###############
+# Univariate Data ---------------------------------------------------------
+
 
 richness <- rowSums(benthic.data > 0) # species richness
 rich <- specnumber(benthic.data) # species richness in vegan
@@ -36,6 +39,8 @@ write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
 
 colnames(benthic.uni)
 
+
+# Univariate Analyses -----------------------------------------------------
 
 abundance.lm <- lm(abundance ~ Habitat, data = benthic.uni)
 Anova(abundance.lm, type = 3)
@@ -87,6 +92,8 @@ benthic.uni %>%
          sterr.ab = (sd.ab/sqrt(N))) -> benthic.uni
 
 
+# Univariate Figures ------------------------------------------------------
+
 # Density plots 
 
 abundance <- ggplot(data = benthic.uni, 
@@ -126,31 +133,31 @@ ggarrange(abundance, richness,
 
 # Violin Plots
 
-violin.s <- ggplot(data = benthic.uni, 
+(violin.s <- ggplot(data = benthic.uni, 
        aes(x = Habitat, y = rich, group = Habitat, fill = Habitat)) +
-  geom_violin(trim = FALSE) +
+  geom_violin(trim = FALSE, lwd = 1) +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Species Richness") +
   theme(legend.position = "none",
         axis.text = element_text(size = 14)) +
   ylim(0, 30) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_manual(values = c("#969696","#35978f", "#2166ac"))) 
 
 
 
-violin.ab <- ggplot(data = benthic.uni, 
+(violin.ab <- ggplot(data = benthic.uni, 
        aes(x = Habitat, y = abundance, group = Habitat, fill = Habitat)) +
-  geom_violin(trim = FALSE, scale = "count") +
+  geom_violin(trim = FALSE, lwd = 1) +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Abundance") +
   theme(legend.position = "none",
         axis.text = element_text(size = 14)) +
-  scale_fill_viridis(discrete = TRUE) +
+  scale_fill_manual(values = c("#969696","#35978f", "#2166ac")) +
   annotate("text", x = 1:3, y = c(4600, 12000, 4600),
                      label = c("a", "b", "a"),
-           size = 4.5)
+           size = 4.5))
 
 (violin.benthic <- ggarrange(violin.ab, violin.s,
           labels = "AUTO",
@@ -158,7 +165,10 @@ violin.ab <- ggplot(data = benthic.uni,
           vjust = 2))
 
 ggsave("Figures/benthic_violin.TIFF", violin.benthic,
-       dpi = 300)
+       dpi = 300,
+       height = 6.1,
+       width = 11.9,
+       units = "in")
 
 # Ridge Plots
 
@@ -219,7 +229,11 @@ ggarrange(H.vio, D.vio, J.vio,
 
 
 
-############ Multivariate Analyses ################
+# Multivariate Analyses ---------------------------------------------------
+
+
+# perMANOVA ---------------------------------------------------------------
+
 
 benthic.rel <- decostand(benthic.data, "max", 2, na.rm = NULL) # divide by column max
 
@@ -277,7 +291,10 @@ library(EcolUtils)
 #2 Invaded <-> Uninvaded 1.0981493 1.0981493 4.193700 0.2305029 0.000999001       0.002997003
 #3 Treated <-> Uninvaded 1.3110559 1.3110559 4.796596 0.2422940 0.000999001       0.002997003
 
-############ NMDS ############
+
+
+# NMDS  -------------------------------------------------------------------
+
 
 library(ggrepel)
 
@@ -489,7 +506,7 @@ invert.12 <- ggplot(data = scores,
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) 
 
 
 ## NMDS Axis 1, 3
@@ -525,10 +542,14 @@ invert.13 <- ggplot(data = scores,
 invert.13
 
 
-NMS.benthic.panel <- ggarrange(invert.12, invert.13)
+(NMS.benthic.panel <- ggarrange(invert.12, invert.13,
+                               align = "hv"))
 
 ggsave("Figures/Benthic_NMDS_panel.TIFF", NMS.benthic.panel,
-       dpi = 300)
+       dpi = 300,
+       height = 7.33,
+       width = 11.9,
+       units = "in")
 
 
 
