@@ -223,6 +223,7 @@ qqline(resid(rich.in.glmm))
 abundance <- ggplot(data = invert.uni, aes(x = Treatment, y = abundance, 
                               shape = Year, colour = Treatment),
        size = 4) +
+  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.5)) +
   geom_jitter(position = position_jitterdodge(
     jitter.width = 0.1, dodge.width = 0.5), size = 3) +
   stat_summary(     
@@ -242,19 +243,21 @@ abundance <- ggplot(data = invert.uni, aes(x = Treatment, y = abundance,
   scale_shape_manual(values = c(15, 16)) +
   guides(color = "none") 
 
+abundance
 
 
 richness <- ggplot(data = invert.uni, aes(x = Treatment, y = rich, 
                               shape = Year, colour = Treatment),
        size = 4) +
+  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.8)) +
   geom_jitter(position = position_jitterdodge(
-    jitter.width = 0.1, dodge.width = 0.5), size = 3) +
+    jitter.width = 0.1, dodge.width = 0.8), size = 3) +
   stat_summary(     
     aes(shape = Year),
     colour = "black",
     fun.data = "mean_se", fun.args = list(mult = 1), 
     geom = "pointrange", size = 1,
-    position = position_dodge(0.5)) +
+    position = position_dodge(0.8)) +
   theme_classic() +
   labs(x = " ",
        y = expression(paste("Taxonomic Richness"))) +
@@ -262,12 +265,13 @@ richness <- ggplot(data = invert.uni, aes(x = Treatment, y = rich,
   theme(text = element_text(size = 14),
         axis.text.x = element_text(size = 14),
         axis.text.y = element_text(size = 14)) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
   scale_shape_manual(values = c(15, 16)) +
   ylim(0, 40) +
   guides(color = "none") +
   theme(legend.position = "right") 
 
+richness
 
 uni.panel <- ggarrange(abundance, richness,
           common.legend = TRUE,
@@ -277,7 +281,10 @@ uni.panel <- ggarrange(abundance, richness,
           vjust = 2)
 
 
-ggsave("Figures/emerging_invert_unipanel.jpeg", uni.panel)
+ggsave("Figures/emerging_invert_unipanel.jpeg", uni.panel,
+       height = 5.49,
+       width = 9.58,
+       units = "in")
 
 
 # Multivariate Analyses ---------------------------------------------------
