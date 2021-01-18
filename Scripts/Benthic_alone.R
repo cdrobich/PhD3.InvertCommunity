@@ -146,32 +146,46 @@ ggarrange(abundance, richness,
 # Violin Plots
 
 (violin.s <- ggplot(data = benthic.uni, 
-       aes(x = Habitat, y = rich, group = Habitat, fill = Habitat)) +
-  geom_violin(trim = FALSE, lwd = 1) +
-  geom_point() +
+       aes(x = Habitat, y = rich, group = Habitat, colour = Habitat)) +
+  geom_violin(trim = FALSE, lwd = 1, colour = "black") +
+  geom_point(size = 3) +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Species Richness") +
   theme(legend.position = "none",
         axis.text = element_text(size = 14)) +
   ylim(0, 30) +
-  scale_fill_manual(values = c("#969696","#35978f", "#2166ac"))) 
+  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
+  stat_summary(     
+    aes(shape = Habitat),
+    colour = "black",
+    fun.data = "mean_se", fun.args = list(mult = 1), 
+    geom = "pointrange", size = 1,
+    position = position_dodge(0.8)) +
+    theme(panel.border = element_rect(fill = NA)))
 
 
 
 (violin.ab <- ggplot(data = benthic.uni, 
-       aes(x = Habitat, y = abundance, group = Habitat, fill = Habitat)) +
-  geom_violin(trim = FALSE, lwd = 1) +
-    geom_point() +
+       aes(x = Habitat, y = abundance, group = Habitat, colour = Habitat)) +
+  geom_violin(trim = FALSE, lwd = 1, colour = "black") +
+    geom_point(size = 3) +
   theme_classic(base_size = 14) +
   xlab(" ") +
   ylab("Abundance") +
   theme(legend.position = "none",
         axis.text = element_text(size = 14)) +
-  scale_fill_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
   annotate("text", x = 1:3, y = c(4600, 12000, 4600),
                      label = c("a", "b", "a"),
-           size = 4.5))
+           size = 4.5) +
+  stat_summary(     
+    aes(shape = Habitat),
+    colour = "black",
+    fun.data = "mean_se", fun.args = list(mult = 1), 
+    geom = "pointrange", size = 1,
+    position = position_dodge(0.8)) +
+    theme(panel.border = element_rect(fill = NA)))
 
 (violin.benthic <- ggarrange(violin.ab, violin.s,
           labels = "AUTO",

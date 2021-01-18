@@ -223,7 +223,8 @@ qqline(resid(rich.in.glmm))
 abundance <- ggplot(data = invert.uni, aes(x = Treatment, y = abundance, 
                               shape = Year, colour = Treatment),
        size = 4) +
-  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.5)) +
+  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.5),
+              colour = "black") +
   geom_jitter(position = position_jitterdodge(
     jitter.width = 0.1, dodge.width = 0.5), size = 3) +
   stat_summary(     
@@ -249,7 +250,8 @@ abundance
 richness <- ggplot(data = invert.uni, aes(x = Treatment, y = rich, 
                               shape = Year, colour = Treatment),
        size = 4) +
-  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.8)) +
+  geom_violin(trim = FALSE, lwd = 1, position = position_dodge(0.8),
+              colour = "black") +
   geom_jitter(position = position_jitterdodge(
     jitter.width = 0.1, dodge.width = 0.8), size = 3) +
   stat_summary(     
