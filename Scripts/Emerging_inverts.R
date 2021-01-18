@@ -535,7 +535,8 @@ invert.12 <- ggplot(data = scores,
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
   scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(linetype = "none")
+  guides(linetype = "none") +
+  coord_fixed()
 
 invert.12
 
@@ -558,26 +559,24 @@ invert.13 <- ggplot(data = scores,
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
   theme_minimal() +
   theme(panel.border = element_rect(fill = NA)) +
-  xlab("NMDS 1") +
-  ylab("NMDS 3") +
   geom_text_repel(data = species.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
   scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(linetype = "none")
+  guides(linetype = "none") +
+  coord_fixed()
 
 invert.13
 
 
 (NMS.emerging.panel <- ggarrange(invert.12, invert.13,
                                  common.legend = TRUE,
-                                 legend = "bottom",
-                                 labels = "AUTO"))
+                                 legend = "bottom"))
   
 
-ggsave("Figures/Benthic_NMDS_panel.TIFF", NMS.benthic.panel,
+ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
        dpi = 300)
 
 
