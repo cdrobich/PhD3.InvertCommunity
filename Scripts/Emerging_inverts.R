@@ -5,6 +5,10 @@ library(agricolae)
 library(Hmisc)
 library(car)
 library(viridis)
+library(lme4)
+library(MuMIn)
+library(AICcmodavg)
+
 
 
 # Data Import -------------------------------------------------------------
@@ -51,14 +55,14 @@ colnames(invert.uni)
 
 invert.uni <- read.csv("Data/emerging_invertebrate_univariate.csv")
 invert.uni$Year <- as.factor(invert.uni$Year)
-
+invert.uni$Treatment <- as.factor(invert.uni$Treatment)
 
 
 abundance.lm <- lm(abundance ~ Treatment * Year, data = invert.uni)
 Anova(abundance.lm, type = 3)
 
 #Response: abundance
-#Sum Sq Df F value   Pr(>F)   
+#                Sum Sq Df F value   Pr(>F)   
 #(Intercept)    901867  1  1.8186 0.183813   
 #Habitat       2466358  2  2.4866 0.093849 . 
 #Year            78937  1  0.1592 0.691690   
@@ -68,49 +72,53 @@ Anova(abundance.lm, type = 3)
 
 ## GLMM abundance #
 
-library(lme4)
-library(MuMIn)
-
 ggplot(invert.data, aes(x = abundance)) + 
   geom_histogram(binwidth = 100,
                  color="black", fill="white")
 
 
-invert.glmm <- lmer(abundance ~ Habitat + (1|Year), data = invert.uni, REML = FALSE)
+invert.glmm <- lmer(abundance ~ Treatment + (1|Year) + (1|N), data = invert.uni, REML = FALSE)
 summary(invert.glmm)
 
-#Linear mixed model fit by REML ['lmerMod']
-#Formula: abundance ~ Habitat + (1 | Year)
+#Linear mixed model fit by maximum likelihood  ['lmerMod']
+#Formula: abundance ~ Treatment + (1 | Year) + (1 | N)
 #Data: invert.uni
 
-#REML criterion at convergence: 833.6
+#AIC      BIC   logLik deviance df.resid 
+#884.4    896.4   -436.2    872.4       48 
 
 #Scaled residuals: 
 #  Min      1Q  Median      3Q     Max 
-#-2.1911 -0.5870  0.0113  0.3136  3.8420 
+#-2.1987 -0.5641 -0.0023  0.2849  3.9533 
 
 #Random effects:
-#Groups   Name        Variance Std.Dev.
-#Year     (Intercept) 265414   515.2   
-#Residual             588945   767.4   
-#Number of obs: 54, groups:  Year, 2
+#Groups   Name        Variance  Std.Dev. 
+#N        (Intercept) 8.354e-05   0.00914
+#Year     (Intercept) 1.226e+05 350.20975
+#Residual             5.664e+05 752.60881
+#Number of obs: 54, groups:  N, 5; Year, 2
 
 #Fixed effects:
-#Estimate Std. Error t value
-#(Intercept)         382.8      406.7   0.941
-#HabitatRestored    1373.6      255.8   5.369
-#HabitatUninvaded    132.1      255.8   0.516
+#                    Estimate Std. Error t value
+#(Intercept)           382.4      304.6   1.255
+#TreatmentTreated     1373.7      250.9   5.476
+#TreatmentUninvaded    132.4      250.9   0.528
 
 #Correlation of Fixed Effects:
-#(Intr) HbttRs
-#HabittRstrd -0.314       
-#HabttUnnvdd -0.314  0.500
+#             (Intr) TrtmnT
+#TretmntTrtd -0.412       
+#TrtmntUnnvd -0.412  0.500
+
+#optimizer (nloptwrap) convergence code: 0 (OK)
+#boundary (singular) fit: see ?isSingular
+
 
 VarCorr(invert.glmm)
 
-#Groups   Name        Std.Dev.
-#Year     (Intercept) 515.18  
-#Residual             767.43 
+#Groups   Name        Std.Dev.  
+#N        (Intercept) 9.1398e-03
+#Year     (Intercept) 3.5021e+02
+#Residual             7.5261e+02
 
 r.squaredGLMM(invert.glmm) # marginal and conditional r2 for model 1
 
@@ -118,6 +126,7 @@ r.squaredGLMM(invert.glmm) # marginal and conditional r2 for model 1
 #[1,] 0.3134326 0.5267209
 
 ## coefficients
+
 coef(invert.glmm)
 
 #     (Intercept) HabitatRestored HabitatUninvaded
@@ -130,15 +139,74 @@ qqnorm(resid(invert.glmm))
 qqline(resid(invert.glmm))
 
 
+# null model 
+
+ab.null <- lmer(abundance ~ (1|Year) + (1|N), data = invert.uni, REML = FALSE) #boundary(singular) = variances of one or more linear combination of effects are 0
+summary(ab.null)
+
+#Linear mixed model fit by maximum likelihood  ['lmerMod']
+#Formula: abundance ~ (1 | Year) + (1 | N)
+#Data: invert.uni
+
+#AIC      BIC   logLik deviance df.resid 
+#908.1    916.0   -450.0    900.1       50 
+
+#Scaled residuals: 
+#  Min      1Q  Median      3Q     Max 
+#-1.0595 -0.5600 -0.3445  0.1872  3.9578 
+
+#Random effects:
+#Groups   Name        Variance  Std.Dev. 
+#N        (Intercept) 2.753e-09 5.247e-05
+#Year     (Intercept) 1.079e+05 3.285e+02
+#Residual             9.639e+05 9.818e+02
+#Number of obs: 54, groups:  N, 5; Year, 2
+
+#              Fixed effects:
+#              Estimate Std. Error t value
+#(Intercept)    884.5      268.0     3.3
+
+#optimizer (nloptwrap) convergence code: 0 (OK)
+#boundary (singular) fit: see ?isSingular
+
+confint(ab.null)
+r.squaredGLMM(ab.null)
+
+#  R2m       R2c
+# 0      0.1006882
+
+
+models <- list(invert.glmm, ab.null)
+names <- c(1:2)
+
+#Model selection based on AICc:
+  
+#  K   AICc Delta_AICc AICcWt Cum.Wt      LL
+#1 6 886.22       0.00      1      1 -436.22
+#2 4 908.90      22.68      0      1 -450.04
+
+
+# or do it this way and get info re: test statistic
+
+anova(invert.glmm, ab.null)
+
+#Data: invert.uni
+#Models:
+#  ab.null: abundance ~ (1 | Year) + (1 | N)
+#invert.glmm: abundance ~ Treatment + (1 | Year) + (1 | N)
+
+#             npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
+#ab.null        4 908.08 916.04 -450.04   900.08                         
+#invert.glmm    6 884.44 896.37 -436.22   872.44 27.649  2  9.913e-07 ***
 
 
 ## Richness 
 # ANOVA
 
-rich.lm <- lm(rich ~ Habitat * Year, data = invert.uni)
-Anova(rich.lm, type = 3)
+rich.lm <- lm(rich ~ Treatment * Year, data = invert.uni)
+Anova(rich.lm, type = 2)
 
-#Response: rich
+#Response: rich Type III SS
 
 #Sum Sq Df  F value    Pr(>F)    
 #(Intercept)  4489.0  1 140.9132 6.907e-16 ***
@@ -147,60 +215,68 @@ Anova(rich.lm, type = 3)
 #Habitat:Year   87.1  2   1.3672  0.264552    
 #Residuals    1529.1 48  
 
+#Anova Table (Type II tests)
 
+#Response: rich
+#                   Sum Sq Df F value    Pr(>F)    
+#Treatment       840.70  2  13.034  3.01e-05 ***
+#Year            498.07  1  15.444 0.0002719 ***
+#Treatment:Year   93.59  2   1.451 0.2444183    
+#Residuals      1548.00 48 
 
 # GLMM 
-
-library(lme4)
-library(MuMIn)
 
 ggplot(invert.uni, aes(x = rich)) + 
   geom_histogram(binwidth = 1,
                  color="black", fill="white")
 
 
-rich.in.glmm <- lmer(rich ~ Habitat + (1|Year), data = invert.uni, REML = FALSE)
+rich.in.glmm <- lmer(rich ~ Treatment + (1|Year) + (1|N),
+                     data = invert.uni, REML = FALSE)
 summary(rich.in.glmm)
 
 #Linear mixed model fit by maximum likelihood  ['lmerMod']
-#Formula: rich ~ Habitat + (1 | Year)
+#Formula: rich ~ Treatment + (1 | Year) + (1 | N)
 #Data: invert.uni
 
 #AIC      BIC   logLik deviance df.resid 
-#353.0    363.0   -171.5    343.0       49 
+#349.0    361.0   -168.5    337.0       48 
 
 #Scaled residuals: 
 #  Min      1Q  Median      3Q     Max 
-# -2.2045 -0.5940  0.1993  0.7097  2.2798 
+#-2.2232 -0.6037  0.1341  0.6268  2.2744 
 
 #Random effects:
 #Groups   Name        Variance Std.Dev.
-#Year     (Intercept)  8.185   2.861   
-#Residual             31.081   5.575   
-#Number of obs: 54, groups:  Year, 2
+#N        (Intercept) 12.35    3.514   
+#Year     (Intercept)  0.00    0.000   
+#Residual             26.28    5.127   
+#Number of obs: 54, groups:  N, 5; Year, 2
 
 #Fixed effects:
-#Estimate Std. Error t value
-#(Intercept)        24.722      2.412  10.248
-#HabitatRestored    -9.556      1.858  -5.142
-#HabitatUninvaded   -3.111      1.858  -1.674
+#                   Estimate Std. Error t value
+#(Intercept)          23.029      2.181  10.557
+#TreatmentTreated     -8.814      1.727  -5.104
+#TreatmentUninvaded   -2.944      1.709  -1.723
 
 #Correlation of Fixed Effects:
-#  (Intr) HbttRs
-#HabittRstrd -0.385       
-#HabttUnnvdd -0.385  0.500
-
+#  (Intr) TrtmnT
+#TretmntTrtd -0.440       
+#TrtmntUnnvd -0.392  0.495
+#optimizer (nloptwrap) convergence code: 0 (OK)
+#boundary (singular) fit: see ?isSingular
 
 VarCorr(rich.in.glmm)
 
 #Groups   Name        Std.Dev.
-#Year     (Intercept) 2.8610  
-#Residual             5.5751 
+#N        (Intercept) 3.5143  
+#Year     (Intercept) 0.0000  
+#Residual             5.1266  
 
 r.squaredGLMM(rich.in.glmm) # marginal and conditional r2 for model 1
 
 #       R2m       R2c
-#[1,] 0.2912272 0.438974
+#[1,] 0.2614732 0.4975748
 
 ## coefficients
 coef(rich.in.glmm)
@@ -209,12 +285,85 @@ coef(rich.in.glmm)
 #2017    22.04341       -9.555556        -3.111111
 #2018    27.40104       -9.555556        -3.111111
 
+
+confint(rich.in.glmm)
+
+#                     2.5 %     97.5 %
+#.sig01               1.595810  8.6648467
+#.sig02               0.000000  6.7664837
+#.sigma               4.265627  6.3189536
+#(Intercept)         17.983681 27.8249298
+#TreatmentTreated   -12.271214 -5.3680080
+#TreatmentUninvaded  -6.358896  0.4700068
+
 # examine the residuals 
 plot(rich.in.glmm)
 qqnorm(resid(rich.in.glmm))
 qqline(resid(rich.in.glmm))
 
+# null model 
 
+rich.null <- lmer(rich ~ (1|Year) + (1|N), data = invert.uni, REML = FALSE) #boundary(singular) = variances of one or more linear combination of effects are 0
+summary(rich.null)
+
+#Linear mixed model fit by maximum likelihood  ['lmerMod']
+#Formula: rich ~ (1 | Year) + (1 | N)
+#Data: invert.uni
+
+#AIC      BIC   logLik deviance df.resid 
+#366.8    374.7   -179.4    358.8       50 
+
+#Scaled residuals: 
+#  Min       1Q   Median       3Q      Max 
+#-1.98998 -0.83028 -0.00916  0.70006  1.96595 
+
+#Random effects:
+#  Groups   Name        Variance Std.Dev.
+#N        (Intercept) 14.46    3.802   
+#Year     (Intercept)  0.00    0.000   
+#Residual             39.94    6.320   
+#Number of obs: 54, groups:  N, 5; Year, 2
+
+#Fixed effects:
+#            Estimate Std. Error t value
+#(Intercept)   18.665      2.138   8.731
+
+#optimizer (nloptwrap) convergence code: 0 (OK)
+#boundary (singular) fit: see ?isSingular
+
+confint(rich.null)
+r.squaredGLMM(rich.null)
+
+#  R2m       R2c
+#  0    0.2657744
+
+models <- list(rich.in.glmm, rich.null)
+names <- c(1:2)
+
+aictab(cand.set = models, modnames = names,
+       sort = TRUE, c.hat = 1, second.ord = TRUE,
+       nobs = NULL)
+
+#Model selection based on AICc:
+  
+#  K   AICc Delta_AICc AICcWt Cum.Wt      LL
+#1 6 350.81       0.00      1      1 -168.51
+#2 4 367.58      16.77      0      1 -179.38
+
+
+# or do it this way and get info re: test statistic
+
+anova(rich.in.glmm, rich.null)
+
+#Data: invert.uni
+#Models:
+#rich.null: rich ~ (1 | Year) + (1 | N)
+#rich.in.glmm: rich ~ Treatment + (1 | Year) + (1 | N)
+
+#             npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
+#rich.null       4 366.76 374.72 -179.38   358.76                         
+#rich.in.glmm    6 349.02 360.96 -168.51   337.02 21.741  2  1.901e-05 ***
+ 
 
 # Univariate Figures ------------------------------------------------------
 
