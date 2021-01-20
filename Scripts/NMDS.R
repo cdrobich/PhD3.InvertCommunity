@@ -257,7 +257,7 @@ ggsave("Figures/NMDS_invertebrate.jpeg", NMDS.inv) # save that figure to my fold
 ########## NMDS with Clustering ##########
 # with the grouping variable (4 groups) derived from the ISA and cluster analysis
 
-inverts <- read.csv("Data/Inverts_rel_rares_clustergroups.csv")
+inverts <- read.csv("Data/emerging_invert_relativized_10 groups.csv")
 
 str(inverts)
 dim(inverts)

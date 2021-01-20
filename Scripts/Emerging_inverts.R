@@ -8,6 +8,7 @@ library(viridis)
 library(lme4)
 library(MuMIn)
 library(AICcmodavg)
+library(ggrepel)
 
 
 
@@ -442,6 +443,8 @@ ggsave("Figures/emerging_invert_unipanel.jpeg", uni.panel,
 
 invert.rel <- decostand(invert.data, "max", 2, na.rm = NULL) # divide by column max
 
+write.csv(invert.rel, "Data/emerging_invert_relativized.csv")
+
 ##### perMANVOA ####
 
 (per.inv <- adonis2(invert.rel ~ Treatment * Year,
@@ -525,13 +528,16 @@ nms.invert <- metaMDS(invert.rel, distance = "bray", # species data, bray-curtis
                       k = 3, trymax = 1000)   # k = number of axes
 nms.invert
 
+
+#global Multidimensional Scaling using monoMDS
+
 #Data:     invert.rel 
 #Distance: bray 
 
 #Dimensions: 3 
-#Stress:     0.2014091 
+#Stress:     0.2017306 
 #Stress type 1, weak ties
-#Two convergent solutions found after 57 tries
+#Two convergent solutions found after 22 tries
 #Scaling: centring, PC rotation, halfchange scaling 
 #Species: expanded scores based on ‘invert.rel’ 
 
@@ -546,26 +552,25 @@ orditorp(nms.invert, display = "species")
 orditorp(nms.invert, display = "sites")
 
 
-
 ordiplot(nms.invert, type = "n", choices = c(1,3))
 orditorp(nms.invert, display = "species", choices = c(1,3))
 orditorp(nms.invert, display = "sites", choices = c(1,3))
 
 
 # how many iterations of the NMDS
-nms.invert$iters # 129
+nms.invert$iters # 136
 
 # Goodness of fit
 (g <- goodness(nms.invert)) # smaller the number the better the fit
 sum(g^2)
-nms.invert$stress^2  # 0.04056562
+nms.invert$stress^2  # 0.04069524
 
-1-nms.invert$stress^2 # 0.9594344 #analogous to square correlation coefficient
+1-nms.invert$stress^2 # 0.9593048 #analogous to square correlation coefficient
 
 
 ## extract the scores for plotting 
 scr <- as.data.frame(scores(nms.invert, display = "sites")) # extract NMDS scores
- colnames(scr)
+colnames(scr)
  
 # adding categorical info to scores
 invert.env$NMDS1 <- scr$NMDS1
@@ -583,37 +588,12 @@ alltaxa12 <- envfit(nms.invert, invert.rel,
 
 all.taxa.df <- data.frame((alltaxa12$vectors)$arrows,
                           (alltaxa12$vectors)$r,
-                          (alltaxa12$vectors)$pvals) #take list and make into dataframe
+                          (alltaxa12$vectors)$pvals) #take list and make into data frame
 
 write.csv(all.taxa.df, "Data/NMDS_emerg_vectors_axis12.csv") # save vector scores as csv
 
 
-alltaxa12$vectors$r[alltaxa12$vectors$r > 0.25] # selecting vectors (Family) that are reasonably correlated (r2 > 0.2)
-
-# Anthicidae   Chironomidae Dolichopodidae  Ichneumonidae 
-# 0.3335932      0.2748834      0.3038629      0.2892768 
-
-
-# taking out those correlated ones to add to the figure
-corr.taxa12 <- invert.rel %>% select(Anthicidae,
-                                    Chironomidae,
-                                    Dolichopodidae,
-                                    Ichneumonidae)
-
-# recalculated it because I am lazy but you could probably pull them from all.taxa.df
-corrtaxa12 <- envfit(nms.invert$points, corr.taxa12, 
-                   permutations = 999, choices = c(1,2))
-
-
-corrtaxa12
-
-# make a new data frame for the figure
-species.12 <- as.data.frame(corrtaxa12$vectors$arrows*sqrt(corrtaxa12$vectors$r)) #scaling vectors so they correspond with r2
-species.12$species <- rownames(species.12)
-
-
 #### Vectors correlated with axis 1 & 3 ###
-# same as above but now for the other axes/figure
 
 alltaxa.13 <- envfit(nms.invert, invert.rel, 
                      permutations = 999, choices = c(1,3)) 
@@ -626,25 +606,48 @@ all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows,
 write.csv(all.taxa13.df, "Data/NMDS_emerging_vectors_axis13.csv")
 
 
-alltaxa.13$vectors$r[alltaxa.13$vectors$r > 0.25] 
 
-#Latridiidae Chironomidae 
-#0.3044679    0.2699855 
+## Picking the vectors we want for the figure based on fit (r > 0.2)
 
-corr.taxa.13 <- invert.rel %>% select(Latridiidae,
-                                       Chironomidae)
+nmds.axis12 <- read.csv("Data/NMDS_emerg_vectors_axis12.csv")
+nmds.axis13 <- read.csv("Data/NMDS_emerging_vectors_axis13.csv")
+
+colnames(nmds.axis13)
+
+# axis 1, 2
+corr.sp <- nmds.axis12 %>% filter(X.alltaxa12.vectors..r > 0.2) 
+target12 <- corr.sp$X # string of the Family names
+
+axis12.vectors <- invert.rel %>% select(all_of(target12)) # make a matrix of just those
+
+# axis 1, 3
+
+corr.sp13 <- nmds.axis13 %>% filter(X.alltaxa.13.vectors..r > 0.2) 
+target13 <- corr.sp13$X # string of the Family names
+
+axis13.vectors <- invert.rel %>% select(all_of(target13)) # make a matrix of just those
 
 
-corrtaxa.13 <- envfit(nms.invert$points, corr.taxa.13, 
-                      permutations = 999, choices = c(1,3))
+# fit them to the nms
+# axis 1, 2
+(nmds.vectors.12 <- envfit(nms.invert$points, axis12.vectors,
+                         permutations = 999, choices = c(1,2)))                        
 
 
-corrtaxa.13
+corr.vectors.12 <- as.data.frame(nmds.vectors.12$vectors$arrows*sqrt(nmds.vectors.12$vectors$r)) #scaling vectors
+corr.vectors.12$species <- rownames(corr.vectors.12) # add Family as a column
 
-species.13 <- as.data.frame(corrtaxa.13$vectors$arrows*sqrt(corrtaxa.13$vectors$r)) #scaling vectors
-species.13$species <- rownames(species.13)
+write.csv(corr.vectors.12, "Data/NMDS_emerging_correlatedvectors_axis12.csv")
+
+# axis 1, 3
+(nmds.vectors.13 <- envfit(nms.invert$points, axis13.vectors,
+                           permutations = 999, choices = c(1,3)))                        
 
 
+corr.vectors.13 <- as.data.frame(nmds.vectors.13$vectors$arrows*sqrt(nmds.vectors.13$vectors$r)) #scaling vectors
+corr.vectors.13$species <- rownames(corr.vectors.13) # add Family as a column
+
+write.csv(corr.vectors.13, "Data/NMDS_emerging_correlatedvectors_axis13.csv")
 
 ## plotting with base R ##
 # I don't like base R but it has some nice things built in for ordinations
@@ -661,24 +664,43 @@ ordiplot(nms.invert, choices = c(1,2),
 ordihull(nms.invert, groups = scores$Treatment, # ellipse hull
          col = col_vec)
 
-plot(alltaxa12, p.max = 0.013, col = "black")
+plot(alltaxa12, p.max = 0.001, col = "black")
 
+
+ordiplot(nms.invert, choices = c(1,3), 
+         type = "points",
+         display = "sites")
+
+
+ordihull(nms.invert, groups = scores$Treatment, # ellipse hull
+         col = col_vec)
+
+plot(alltaxa13, p.max = 0.013, col = "black")
 
 #### ggPlot Figures ####
 
+# NMDS Figures ------------------------------------------------------------
+# load the data so you don't have to redo it every time
+
+nmds.scores <- read.csv("Data/NMDS_emerging_inverts_NMDSscores.csv") #points
+nmds.scores$Year <- as.factor(nmds.scores$Year)
+nmds.scores <- nmds.scores %>% unite("HabYr", Habitat,Year, remove = FALSE)
+
+#vectors r > 0.2
+vectors.12 <- read.csv("Data/NMDS_emerging_correlatedvectors_axis12.csv") 
+vectors.13 <- read.csv("Data/NMDS_emerging_correlatedvectors_axis13.csv")
+
 ## NMDS Axis 1, 2 
 
-scores # coordinates we extracted
-species.12 # reasonably correlated vectors with axis 1,2
-
-invert.12 <- ggplot(data = scores,
+invert.12 <- ggplot(data = nmds.scores,
                     aes(x = NMDS1, y = NMDS2)) +
-  geom_point(data = scores, 
-             aes(x = NMDS1, y = NMDS2, colour = Treatment, shape = Habitat),
-             size = 4) + # sites as points
-  stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS2,
-                                  linetype = TrtYr, colour = Treatment), size = 1) + # a 95% CI ellipses
-  geom_segment(data = species.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+  geom_point(data = nmds.scores, 
+             aes(x = NMDS1, y = NMDS2, colour = Treatment, shape = HabYr),
+             size = 4, stroke = 1.5) + # sites as points
+  stat_ellipse(data = nmds.scores, aes(x = NMDS1,y = NMDS2,
+                                  linetype = Year, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = vectors.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
@@ -687,44 +709,38 @@ invert.12 <- ggplot(data = scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = species.12, 
-                  aes(x = MDS1, y = MDS2, label = species),
+  geom_text_repel(data = vectors.12, 
+                  aes(x = MDS1, y = MDS2, label = X),
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(linetype = "none") +
-  coord_fixed()
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
 
 invert.12
 
 ## NMDS Axis 1, 3
-# same as above
 
-scores
-species.13 # vectors correlated with axis 1, 3
-
-invert.13 <- ggplot(data = scores,
+invert.13 <- ggplot(data = nmds.scores,
                     aes(x = NMDS1, y = NMDS3)) +
-  geom_point(data = scores, 
+  geom_point(data = nmds.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Treatment, shape = Habitat), size = 4) +
-  stat_ellipse(data = scores, 
-               aes(x = NMDS1,y = NMDS3,linetype = TrtYr, 
-                   colour = Treatment), size = 1) +
-  geom_segment(data = species.13, 
+                 colour = Treatment, shape = HabYr), 
+             size = 4, stroke = 1.5) +
+  stat_ellipse(data = nmds.scores, 
+               aes(x = NMDS1,y = NMDS3,linetype = Year, 
+                   colour = Treatment), 
+               size = 1, level = 0.9) +
+  geom_segment(data = vectors.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
   theme_minimal() +
   theme(panel.border = element_rect(fill = NA)) +
-  geom_text_repel(data = species.13, 
-                  aes(x = MDS1, y = MDS3, label = species),
+  geom_text_repel(data = vectors.13, 
+                  aes(x = MDS1, y = MDS3, label = X),
                   color="black",
                   size = 6) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(linetype = "none") +
-  coord_fixed()
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
 
 invert.13
 
@@ -739,4 +755,132 @@ ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
 
 
 
+
+# NMDS Clusters -----------------------------------------------------------
+
+# added the grouping variable derived from the ISA and cluster analysis
+
+inverts <- read.csv("Data/emerging_invert_relativized_10 groups.csv")
+
+str(inverts)
+dim(inverts)
+colnames(inverts)
+
+invert.sp <- inverts %>% select(Araneae:Crambidae)# just the Families
+env.group <- inverts %>% select(Site:Group4) # Categorical variables
+
+env.group$Group4 <- as.factor(env.group$Group4) # adding in the cluster groups
+env.group$Group5 <- as.factor(env.group$Group5)
+
+
+scores$ClusterGroups4 <- env.group$Group4
+scores$ClusterGroups5 <- env.group$Group5
+
+colnames(scores)
+
+col_order <- c("ID", "Treatment", "Habitat", "Year", "TrtYr", "ClusterGroups4", "ClusterGroups4", "NMDS1", "NMDS2", "NMDS3")
+
+scores <- scores[, col_order] # put the categorical values in order
+
+write.csv(scores,"Data/NMDS_emerg_inverts_scores_clusters.csv") 
+
+# for later ##
+
+ISA.scores <- read.csv("Data/NMDS_emerg_inverts_scores_clusters.csv")
+colnames(ISA.scores)
+
+ISA.scores$ClusterGroup5 <- as.factor(ISA.scores$ClusterGroup5)
+ISA.scores$ClusterGroups4 <- as.factor(ISA.scores$ClusterGroups4)
+ISA.scores$ClusterGroup3 <- as.factor(ISA.scores$ClusterGroup3)
+
+ISA.scores <- ISA.scores %>% unite("HabYr", Habitat,Year, remove = FALSE)
+
+# selecting the ISA with p < 0.05 for the NMDS
+
+colnames(invert.sp)
+colnames(ISA.clust4)
+
+ISA.clust4 <- read.csv("Data/ISA_fourclusters.csv")
+
+ISA.spp <- ISA.clust4 %>% filter(pvalue < 0.001) # should be 39
+target <- ISA.spp$Species # string of species names
+
+ISA <- invert.sp %>% select(all_of(target)) # make a matrix of just those
+
+
+colnames(ISA)
+dim(ISA) # 39 columns and 54 sites
+
+# calculate vectors for Indicator Species ####
+
+(ISA.vector.12 <- envfit(nms.invert$points, ISA,
+                         permutations = 999, choices = c(1,2)))                        
+
+
+ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
+ISA.12$species <- rownames(ISA.12) # add Family as a column
+
+
+(ISA.vector.13 <- envfit(nms.invert$points, ISA,
+                         permutations = 999, choices = c(1,3)))   
+
+
+ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
+ISA.13$species <- rownames(ISA.13)
+
+###### NMDS with Cluster/ISA groups ###
+
+ISA.invert.12 <- ggplot(data = ISA.scores,
+                        aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = ISA.scores, aes(x = NMDS1, y = NMDS2, 
+                                colour = ClusterGroups4, shape = HabYr), 
+             size = 4, stroke = 1.5) + # sites as points
+  stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS2,
+                                  linetype = ClusterGroups4, colour = ClusterGroups4), 
+               size = 1, type = "norm") + 
+  geom_segment(data = ISA.12, aes(x = 0, xend = MDS1,
+                                  y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_classic() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  geom_label(data = ISA.12,aes(x=MDS1,y=MDS2,label=species),size=5) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
+
+ISA.invert.12
+
+## NMDS Axis 1, 3
+# same as above
+
+ISA.invert.13 <- ggplot(data = ISA.scores,
+                        aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = ISA.scores , aes(x = NMDS1, y = NMDS3, 
+                                colour = ClusterGroups4, shape = HabYr),
+             size = 4, stroke = 1.5) + # sites as points
+  stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS3,
+                                  colour = ClusterGroups4, linetype = ClusterGroups4), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = ISA.13, aes(x = 0, xend = MDS1,
+                                  y = 0, yend = MDS3), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_classic() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  geom_label(data = ISA.13,aes(x = MDS1,y = MDS3,label = species), size = 5) +
+  scale_colour_viridis(discrete = TRUE) + 
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
+
+
+ISA.invert.13
+
+NMDS.inv.ISA <- ggarrange(ISA.invert.12, ISA.invert.13, 
+                          common.legend = TRUE, 
+                          legend = "bottom",
+                          align = "hv")
+NMDS.inv.ISA
+
+ggsave("Figures/NMDS_invertebrate_ISAgroups.jpeg", NMDS.inv.ISA) 
 
