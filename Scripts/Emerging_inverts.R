@@ -12,42 +12,6 @@ library(ggrepel)
 
 
 
-# Data Import -------------------------------------------------------------
-
-invert <- read.csv("Data/emerging_invertebrates.csv")
-str(invert)
-
-colnames(invert)
-
-invert$Year <- as.factor(invert$Year)
-invert <- invert %>% unite("TrtYr", Treatment,Year, remove = FALSE)
-
-invert.data <- invert %>% select(Araneae:Crambidae)
-invert.env <- invert %>% select(ID:N)
-
-unique(invert$Habitat)
-
-# Diversity Metrics -------------------------------------------------------
-
-richness <- rowSums(invert.data > 0) # species richness
-abundance <- rowSums(invert.data) # abundance
-H <- diversity(invert.data) # Shannon Weiner
-D1 <- diversity(invert.data, index = "simpson") #default is base log, but can change it
-J <- H/log(specnumber(invert.data))
-
-
-# make new little data frame
-invert.uni<- invert.env
-invert.uni$rich <- richness
-invert.uni$abundance <- abundance
-invert.uni$H <- H
-invert.uni$D1 <- D1
-invert.uni$J <- J
-
-invert.univariate <- invert.uni
-
-write.csv(invert.univariate, "Data/emerging_invertebrate_univariate.csv")
-
 
 colnames(invert.uni)
 
