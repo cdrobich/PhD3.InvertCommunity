@@ -845,7 +845,10 @@ ISA.invert.12 <- ggplot(data = ISA.scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  geom_label(data = ISA.12,aes(x=MDS1,y=MDS2,label=species),size=5) +
+  geom_text_repel(data = ISA.12, 
+                  aes(x = MDS1, y = MDS2, label = species),
+                  color="black",
+                  size = 6) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
 
@@ -869,7 +872,10 @@ ISA.invert.13 <- ggplot(data = ISA.scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  geom_label(data = ISA.13,aes(x = MDS1,y = MDS3,label = species), size = 5) +
+  geom_text_repel(data = ISA.13, 
+                  aes(x = MDS1, y = MDS3, label = species),
+                  color="black",
+                  size = 6) +
   scale_colour_viridis(discrete = TRUE) + 
   scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
 
