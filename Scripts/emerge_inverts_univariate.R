@@ -75,7 +75,7 @@ abundance.lm <- lm(abundance ~ Treatment * Year, data = invert)
 Anova(abundance.lm, type = 3)
 
 #Response: abundance
-#Sum Sq Df F value   Pr(>F)   
+#                  Sum Sq Df F value   Pr(>F)   
 #(Intercept)      901867  1  1.8186 0.183813   
 #Treatment       2466358  2  2.4866 0.093849 . 
 #Year              78937  1  0.1592 0.691690   
@@ -205,7 +205,7 @@ aictab(cand.set = models, modnames = names,
 
 anova(abundance.glmm, ab.null)
 
-#npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
+#               npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
 #ab.null           4 891.64 899.52 -441.82   883.64                         
 #abundance.glmm    6 869.01 880.83 -428.50   857.01 26.631  2  1.649e-06 ***
 
@@ -232,7 +232,7 @@ summary(rich.glmm)
 #Number of obs: 53, groups:  N, 5; Year, 2
 
 #Fixed effects:
-#  Estimate Std. Error t value
+#                   Estimate Std. Error t value
 #(Intercept)          23.885      2.209  10.812
 #TreatmentTreated     -9.432      1.711  -5.513
 #TreatmentUninvaded   -3.630      1.696  -2.141
@@ -314,13 +314,13 @@ colnames(invert)
 
 # Abundance
 
-abundance <- ggplot(data = invert, 
+abundance <- ggplot(data = invert.univariate, 
                     aes(x = Treatment, 
                         y = abundance,
                         shape = Year, colour = Treatment),
                     size = 4) +
   geom_violin(trim = FALSE, 
-              lwd = 1, 
+              lwd = 0.75, 
               position = position_dodge(0.5),
               colour = "black") +
   geom_jitter(position = position_jitterdodge(jitter.width = 0.1, 
@@ -345,12 +345,12 @@ abundance <- ggplot(data = invert,
 abundance
 
 
-richness <- ggplot(data = invert, 
+richness <- ggplot(data = invert.univariate, 
                    aes(x = Treatment, 
                        y = rich, 
                        shape = Year, colour = Treatment), size = 4) +
   geom_violin(trim = FALSE,
-              lwd = 1, 
+              lwd = 0.75, 
               position = position_dodge(0.8),
               colour = "black") +
   geom_jitter(position = position_jitterdodge(jitter.width = 0.1, 
