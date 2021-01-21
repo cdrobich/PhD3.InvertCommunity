@@ -6,10 +6,22 @@ Comparing the invertebrate communities among invaded (Phragmites), uninvaded (ca
 
 ### Analyses
 
-1. NMDS ordination
+# Juvenille aquatic invertebrates
 
-    - To visualize differences among the vegetation types; likely will keep both years together
-    - Data was relativized by column maximum, and removed rare Families (anything with 2 or fewer occurrences)
-    - Performed ordination using metaMDS with bray-curtis distances (in script `Explore` right now)
-        - extracted the coordinates using scores()
-        - used envfit to find the Families that had an r2 > 0.2 for axis 1,2 and axis 1,3 and pulled them out
+1. Univariate analyses
+    - one-way ANOVAs with habitat type for abundance and richness
+    - did a GLMM of these too (for no good reason)
+    - made violin plots for abundance, richness, Simpsons, Shannon-Weiner, and Pielou's
+    
+2. Mulivariate analyses
+    - one-way perMANOVA with pairwise comparison
+    - NMDS to visualize the groups
+    
+# Emerging adult invertebrates
+
+1. Univariate
+    - two-way ANOVAs with habitat and year for abundance and richness
+    - used a GLMM and treated year and number of collections as a random effect; compared to a null
+    - NMDS to visualize 
+    - Did hierarchical clustering of 2 - 10 groups then used Indicator Species Analysis to choose 3 groups as optimal (in PC-ORD)
+    - Made an NMDS figure to visualize the groups
