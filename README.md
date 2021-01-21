@@ -1,12 +1,12 @@
 # PhD Chapter 3
-## Invertebrate communities
+# Invertebrate communities
 
 
 Comparing the invertebrate communities among invaded (Phragmites), uninvaded (cattail, meadow) and herbicide-treated (restore) sites in Long Point. There were 9 sites in each vegetation type and they spanned a water depth gradient. Were collected in two years, 2017 and 2018, over the field season (4 collections in 2017, 6 in 2018). Will combine them since differences between years are not of interest. 
 
-### Analyses
+## Analyses
 
-# Juvenille aquatic invertebrates
+### Juvenille aquatic invertebrates
 
 1. Univariate analyses
     - one-way ANOVAs with habitat type for abundance and richness
@@ -17,7 +17,7 @@ Comparing the invertebrate communities among invaded (Phragmites), uninvaded (ca
     - one-way perMANOVA with pairwise comparison
     - NMDS to visualize the groups
     
-# Emerging adult invertebrates
+### Emerging adult invertebrates
 
 1. Univariate
     - two-way ANOVAs with habitat and year for abundance and richness
