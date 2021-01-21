@@ -5,7 +5,7 @@ library(ggpubr) # for arranging figures
 
 ### Mantel test ####
 
-# Compare benthic inverts to emerging inverts in each community
+# Compare juvenille inverts to emerging inverts in each community
 
 benthic <- read.csv("Data/benthics_rares_rel.csv") # veg QCC samples, rares (<=2) removed and rel. by col max
 emerge <- read.csv("Data/inverts_rare_rel_2018.csv") # 2018 emergent community, rares and rel. same as above

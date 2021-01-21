@@ -305,10 +305,9 @@ invert.12 <- ggplot(data = nmds.scores,
   geom_text_repel(data = vectors.12, 
                   aes(x = MDS1, y = MDS2, label = X),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) +
-  coord_fixed()
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
 
 invert.12
 
@@ -332,10 +331,9 @@ invert.13 <- ggplot(data = nmds.scores,
   geom_text_repel(data = vectors.13, 
                   aes(x = MDS1, y = MDS3, label = X),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) +
-  coord_fixed()
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
 
 invert.13
 
@@ -380,14 +378,6 @@ nmds.scores <- nmds.scores[, col_order] # put the categorical values in order
 
 write.csv(nmds.scores,"Data/NMDS_emerg_inverts_scores_clusters.csv") 
 
-# for later ##
-
-ISA.scores <- read.csv("Data/NMDS_emerg_inverts_scores_clusters.csv")
-colnames(ISA.scores)
-
-
-ISA.scores$Cluster4 <- as.factor(ISA.scores$Cluster4)
-ISA.scores$Cluster3 <- as.factor(ISA.scores$Cluster3)
 
 # selecting the ISA with p < N for the NMDS
 
@@ -411,6 +401,7 @@ dim(ISA) # 27 columns and 54 sites
 ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
 ISA.12$species <- rownames(ISA.12) # add Family as a column
 
+write.csv(ISA.12, "Data/NMDS_emerg_cluster_vector12.csv")
 
 (ISA.vector.13 <- envfit(nms.invert$points, ISA,
                          permutations = 999, choices = c(1,3)))   
@@ -419,7 +410,24 @@ ISA.12$species <- rownames(ISA.12) # add Family as a column
 ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
 ISA.13$species <- rownames(ISA.13)
 
-###### NMDS with Cluster/ISA groups ###
+write.csv(ISA.13, "Data/NMDS_emerg_cluster_vector13.csv")
+
+# NMDS Cluster Figure -----------------------------------------------------
+
+
+# for later ##
+
+ISA.scores <- read.csv("Data/NMDS_emerg_inverts_scores_clusters.csv")
+colnames(ISA.scores)
+
+
+ISA.scores$Cluster4 <- as.factor(ISA.scores$Cluster4)
+ISA.scores$Cluster3 <- as.factor(ISA.scores$Cluster3)
+
+ISA.12 <- read.csv("Data/NMDS_emerg_cluster_vector12.csv")
+ISA.13 <- read.csv("Data/NMDS_emerg_cluster_vector13.csv")
+
+
 
 ISA.invert.12 <- ggplot(data = ISA.scores,
                         aes(x = NMDS1, y = NMDS2)) +
@@ -427,13 +435,12 @@ ISA.invert.12 <- ggplot(data = ISA.scores,
                                 colour = Cluster3, shape = HabYr), 
              size = 4, stroke = 1.5) + # sites as points
   stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS2,
-                                  linetype = Cluster3,
-                                  colour = Cluster3), 
+                                      colour = Cluster3), 
                size = 1, type = "norm") + 
   geom_segment(data = ISA.12, aes(x = 0, xend = MDS1,
                                   y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_classic() + # no background
+  theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
@@ -442,7 +449,7 @@ ISA.invert.12 <- ggplot(data = ISA.scores,
                   color="black",
                   size = 5) +
   scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
+  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
 
 ISA.invert.12
 
@@ -455,12 +462,12 @@ ISA.invert.13 <- ggplot(data = ISA.scores,
                                 colour = Cluster3, shape = HabYr),
              size = 4, stroke = 1.5) + # sites as points
   stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS3,
-                                  colour = Cluster3, linetype = Cluster3), 
+                                  colour = Cluster3), 
                size = 1, level = 0.9) + 
   geom_segment(data = ISA.13, aes(x = 0, xend = MDS1,
                                   y = 0, yend = MDS3), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_classic() + # no background
+  theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 3") +
@@ -471,8 +478,9 @@ ISA.invert.13 <- ggplot(data = ISA.scores,
   scale_colour_viridis(discrete = TRUE) + 
   scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
 
-
 ISA.invert.13
+
+
 
 NMDS.inv.ISA <- ggarrange(ISA.invert.12, ISA.invert.13, 
                           common.legend = TRUE, 
@@ -481,3 +489,15 @@ NMDS.inv.ISA <- ggarrange(ISA.invert.12, ISA.invert.13,
 NMDS.inv.ISA
 
 ggsave("Figures/NMDS_invertebrate_ISAgroups.jpeg", NMDS.inv.ISA) 
+
+p <- ggarrange(NMS.emerging.panel, NMDS.inv.ISA,
+          nrow = 2,
+          labels = c("A","B ",""," "),
+          hjust = c(-5,-3.5),
+          vjust = 2)
+p
+
+ggsave("Figures/NMDS_panels.jpeg", p,
+       width = 15,
+       height = 13,
+       units = "in")
