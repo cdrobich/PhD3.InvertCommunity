@@ -322,7 +322,7 @@ benthic.13
                                common.legend = TRUE,
                                legend = "bottom"))
 
-ggsave("Figures/Benthic_NMDS_panel.TIFF", NMS.benthic.panel,
+ggsave("Figures/Benthic_NMDS_panel.jpeg", NMS.benthic.panel,
        dpi = 300,
        height = 7.33,
        width = 11.9,
@@ -340,6 +340,8 @@ group3 <- invert.clust$Group3
 cluster.scores <- benth.scores
 cluster.scores$group3 <- as.factor(group3)
 cluster.scores$group4 <- as.factor(group4)
+
+write.csv(cluster.scores, "Data/benthic_cluster_NMDS_scores.csv")
 
 ISA.three <- read.csv("Data/benthic_ISA_threegroups.csv")
 
@@ -375,6 +377,13 @@ write.csv(ISA.13, "Data/NMDS_emerg_cluster_vector13.csv")
 
 
 # Cluster ggplot figure ---------------------------------------------------
+
+cluster.scores <- read.csv("Data/benthic_cluster_NMDS_scores.csv")
+cluster.scores$group3 <- as.factor(group3)
+cluster.scores$group4 <- as.factor(group4)
+
+ISA.12 <- read.csv("Data/NMDS_emerg_cluster_vector12.csv")
+ISA.13 <- read.csv("Data/NMDS_emerg_cluster_vector13.csv")
 
 ## NMDS Axis 1, 2 
 
@@ -441,7 +450,7 @@ benthic.cluster.13
                                 common.legend = TRUE,
                                 legend = "bottom"))
 
-ggsave("Figures/benthic_3clusters_nmds.TIFF")
+ggsave("Figures/benthic_3clusters_nmds.jpeg")
 
 
 ## Regular and cluster nms together
@@ -454,7 +463,7 @@ nms.panel <- ggarrange(NMS.benthic.panel,
           hjust = c(-5,-5),
           vjust = 2)
 
-ggsave("Figures/benthic_NMDS_cluster_regular.TIFF",
+ggsave("Figures/benthic_NMDS_cluster_regular.jpeg",
        nms.panel, 
        width = 15,
        height = 13,
