@@ -2,7 +2,7 @@
 # Invertebrate communities
 
 
-Comparing the invertebrate communities among invaded (Phragmites), uninvaded (cattail, meadow) and herbicide-treated (restore) sites in Long Point. There were 9 sites in each vegetation type and they spanned a water depth gradient. Were collected in two years, 2017 and 2018, over the field season (4 collections in 2017, 6 in 2018). Will combine them since differences between years are not of interest. 
+Comparing the invertebrate communities among invaded (Phragmites), uninvaded (cattail, meadow) and herbicide-treated (treated) sites in Long Point. There were 9 sites in each vegetation type and they spanned a water depth gradient. Were collected in two years, 2017 and 2018, over the field season (4 collections in 2017, 6 in 2018). Will combine them since differences between years are not of interest. 
 
 ## Analyses
 
