@@ -38,10 +38,30 @@ write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
 colnames(benthic.uni)
 
 
-# Univariate Analyses -----------------------------------------------------
+# Histograms --------------------------------------------------------------
 
 benthic.uni <- read.csv("Data/benthic_invertebrates_univariate.csv")
 
+# abundance histogram
+ggplot(benthic.uni, aes(x = abundance)) + 
+  geom_histogram(binwidth = 100,
+                 color="black", fill="white")
+
+#richness histogram
+ggplot(benthic.uni, aes(x = rich)) + 
+  geom_histogram(binwidth = 1,
+                 color="black", fill="white")
+
+
+
+benthic.uni$logAb <- log(benthic.uni$abundance)
+
+# abundance histogram
+ggplot(benthic.uni, aes(x = logAb)) + 
+  geom_histogram(binwidth = 1,
+                 color="black", fill="white")
+
+# Univariate Analyses -----------------------------------------------------
 
 abundance.lm <- lm(abundance ~ Habitat, data = benthic.uni)
 Anova(abundance.lm, type = 3)
@@ -67,6 +87,35 @@ abundance.hsd <- HSD.test(abundance.lm, "Habitat")
 #Invaded      583.75      b
 #Uninvaded    445.25      b
 
+# examine the residuals 
+
+plot(abundance.lm)
+qqnorm(resid(abundance.lm))
+qqline(resid(abundance.lm))
+
+
+logabundance.lm <- lm(logAb ~ Habitat, data = benthic.uni)
+Anova(logabundance.lm, type = 3)
+
+#Response: logAb
+#Sum Sq Df  F value    Pr(>F)    
+#(Intercept) 277.499  1 218.0867 6.721e-13 ***
+#Habitat      14.830  2   5.8276  0.009313 ** 
+#Residuals    27.993 22   
+
+abundance.hsd <- HSD.test(logabundance.lm, "Habitat")
+
+#logAb groups
+#Treated   7.567666      a
+#Uninvaded 6.047326      b
+#Invaded   5.889604      b
+
+plot(logabundance.lm)
+qqnorm(resid(logabundance.lm))
+qqline(resid(logabundance.lm))
+
+
+# Richness
 
 rich.lm <- lm(rich ~ Habitat, data = benthic.uni)
 Anova(rich.lm, type = 3)

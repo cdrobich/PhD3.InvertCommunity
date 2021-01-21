@@ -53,21 +53,32 @@ write.csv(invert.univariate, "Data/emerging_invertebrate_univariate.csv")
 
 
 # Histograms ---------------------------------------------------------------
+invert <- read.csv("Data/emerging_invertebrate_univariate.csv")
+invert$Year <- as.factor(invert$Year)
 
 # abundance histogram
 ggplot(invert, aes(x = abundance)) + 
   geom_histogram(binwidth = 100,
                  color="black", fill="white")
 
+
 #richness histogram
 ggplot(invert, aes(x = rich)) + 
   geom_histogram(binwidth = 1,
                  color="black", fill="white")
 
+
+
+
+invert$logAb <- log(invert$abundance)
+
+# abundance histogram
+ggplot(invert, aes(x = logAb)) + 
+  geom_histogram(binwidth = 1,
+                 color="black", fill="white")
+
 # ANOVAs ------------------------------------------------------------------
 
-invert <- read.csv("Data/emerging_invertebrate_univariate.csv")
-invert$Year <- as.factor(invert$Year)
 
 # abundance two-way ANOVA
 
@@ -82,6 +93,28 @@ Anova(abundance.lm, type = 3)
 #Treatment:Year  5642917  2  5.6893 0.006063 **
 #Residuals      23804326 48
 
+
+
+# log Abundance
+
+labundance.lm <- lm(logAb ~ Treatment * Year, data = invert)
+Anova(labundance.lm, type = 3)
+
+#Response: logAb
+#                Sum Sq Df  F value    Pr(>F)    
+#(Intercept)    282.780  1 515.3912 < 2.2e-16 ***
+#Treatment        6.784  2   6.1819  0.004085 ** 
+#Year             0.799  1   1.4556  0.233543    
+#Treatment:Year   1.323  2   1.2056  0.308423    
+#Residuals       26.336 48  
+
+labundance.hsd <- HSD.test(labundance.lm, "Treatment")
+
+#logAb groups
+#Treated   7.108355      a
+#Invaded   5.815990      b
+#Uninvaded 5.775302      b
+
 # richness two-way ANOVA
 
 rich.lm <- lm(rich ~ Treatment * Year, data = invert)
@@ -94,6 +127,13 @@ Anova(rich.lm, type = 3)
 #Year            102.7  1   3.2245  0.078839 .  
 #Treatment:Year   87.1  2   1.3672  0.264552    
 #Residuals      1529.1 48 
+
+rich.hsd <- HSD.test(rich.lm, "Treatment")
+
+#rich groups
+#Invaded   24.72222      a
+#Uninvaded 21.61111      a
+#Treated   15.16667      b
 
 
 
@@ -208,6 +248,61 @@ anova(abundance.glmm, ab.null)
 #               npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
 #ab.null           4 891.64 899.52 -441.82   883.64                         
 #abundance.glmm    6 869.01 880.83 -428.50   857.01 26.631  2  1.649e-06 ***
+
+
+# log Abundance GLMMM
+
+
+labundance.glmm <- lmer(logAb ~ Treatment + (1|Year) + (1|N),
+                       data = invert, REML = FALSE)
+
+summary(labundance.glmm)
+
+
+
+#Linear mixed model fit by maximum likelihood  ['lmerMod']
+#Formula: logAb ~ Treatment + (1 | Year) + (1 | N)
+#Data: invert
+
+#AIC      BIC   logLik deviance df.resid 
+#133.8    145.6    -60.9    121.8       47 
+
+#Scaled residuals: 
+#  Min      1Q  Median      3Q     Max 
+#-2.3632 -0.6599  0.1089  0.5649  2.1454 
+
+#Random effects:
+#  Groups   Name        Variance Std.Dev.
+#N        (Intercept) 0.0000   0.0000  
+#Year     (Intercept) 0.1563   0.3953  
+#Residual             0.5374   0.7331  
+#Number of obs: 53, groups:  N, 5; Year, 2
+
+#Fixed effects:
+#  Estimate Std. Error t value
+#(Intercept)         5.84197    0.33134  17.631
+#TreatmentTreated    1.26638    0.24800   5.106
+#TreatmentUninvaded -0.06667    0.24800  -0.269
+
+#Correlation of Fixed Effects:
+#  (Intr) TrtmnT
+#TretmntTrtd -0.385       
+#TrtmntUnnvd -0.385  0.515
+
+r.squaredGLMM(labundance.glmm)
+
+#R2m       R2c
+#0.3583682 0.5029123
+
+plot(labundance.glmm)
+qqnorm(resid(labundance.glmm))
+qqline(resid(labundance.glmm))
+
+
+
+
+
+
 
 
 # Richness GLMM -----------------------------------------------------------

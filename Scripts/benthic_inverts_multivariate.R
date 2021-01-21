@@ -15,6 +15,7 @@ library(ggrepel)
 
 library(devtools)
 install_github("GuillemSalazar/EcolUtils")
+
 library(EcolUtils)
 
 # Load Data ---------------------------------------------------------------
@@ -31,6 +32,8 @@ benthic.env <- benthic %>% select(Site.ID:Collection.date)
 # perMANOVA ---------------------------------------------------------------
 
 benthic.rel <- decostand(benthic.data, "max", 2, na.rm = NULL) # divide by column max
+
+write.csv(benthic.rel, "Data/benthic_inverts_relativized.csv")
 
 #### perMANOVA #####
 
@@ -98,7 +101,9 @@ for(i in seq_along(k_vec)) {
 
 plot(stress) # 3D makes sense
 
-#### NMDS analysis ####
+
+# NMDS analysis code ------------------------------------------------------
+
 set.seed(120) 
 
 nms.invert <- metaMDS(benthic.rel, distance = "bray", # species data, bray-curtis dissimilarity
@@ -141,7 +146,8 @@ nms.invert$stress^2  # 0.02066487
 1-nms.invert$stress^2 #0.9793351 #analogous to square correlation coefficient
 
 
-## extract the scores for plotting 
+# Scores and vectors for plotting -----------------------------------------
+
 scr <- as.data.frame(scores(nms.invert, display = "sites")) # extract NMDS scores
 
 # adding categorical info to scores
@@ -158,7 +164,7 @@ scores <- scr[, col_order] # put the categorical values in order
 write.csv(scores,"Data/NMDS_benthic_inverts_scores.csv") # save this as a csv
 
 
-### Vectors correlated with Axis 1 & 2 ####
+### Vectors correlated with Axis 1 & 2 
 
 alltaxa <- envfit(nms.invert, benthic.rel,
                  choices = c(1,2)) #produces a list with r2, p value, and NMDS coordinates
@@ -167,11 +173,9 @@ all.taxa.df <- data.frame((alltaxa$vectors)$arrows,
                           (alltaxa$vectors)$r,
                           (alltaxa$vectors)$pvals) #take list and make into dataframe
 
-write.csv(all.taxa.df, "Data/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
-
 
 corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.2)
-corr.spp12$species <- rownames(corr.spp)
+corr.spp12$species <- rownames(corr.spp12)
 
 corr.species12 <- corr.spp12$species # string of the Family names
 
@@ -182,13 +186,15 @@ corrtaxa12 <- envfit(nms.invert$points, axis12.vectors,
                    permutations = 999, choices = c(1,2))
 corrtaxa12
 
-# make a new data frame for the figure
+
 species.12 <- as.data.frame(corrtaxa12$vectors$arrows*sqrt(corrtaxa12$vectors$r)) #scaling vectors so they correspond with r2
 species.12$species <- rownames(species.12)
 
 
-#### Vectors correlated with axis 1 & 3 ###
-# same as above but now for the other axes/figure
+write.csv(species.12, "Data/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
+
+
+#### Vectors correlated with axis 1 & 3 
 
 alltaxa.13 <- envfit(nms.invert, benthic.rel, 
                      permutations = 999, choices = c(1,3)) 
@@ -197,9 +203,6 @@ alltaxa.13 <- envfit(nms.invert, benthic.rel,
 all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows,
                             (alltaxa.13$vectors)$r,
                             (alltaxa.13$vectors)$pvals)
-
-write.csv(all.taxa13.df, "Data/NMDS_vectors_axis13.csv")
-
 
 
 corr.spp13 <- all.taxa13.df %>% filter(X.alltaxa.13.vectors..r > 0.2)
@@ -214,12 +217,17 @@ corrtaxa13 <- envfit(nms.invert$points, axis13.vectors,
                      permutations = 999, choices = c(1,3))
 corrtaxa13
 
-# make a new data frame for the figure
+
 species.13 <- as.data.frame(corrtaxa13$vectors$arrows*sqrt(corrtaxa13$vectors$r)) #scaling vectors so they correspond with r2
 species.13$species <- rownames(species.13)
 
+write.csv(species.13, "Data/NMDS_benthic_vectors_axis13.csv")
 
-## plotting with base R ##
+
+
+
+# Base R plots ------------------------------------------------------------
+
 # I don't like base R but it has some nice things built in for ordinations
 
 # axis 1, 2 
@@ -241,57 +249,56 @@ ordiellipse(nms.invert, groups = benthic.env$Habitat, # st error of centroid ell
 plot(alltaxa, p.max = 0.013, col = "black")
 
 
-#### ggPlot Figures ####
+
+# NMDS Figures ------------------------------------------------------------
+
+# load data from above 
+
+benth.scores <- read.csv("Data/NMDS_benthic_inverts_scores.csv")
+vector.12 <- read.csv("Data/NMDS_benthic_vectors_axis12.csv")
+vector.13 <- read.csv("Data/NMDS_benthic_vectors_axis13.csv")
 
 ## NMDS Axis 1, 2 
 
-scores # coordinates we extracted
-species.12 # reasonably correlated vectors with axis 1,2
-
-benthic.12 <- ggplot(data = scores,
+benthic.12 <- ggplot(data = benth.scores,
                     aes(x = NMDS1, y = NMDS2)) +
-  geom_point(data = scores, 
+  geom_point(data = benth.scores, 
              aes(x = NMDS1, 
                  y = NMDS2, 
                  colour = Habitat, 
                  shape = Habitat),
              size = 4) + # sites as points
-  stat_ellipse(data = scores, aes(x = NMDS1,y = NMDS2,
+  stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
                                   linetype = Habitat, colour = Habitat), 
                size = 1, level = 0.90) + # a 95% CI ellipses
-  geom_segment(data = species.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+  geom_segment(data = vector.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
   theme(legend.position = "none") +
-  geom_text_repel(data = species.12, 
+  geom_text_repel(data = vector.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
                   size = 5) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) +
-  coord_fixed()
+  scale_shape_manual(values = c(17, 18, 15)) 
 
 
 benthic.12
 
 ## NMDS Axis 1, 3
-# same as above
 
-scores
-species.13 # vectors correlated with axis 1, 3
-
-benthic.13 <- ggplot(data = scores,
+benthic.13 <- ggplot(data = benth.scores,
                     aes(x = NMDS1, y = NMDS3)) +
-  geom_point(data = scores, 
+  geom_point(data = benth.scores, 
              aes(x = NMDS1, y = NMDS3, 
                  colour = Habitat, shape = Habitat), size = 4) +
-  stat_ellipse(data = scores, 
+  stat_ellipse(data = benth.scores, 
                aes(x = NMDS1,y = NMDS3,linetype = Habitat, 
                    colour = Habitat), size = 1, level = 0.9) +
-  geom_segment(data = species.13, 
+  geom_segment(data = vector.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
   theme_minimal() +
@@ -299,19 +306,21 @@ benthic.13 <- ggplot(data = scores,
   xlab("NMDS 1") +
   ylab("NMDS 3") +
   theme(legend.position = c(0.85, 0.9)) +
-  geom_text_repel(data = species.13, 
+  geom_text_repel(data = vector.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
                   size = 5) +
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) +
-  coord_fixed()
+  scale_shape_manual(values = c(17, 18, 15)) 
 
 benthic.13
 
+# putting both figures together
 
 (NMS.benthic.panel <- ggarrange(benthic.12, benthic.13,
-                               align = "hv"))
+                               align = "hv",
+                               common.legend = TRUE,
+                               legend = "bottom"))
 
 ggsave("Figures/Benthic_NMDS_panel.TIFF", NMS.benthic.panel,
        dpi = 300,
@@ -321,4 +330,132 @@ ggsave("Figures/Benthic_NMDS_panel.TIFF", NMS.benthic.panel,
 
 
 
+# NMDS Cluster Figures ----------------------------------------------------
 
+invert.clust <- read.csv("Data/benthic_inverts_relativized_clusters.csv")
+
+group4 <- invert.clust$Group4
+group3 <- invert.clust$Group3
+
+cluster.scores <- benth.scores
+cluster.scores$group3 <- as.factor(group3)
+cluster.scores$group4 <- as.factor(group4)
+
+ISA.three <- read.csv("Data/benthic_ISA_threegroups.csv")
+
+# selecting the ISA with p < N for the NMDS
+
+ISA.spp <- ISA.three %>% filter(pvalue < 0.05) 
+target <- ISA.spp$taxa 
+
+ISA <- benthic.rel %>% select(all_of(target))
+
+colnames(ISA)
+dim(ISA) # 17 indicators
+
+# calculate vectors for Indicator Species ####
+
+(ISA.vector.12 <- envfit(nms.invert$points, ISA,
+                         permutations = 999, choices = c(1,2)))                        
+
+
+ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
+ISA.12$species <- rownames(ISA.12) # add Family as a column
+
+write.csv(ISA.12, "Data/NMDS_emerg_cluster_vector12.csv")
+
+(ISA.vector.13 <- envfit(nms.invert$points, ISA,
+                         permutations = 999, choices = c(1,3)))   
+
+
+ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
+ISA.13$species <- rownames(ISA.13)
+
+write.csv(ISA.13, "Data/NMDS_emerg_cluster_vector13.csv")
+
+
+# Cluster ggplot figure ---------------------------------------------------
+
+## NMDS Axis 1, 2 
+
+benthic.cluster.12 <- ggplot(data = cluster.scores,
+                     aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = cluster.scores, 
+             aes(x = NMDS1, 
+                 y = NMDS2, 
+                 colour = group3, 
+                 shape = Habitat),
+             size = 4) + # sites as points
+  stat_ellipse(data = cluster.scores, aes(x = NMDS1,y = NMDS2,
+                                        colour = group3), 
+               size = 1, level = 0.90) + # a 95% CI ellipses
+  geom_segment(data = ISA.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  theme(legend.position = "none") +
+  geom_text_repel(data = ISA.12, 
+                  aes(x = MDS1, y = MDS2, label = species),
+                  color="black",
+                  size = 5) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(17, 18, 15)) +
+  guides(colour = FALSE)
+
+
+benthic.cluster.12
+
+## NMDS Axis 1, 3
+
+benthic.cluster.13 <- ggplot(data = cluster.scores,
+                     aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = cluster.scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 colour = group3, shape = Habitat), size = 4) +
+  stat_ellipse(data = cluster.scores, 
+               aes(x = NMDS1,y = NMDS3, 
+                   colour = group3), size = 1, level = 0.9) +
+  geom_segment(data = ISA.13, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
+  theme_minimal() +
+  theme(panel.border = element_rect(fill = NA)) +
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  theme(legend.position = c(0.85, 0.9)) +
+  geom_text_repel(data = ISA.13, 
+                  aes(x = MDS1, y = MDS3, label = species),
+                  color="black",
+                  size = 5) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(17, 18, 15)) +
+  guides(colour = FALSE)
+
+benthic.cluster.13
+
+
+(NMS.benthic.clusters <- ggarrange(benthic.cluster.12, benthic.cluster.13,
+                                align = "hv",
+                                common.legend = TRUE,
+                                legend = "bottom"))
+
+ggsave("Figures/benthic_3clusters_nmds.TIFF")
+
+
+## Regular and cluster nms together
+
+nms.panel <- ggarrange(NMS.benthic.panel, 
+          NMS.benthic.clusters,
+          nrow = 2,
+          align = "hv",
+          labels = c("A","B"),
+          hjust = c(-5,-5),
+          vjust = 2)
+
+ggsave("Figures/benthic_NMDS_cluster_regular.TIFF",
+       nms.panel, 
+       width = 15,
+       height = 13,
+       units = "in")
