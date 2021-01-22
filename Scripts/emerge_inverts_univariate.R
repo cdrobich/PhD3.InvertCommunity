@@ -55,6 +55,42 @@ write.csv(invert.univariate, "Data/emerging_invertebrate_univariate.csv")
 # Histograms ---------------------------------------------------------------
 invert <- read.csv("Data/emerging_invertebrate_univariate.csv")
 invert$Year <- as.factor(invert$Year)
+invert$logAb <- log(invert$abundance)
+
+invert %>% group_by(Treatment, Year) %>% 
+  summarise(ab.mean = mean(abundance),
+            ab.N = length(abundance),
+            std.ab = sd(abundance),
+            str.ab = (std.ab)/(sqrt(ab.N)),
+            S.mean = mean(rich),
+            S.N = length(rich),
+            std.S = sd(rich),
+            str.S = (std.S)/(sqrt(S.N)))
+
+#Treatment Year  ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
+#1 Invaded   2017     317.     9   196.   65.2   22.3     9  5.57  1.86
+#2 Invaded   2018     449      9   202.   67.2   27.1     9  6.43  2.14
+#3 Treated   2017     932.     9   860.  287.    13.2     9  4.12  1.37
+#4 Treated   2018    2580.     9  1252.  417.    17.1     9  4.14  1.38
+#5 Uninvaded 2017     268.     9   202.   67.2   16.8     9  5.09  1.70
+#6 Uninvaded 2018     761.     9   741.  247.    26.4     9  7.67  2.56
+
+invert %>% group_by(Treatment) %>% 
+  summarise(ab.mean = mean(abundance),
+            ab.N = length(abundance),
+            std.ab = sd(abundance),
+            str.ab = (std.ab)/(sqrt(ab.N)),
+            S.mean = mean(rich),
+            S.N = length(rich),
+            std.S = sd(rich),
+            str.S = (std.S)/(sqrt(S.N)))
+
+# Treatment ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
+#1 Invaded      383.    18   204.   48.2   24.7    18  6.33  1.49
+#2 Treated     1756.    18  1343.  317.    15.2    18  4.48  1.05
+#3 Uninvaded    515.    18   585.  138.    21.6    18  8.04  1.89
+
+
 
 # abundance histogram
 ggplot(invert, aes(x = abundance)) + 
@@ -69,8 +105,6 @@ ggplot(invert, aes(x = rich)) +
 
 
 
-
-invert$logAb <- log(invert$abundance)
 
 # abundance histogram
 ggplot(invert, aes(x = logAb)) + 
@@ -300,11 +334,6 @@ qqline(resid(labundance.glmm))
 
 
 
-
-
-
-
-
 # Richness GLMM -----------------------------------------------------------
 
 rich.glmm <- lmer(rich ~ Treatment + (1|Year) + (1|N),
@@ -409,7 +438,7 @@ colnames(invert)
 
 # Abundance
 
-abundance <- ggplot(data = invert.univariate, 
+abundance <- ggplot(data = invert, 
                     aes(x = Treatment, 
                         y = abundance,
                         shape = Year, colour = Treatment),
@@ -436,8 +465,6 @@ abundance <- ggplot(data = invert.univariate,
   scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
   scale_shape_manual(values = c(15, 16)) +
   guides(color = "none") 
-
-abundance
 
 
 richness <- ggplot(data = invert.univariate, 
@@ -468,7 +495,11 @@ richness <- ggplot(data = invert.univariate,
   guides(color = "none") +
   theme(legend.position = "right") 
 
-richness
+richness +
+  annotate("text", x = 1:3, y = c(4600, 12000, 4600),
+           label = c("a", "b", "a"),
+           size = 4.5)
+
 
 uni.panel <- ggarrange(abundance, richness,
                        common.legend = TRUE,
@@ -484,7 +515,78 @@ ggsave("Figures/emerging_invert_unipanel.jpeg", uni.panel,
        units = "in")
 
 
+### without year
+
+ab.hab <- ggplot(data = invert, 
+                 aes(x = Treatment, 
+                     y = abundance,
+                     colour = Treatment),
+                 size = 4) +
+  geom_violin(trim = FALSE, lwd = 1) +
+  geom_point() +
+  stat_summary(aes(shape = Treatment), 
+               colour = "black", 
+               fun.data = "mean_se", 
+               fun.args = list(mult = 1), 
+               geom = "pointrange", 
+               size = 1) +
+  theme_classic() +
+  labs(x = " ",
+       y = expression(paste("Invertebrate Abundance"))) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(text = element_text(size = 14),
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14)) +
+  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(17, 18, 15)) +
+  guides(color = "none") +
+  annotate("text", x = 1:3, y = c(4600, 8000, 4600),
+           label = c("a", "b", "a"),
+           size = 4.5)
+
+ab.hab
+
+rich.hab <- ggplot(data = invert, 
+                 aes(x = Treatment, 
+                     y = rich,
+                     colour = Treatment),
+                 size = 4) +
+  geom_violin(trim = FALSE, lwd = 1) +
+  geom_point() +
+  stat_summary(aes(shape = Treatment), 
+               colour = "black", 
+               fun.data = "mean_se", 
+               fun.args = list(mult = 1), 
+               geom = "pointrange", 
+               size = 1) +
+  theme_classic() +
+  labs(x = " ",
+       y = expression(paste("Invertebrate Abundance"))) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(text = element_text(size = 14),
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14)) +
+  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(17, 18, 15)) +
+  guides(color = "none") +
+  annotate("text", x = 1:3, y = c(55, 35, 55),
+           label = c("a", "b", "a"),
+           size = 4.5)
+
+rich.hab
 
 
 
+uni.hab.panel <- ggarrange(ab.hab, rich.hab,
+                       common.legend = TRUE,
+                       legend = "bottom",
+                       labels = "AUTO",
+                       hjust = c(-7,-6),
+                       vjust = 2)
 
+
+ggsave("Figures/emerging_invert_unipanel.jpeg",
+       uni.hab.panel,
+       height = 5.49,
+       width = 9.58,
+       units = "in")

@@ -72,28 +72,27 @@ uninvaded.emerge.bc <- vegdist(uninvaded.e.inverts, method = "bray")
 
 # Jaccard
 
-#Mantel statistic r: 0.09216 
-#Significance: 0.298 
+#Mantel statistic r: -0.217 
+#Significance: 0.878 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.255 0.321 0.383 0.472 
+#  0.246 0.326 0.389 0.426 
 #Permutation: free
 #Number of permutations: 999
 
 
 # Bray Curtis
 
-#Mantel statistic r: 0.1223 
-#Significance: 0.248 
+
+#Mantel statistic r: -0.2184 
+#Significance: 0.884 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.244 0.306 0.380 0.425 
+#  0.249 0.308 0.366 0.421 
 #Permutation: free
 #Number of permutations: 999
-
-
 
 
 
@@ -127,29 +126,26 @@ invaded.emerge.bc <- vegdist(invaded.e.inverts, method = "bray")
 
 # Jaccard
 
-#Mantel statistic r: -0.0658 
-#Significance: 0.61 
+#Mantel statistic r: 0.1327 
+#Significance: 0.197 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.203 0.259 0.289 0.359 
+#  0.197 0.261 0.296 0.345 
 #Permutation: free
 #Number of permutations: 999
 
 
 # Bray-Curtis
 
-#Mantel statistic r: -0.04851 
-#Significance: 0.561 
+#Mantel statistic r: 0.197 
+#Significance: 0.171 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.259 0.303 0.340 0.372 
+#  0.268 0.314 0.341 0.393 
 #Permutation: free
 #Number of permutations: 999
-
-
-
 
 
 
@@ -180,28 +176,49 @@ Restored.emerge.bc <- vegdist(Restored.e.inverts, method = "bray")
                           permutations = 999))
 # Jaccard Distance
 
-#Mantel statistic r: -0.3519 
-#Significance: 0.925 
+#Mantel statistic r: 0.5635 
+#Significance: 0.06 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.439 0.568 0.644 0.687 
+#  0.458 0.586 0.667 0.706 
 #Permutation: free
 #Number of permutations: 999
 
 
 # Bray Curtis
 
-#Mantel statistic r: -0.3498 
-#Significance: 0.936 
+#Mantel statistic r: 0.7026 
+#Significance: 0.027 
 
 #Upper quantiles of permutations (null model):
 #  90%   95% 97.5%   99% 
-#  0.567 0.666 0.743 0.788 
+#  0.532 0.632 0.709 0.782 
 #Permutation: free
 #Number of permutations: 999
 
 
+library(ecodist)
+
+mantel(Restored.emerge.bc ~ Restored.benthic.bc)
+
+# mantelr      pval1      pval2      pval3  llim.2.5% ulim.97.5% 
+# 0.7025840  0.0310000  0.9700000  0.0310000  0.1321817  0.8329853
+
+
+
+mantel(invaded.emerge.bc ~ invaded.benthic.bc)
+
+#mantelr      pval1      pval2      pval3  llim.2.5% ulim.97.5% 
+#0.1970081  0.1430000  0.8580000  0.2550000 -0.1159272  0.6508261
+
+
+
+
+mantel(uninvaded.emerge.bc ~ uninvaded.benthic.bc)
+
+#mantelr       pval1       pval2       pval3   llim.2.5%  ulim.97.5% 
+#-0.21843955  0.87700000  0.12400000  0.26100000 -0.39572492 -0.03993152 
 
 
 

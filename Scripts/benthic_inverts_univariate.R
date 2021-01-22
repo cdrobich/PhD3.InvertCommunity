@@ -37,6 +37,21 @@ write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
 
 colnames(benthic.uni)
 
+benthic.uni %>% group_by(Habitat) %>% 
+  summarise(ab.mean = mean(abundance),
+            ab.N = length(abundance),
+            std.ab = sd(abundance),
+            str.ab = (std.ab)/(sqrt(ab.N)),
+            S.mean = mean(rich),
+            S.N = length(rich),
+            std.S = sd(rich),
+            str.S = (std.S)/(sqrt(S.N)))
+
+#Habitat   ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
+#1 Invaded      584.     8   622.  220.    15       8  1.31 0.463
+#2 Treated     3375      9  2920.  973.    16       9  3.16 1.05 
+#3 Uninvaded    445.     8   159.   56.1   19.1     8  4.82 1.71 
+
 
 # Histograms --------------------------------------------------------------
 
@@ -78,7 +93,7 @@ abundance.hsd <- HSD.test(abundance.lm, "Habitat")
 
 #          abundance       std r Min  Max  Q25    Q50     Q75
 #Invaded      583.75  622.2551 8  73 1767  233  320.5  661.25
-#Treated   3375.00 2920.3388 9  42 9851 2194 2472.0 3180.00
+#Treated     3375.00 2920.3388 9  42 9851 2194 2472.0 3180.00
 #Uninvaded    445.25  158.6368 8 234  781  381  406.5  476.00
 
 
@@ -194,7 +209,7 @@ ggarrange(abundance, richness,
 
 (violin.s <- ggplot(data = benthic.uni, 
                     aes(x = Habitat, y = rich, group = Habitat, colour = Habitat)) +
-    geom_violin(trim = FALSE, lwd = 0.75, colour = "black") +
+    geom_violin(trim = FALSE, lwd = 1) +
     geom_point(size = 3) +
     theme_classic(base_size = 14) +
     xlab(" ") +
@@ -215,7 +230,7 @@ ggarrange(abundance, richness,
 
 (violin.ab <- ggplot(data = benthic.uni, 
                      aes(x = Habitat, y = abundance, group = Habitat, colour = Habitat)) +
-    geom_violin(trim = FALSE, lwd = 0.75, colour = "black") +
+    geom_violin(trim = FALSE, lwd = 1) +
     geom_point(size = 3) +
     theme_classic(base_size = 14) +
     xlab(" ") +
@@ -239,7 +254,7 @@ ggarrange(abundance, richness,
                              hjust = c(-8, -5.5),
                              vjust = 2))
 
-ggsave("Figures/benthic_violin.TIFF", violin.benthic,
+ggsave("Figures/benthic_violin.jpeg", violin.benthic,
        dpi = 300,
        height = 6.1,
        width = 11.9,
