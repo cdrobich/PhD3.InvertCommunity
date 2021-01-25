@@ -364,7 +364,7 @@ dim(ISA) # 17 indicators
 ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
 ISA.12$species <- rownames(ISA.12) # add Family as a column
 
-write.csv(ISA.12, "Data/NMDS_emerg_cluster_vector12.csv")
+write.csv(ISA.12, "Data/NMDS_benth_cluster_vector12.csv")
 
 (ISA.vector.13 <- envfit(nms.invert$points, ISA,
                          permutations = 999, choices = c(1,3)))   
@@ -373,7 +373,7 @@ write.csv(ISA.12, "Data/NMDS_emerg_cluster_vector12.csv")
 ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
 ISA.13$species <- rownames(ISA.13)
 
-write.csv(ISA.13, "Data/NMDS_emerg_cluster_vector13.csv")
+write.csv(ISA.13, "Data/NMDS_benth_cluster_vector13.csv")
 
 
 # Cluster ggplot figure ---------------------------------------------------
@@ -382,8 +382,8 @@ cluster.scores <- read.csv("Data/benthic_cluster_NMDS_scores.csv")
 cluster.scores$group3 <- as.factor(group3)
 cluster.scores$group4 <- as.factor(group4)
 
-ISA.12 <- read.csv("Data/NMDS_emerg_cluster_vector12.csv")
-ISA.13 <- read.csv("Data/NMDS_emerg_cluster_vector13.csv")
+ISA.12 <- read.csv("Data/NMDS_benth_cluster_vector12.csv")
+ISA.13 <- read.csv("Data/NMDS_benth_cluster_vector13.csv")
 
 ## NMDS Axis 1, 2 
 
