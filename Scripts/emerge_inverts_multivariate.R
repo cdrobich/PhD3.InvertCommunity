@@ -30,8 +30,7 @@ invert.env <- invert %>% select(Site:N)
 
 # Multivariate Analyses ---------------------------------------------------
 
-invert.rel <- decostand(invert.data, "max", 2, na.rm = NULL) # divide by column max
-
+invert.rel <- decostand(invert.data, "max", 2, na.rm = NULL) # relativize by column max
 write.csv(invert.rel, "Data/emerging_invert_relativized.csv")
 
 ##### perMANVOA ####
