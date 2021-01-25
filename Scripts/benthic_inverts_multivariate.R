@@ -450,7 +450,10 @@ benthic.cluster.13
                                 common.legend = TRUE,
                                 legend = "bottom"))
 
-ggsave("Figures/benthic_3clusters_nmds.jpeg")
+ggsave("Figures/benthic_3clusters_nmds.jpeg",
+       height = 13.1,
+       width = 8.15,
+       units = "in")
 
 
 ## Regular and cluster nms together
