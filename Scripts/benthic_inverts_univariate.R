@@ -11,7 +11,7 @@ library(rstatix)
 
 # Load Data ---------------------------------------------------------------
 
-benthic <- read.csv("Data/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
+benthic <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
 str(benthic)
 
 benthic.data <- benthic %>% select(Oligochaeta:Leptoceridae)
@@ -37,7 +37,7 @@ benthic.uni$J <- J
 
 benthic.uni1 <- benthic.uni
 
-write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
+write.csv(benthic.uni, "Data/Aquatic/benthic_invertebrates_univariate.csv")
 
 colnames(benthic.uni)
 
@@ -75,7 +75,7 @@ sum <- summary %>% t %>% as.data.frame
 
 # Histograms --------------------------------------------------------------
 
-benthic.uni <- read.csv("Data/benthic_invertebrates_univariate.csv")
+benthic.uni <- read.csv("Data/Aquatic/benthic_invertebrates_univariate.csv")
 
 # abundance histogram
 ggplot(benthic.uni, aes(x = abundance)) + 
