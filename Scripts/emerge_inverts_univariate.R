@@ -19,6 +19,7 @@ library(AICcmodavg)
 
 invert <- read.csv("Data/emerging_invertebrates.csv")
 str(invert)
+unique(invert$Treatment)
 
 colnames(invert)
 
@@ -35,7 +36,7 @@ unique(invert$Treatment)
 richness <- rowSums(invert.data > 0) # species richness
 abundance <- rowSums(invert.data) # abundance
 H <- diversity(invert.data) # Shannon Weiner
-D1 <- diversity(invert.data, index = "simpson") #default is base log, but can change it
+D1 <- diversity(invert.data, index = "simpson") # 1 - D
 J <- H/log(specnumber(invert.data)) #Pielous
 
 
@@ -54,49 +55,94 @@ write.csv(invert.univariate, "Data/emerging_invertebrate_univariate.csv")
 
 # Histograms ---------------------------------------------------------------
 invert <- read.csv("Data/emerging_invertebrate_univariate.csv")
+
 invert$Year <- as.factor(invert$Year)
 invert$logAb <- log(invert$abundance)
 
-invert %>% group_by(Treatment, Year) %>% 
-  summarise(ab.mean = mean(abundance),
-            ab.N = length(abundance),
-            std.ab = sd(abundance),
-            str.ab = (std.ab)/(sqrt(ab.N)),
-            S.mean = mean(rich),
-            S.N = length(rich),
-            std.S = sd(rich),
-            str.S = (std.S)/(sqrt(S.N)))
+install.packages("plotrix")
+library(plotrix)
 
-#Treatment Year  ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
-#1 Invaded   2017     317.     9   196.   65.2   22.3     9  5.57  1.86
-#2 Invaded   2018     449      9   202.   67.2   27.1     9  6.43  2.14
-#3 Treated   2017     932.     9   860.  287.    13.2     9  4.12  1.37
-#4 Treated   2018    2580.     9  1252.  417.    17.1     9  4.14  1.38
-#5 Uninvaded 2017     268.     9   202.   67.2   16.8     9  5.09  1.70
-#6 Uninvaded 2018     761.     9   741.  247.    26.4     9  7.67  2.56
+invert.hab <- invert %>% group_by(Treatment) %>% 
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = list(Mean = mean, SD = sd, SE = std.error), na.rm = TRUE,
+    .names = "{col}_{fn}"
+  ))
 
-invert %>% group_by(Treatment) %>% 
-  summarise(ab.mean = mean(abundance),
-            ab.N = length(abundance),
-            std.ab = sd(abundance),
-            str.ab = (std.ab)/(sqrt(ab.N)),
-            S.mean = mean(rich),
-            S.N = length(rich),
-            std.S = sd(rich),
-            str.S = (std.S)/(sqrt(S.N)))
+invert.hab %>% t %>% as.data.frame
 
-# Treatment ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
-#1 Invaded      383.    18   204.   48.2   24.7    18  6.33  1.49
-#2 Treated     1756.    18  1343.  317.    15.2    18  4.48  1.05
-#3 Uninvaded    515.    18   585.  138.    21.6    18  8.04  1.89
+#Treatment         Invaded    Treated  Uninvaded
+#Depth_Mean       43.06111   41.36111   33.15556
+#Depth_SD         18.53579   15.33282   18.69666
+#Depth_SE         4.368927   3.613981   4.406844
+
+#N_Mean           4.823529   4.611111   4.888889
+#N_SD             1.074436   1.195033   1.078610
+#N_SE            0.2605889  0.2816720  0.2542307
+
+#rich_Mean        24.72222   15.16667   21.61111
+#rich_SD          6.332043   4.475423   8.037697
+#rich_SE          1.492477   1.054867   1.894503
+
+#abundance_Mean   382.7778  1756.3333   514.8889
+#abundance_SD     204.4276  1343.4526   584.5660
+#abundance_SE     48.18405  316.65482  137.78353
+
+#H_Mean          1.6472675  0.3933663  1.3781480
+#H_SD            0.4860376  0.2538906  0.7731806
+#H_SE           0.11456015 0.05984259 0.18224040
+
+#D1_Mean         0.6171321  0.1552774  0.5095815
+#D1_SD           0.1673317  0.1329803  0.2809856
+#D1_SE          0.03944046 0.03134375 0.06622894
+
+#J_Mean          0.5181020  0.1478616  0.4479636
+#J_SD           0.13857407 0.09493142 0.23375547
+#J_SE           0.03266222 0.02237555 0.05509669
 
 
 
-# abundance histogram
-ggplot(invert, aes(x = abundance)) + 
-  geom_histogram(binwidth = 100,
-                 color="black", fill="white")
 
+invert.habyr <- invert %>% group_by(Treatment, Year) %>% 
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = list(Mean = mean, SD = sd, SE = std.error), na.rm = TRUE,
+    .names = "{col}_{fn}"
+  ))
+
+invert.habyr %>% t %>% as.data.frame
+
+
+#Treatment         Invaded    Invaded    Treated    Treated  Uninvaded  Uninvaded
+#Year                 2017       2018       2017       2018       2017       2018
+
+#Depth_Mean       42.07778   44.04444   50.66667   32.05556   37.58889   28.72222
+#Depth_SD         17.20064   20.78606   13.45753   11.11925   17.18476   20.08201
+#Depth_SE         5.733546   6.928687   4.485842   3.706418   5.728255   6.694002
+
+#N_Mean           3.888889   5.875000   3.666667   5.555556   3.888889   5.888889
+#N_SD            0.3333333  0.3535534  0.7071068  0.7264832  0.3333333  0.3333333
+#N_SE            0.1111111  0.1250000  0.2357023  0.2421611  0.1111111  0.1111111
+
+#rich_Mean        22.33333   27.11111   13.22222   17.11111   16.77778   26.44444
+#rich_SD          5.567764   6.431260   4.116363   4.136558   5.093569   7.666667
+#rich_SE          1.855921   2.143753   1.372121   1.378853   1.697856   2.555556
+
+#abundance_Mean   316.5556   449.0000   932.2222  2580.4444   268.3333   761.4444
+#abundance_SD     195.6624   201.6290   859.8657  1252.1426   201.6191   740.7581
+#abundance_SE     65.22080   67.20966  286.62188  417.38086   67.20636  246.91936
+
+#H_Mean          1.6687518  1.6257832  0.4041136  0.3826190  1.2662908  1.4900052
+#H_SD            0.4602864  0.5376727  0.2232105  0.2947806  0.7483638  0.8259188
+#H_SE           0.15342881 0.17922423 0.07440348 0.09826022 0.24945459 0.27530628
+
+#D1_Mean         0.6450358  0.5892285  0.1465689  0.1639859  0.4888948  0.5302681
+#D1_SD          0.13468582 0.19901665 0.09529313 0.16830497 0.29554762 0.28189305
+#D1_SE          0.04489527 0.06633888 0.03176438 0.05610166 0.09851587 0.09396435
+
+#J_Mean          0.5421213  0.4940827  0.1599113  0.1358119  0.4477526  0.4481745
+#J_SD           0.12535814 0.15425028 0.08821076 0.10508386 0.25459609 0.22648218
+#J_SE           0.04178605 0.05141676 0.02940359 0.03502795 0.08486536 0.07549406
 
 #richness histogram
 ggplot(invert, aes(x = rich)) + 
@@ -104,272 +150,88 @@ ggplot(invert, aes(x = rich)) +
                  color="black", fill="white")
 
 
-
-
-# abundance histogram
-ggplot(invert, aes(x = logAb)) + 
-  geom_histogram(binwidth = 1,
+#Shannon histogram
+ggplot(invert, aes(x = H)) + 
+  geom_histogram(binwidth = .1,
                  color="black", fill="white")
 
-# ANOVAs ------------------------------------------------------------------
+#Simpsons
+ggplot(invert, aes(x = D1)) + 
+  geom_histogram(binwidth = .1,
+                 color="black", fill="white")
 
-
-# abundance two-way ANOVA
-
-abundance.lm <- lm(abundance ~ Treatment * Year, data = invert)
-Anova(abundance.lm, type = 3)
-
-#Response: abundance
-#                  Sum Sq Df F value   Pr(>F)   
-#(Intercept)      901867  1  1.8186 0.183813   
-#Treatment       2466358  2  2.4866 0.093849 . 
-#Year              78937  1  0.1592 0.691690   
-#Treatment:Year  5642917  2  5.6893 0.006063 **
-#Residuals      23804326 48
-
-
-
-# log Abundance
-
-labundance.lm <- lm(logAb ~ Treatment * Year, data = invert)
-Anova(labundance.lm, type = 3)
-
-#Response: logAb
-#                Sum Sq Df  F value    Pr(>F)    
-#(Intercept)    282.780  1 515.3912 < 2.2e-16 ***
-#Treatment        6.784  2   6.1819  0.004085 ** 
-#Year             0.799  1   1.4556  0.233543    
-#Treatment:Year   1.323  2   1.2056  0.308423    
-#Residuals       26.336 48  
-
-labundance.hsd <- HSD.test(labundance.lm, "Treatment")
-
-#logAb groups
-#Treated   7.108355      a
-#Invaded   5.815990      b
-#Uninvaded 5.775302      b
-
-# richness two-way ANOVA
-
-rich.lm <- lm(rich ~ Treatment * Year, data = invert)
-Anova(rich.lm, type = 3)
-
-#Response: rich
-#Sum Sq Df  F value    Pr(>F)    
-#(Intercept)    4489.0  1 140.9132 6.907e-16 ***
-#Treatment       379.6  2   5.9573  0.004887 ** 
-#Year            102.7  1   3.2245  0.078839 .  
-#Treatment:Year   87.1  2   1.3672  0.264552    
-#Residuals      1529.1 48 
-
-rich.hsd <- HSD.test(rich.lm, "Treatment")
-
-#rich groups
-#Invaded   24.72222      a
-#Uninvaded 21.61111      a
-#Treated   15.16667      b
-
-
+#Pielou
+ggplot(invert, aes(x = J)) + 
+  geom_histogram(binwidth = .1,
+                 color="black", fill="white")
 
 # General Linear Mixed Models ---------------------------------------------
 
-
-# Abundance GLMM ----------------------------------------------------------
-
-# Abundance, with year and number of collections as random
-
-abundance.glmm <- lmer(abundance ~ Treatment + (1|Year) + (1|N),
-                    data = invert, REML = FALSE)
-
-summary(abundance.glmm)
-
-#Linear mixed model fit by maximum likelihood  ['lmerMod']
-#Formula: abundance ~ Treatment + (1 | Year) + (1 | N)
-#Data: invert
-
-#AIC      BIC   logLik deviance df.resid 
-#869.0    880.8   -428.5    857.0       47 
-
-#Scaled residuals: 
-#  Min      1Q  Median      3Q     Max 
-#-2.1973 -0.6076  0.0231  0.2638  3.9185 
-
-#Random effects:
-#Groups   Name        Variance Std.Dev.
-#N        (Intercept)      0     0.0   
-#Year     (Intercept) 128827   358.9   
-#Residual             573135   757.1   
-#Number of obs: 53, groups:  N, 5; Year, 2
-
-#Fixed effects:
-#                    Estimate Std. Error t value
-#(Intercept)           406.4      313.3   1.297
-#TreatmentTreated     1349.9      256.1   5.271
-#TreatmentUninvaded    108.5      256.1   0.424
-
-#Correlation of Fixed Effects:
-#             (Intr) TrtmnT
-#TretmntTrtd -0.421       
-#TrtmntUnnvd -0.421  0.515
-
-r.squaredGLMM(abundance.glmm)
-
-#      R2m       R2c
-#0.3540902 0.4726298
-
-# examine the residuals 
-
-plot(abundance.glmm)
-qqnorm(resid(abundance.glmm))
-qqline(resid(abundance.glmm))
-
-
-# null model 
-
-ab.null <- lmer(abundance ~ (1|Year) + (1|N), 
-                data = invert, REML = FALSE) 
-
-summary(ab.null)
-
-#Linear mixed model fit by maximum likelihood  ['lmerMod']
-#Formula: abundance ~ (1 | Year) + (1 | N)
-#Data: invert
-
-#AIC      BIC   logLik deviance df.resid 
-#891.6    899.5   -441.8    883.6       49 
-
-#Scaled residuals: 
-
-#  Min      1Q  Median      3Q     Max 
-#-1.0976 -0.5546 -0.3346  0.2112  3.9187 
-
-#Random effects:
-
-#Groups   Name        Variance Std.Dev.
-#N        (Intercept)      0     0.0   
-#Year     (Intercept) 121398   348.4   
-#Residual             964325   982.0   
-#Number of obs: 53, groups:  N, 5; Year, 2
-
-#Fixed effects:
-#             Estimate Std. Error t value
-#(Intercept)    901.2      280.9   3.208
-
-r.squaredGLMM(ab.null)
-
-#R2m       R2c
-# 0   0.1118127
-
-## Comparison of abundance model and null model
-
-models <- list(abundance.glmm, ab.null)
-names <- c(1:2)
-
-aictab(cand.set = models, modnames = names,
-       sort = TRUE, c.hat = 1, second.ord = TRUE,
-       nobs = NULL)
-
-#Model selection based on AICc:
-  
-# K   AICc Delta_AICc AICcWt Cum.Wt      LL
-# 6 870.83       0.00      1      1 -428.50
-# 4 892.47      21.64      0      1 -441.82
-
-# or do it this way and get info re: test statistic
-
-anova(abundance.glmm, ab.null)
-
-#               npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
-#ab.null           4 891.64 899.52 -441.82   883.64                         
-#abundance.glmm    6 869.01 880.83 -428.50   857.01 26.631  2  1.649e-06 ***
-
-
-# log Abundance GLMMM
-
-
-labundance.glmm <- lmer(logAb ~ Treatment + (1|Year) + (1|N),
-                       data = invert, REML = FALSE)
-
-summary(labundance.glmm)
-
-
-
-#Linear mixed model fit by maximum likelihood  ['lmerMod']
-#Formula: logAb ~ Treatment + (1 | Year) + (1 | N)
-#Data: invert
-
-#AIC      BIC   logLik deviance df.resid 
-#133.8    145.6    -60.9    121.8       47 
-
-#Scaled residuals: 
-#  Min      1Q  Median      3Q     Max 
-#-2.3632 -0.6599  0.1089  0.5649  2.1454 
-
-#Random effects:
-#  Groups   Name        Variance Std.Dev.
-#N        (Intercept) 0.0000   0.0000  
-#Year     (Intercept) 0.1563   0.3953  
-#Residual             0.5374   0.7331  
-#Number of obs: 53, groups:  N, 5; Year, 2
-
-#Fixed effects:
-#  Estimate Std. Error t value
-#(Intercept)         5.84197    0.33134  17.631
-#TreatmentTreated    1.26638    0.24800   5.106
-#TreatmentUninvaded -0.06667    0.24800  -0.269
-
-#Correlation of Fixed Effects:
-#  (Intr) TrtmnT
-#TretmntTrtd -0.385       
-#TrtmntUnnvd -0.385  0.515
-
-r.squaredGLMM(labundance.glmm)
-
-#R2m       R2c
-#0.3583682 0.5029123
-
-plot(labundance.glmm)
-qqnorm(resid(labundance.glmm))
-qqline(resid(labundance.glmm))
-
+invert$depthst <- scale(invert$Depth,
+                           center = TRUE,
+                           scale = TRUE)
 
 
 # Richness GLMM -----------------------------------------------------------
 
-rich.glmm <- lmer(rich ~ Treatment + (1|Year) + (1|N),
-                     data = invert, REML = FALSE)
+rich.glmm <- glmer(rich ~ Treatment * Depth + (1|Year) + (1|N),
+                     data = invert, family = poisson)
 
 summary(rich.glmm)
 
+#Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+#Family: poisson  ( log )
+#Formula: rich ~ Treatment * Depth + (1 | Year) + (1 | N)
+#Data: invert
+
 #AIC      BIC   logLik deviance df.resid 
-#340.8    352.6   -164.4    328.8       47 
+#338.3    354.1   -161.2    322.3       45 
 
 #Scaled residuals: 
-#  Min      1Q  Median      3Q     Max 
-#-2.4030 -0.4817  0.0774  0.6760  2.2532 
+#  Min       1Q   Median       3Q      Max 
+#-1.98152 -0.63385 -0.09725  0.65619  2.10744 
 
 #Random effects:
-#  Groups   Name        Variance Std.Dev.
-#N        (Intercept) 12.97    3.602   
-#Year     (Intercept)  0.00    0.000   
-#Residual             25.12    5.012   
+#Groups Name        Variance Std.Dev.
+#N      (Intercept) 0.02838  0.1685  
+#Year   (Intercept) 0.00000  0.0000  
 #Number of obs: 53, groups:  N, 5; Year, 2
 
 #Fixed effects:
-#                   Estimate Std. Error t value
-#(Intercept)          23.885      2.209  10.812
-#TreatmentTreated     -9.432      1.711  -5.513
-#TreatmentUninvaded   -3.630      1.696  -2.141
+#                            Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)               3.3774627  0.1582589  21.341  < 2e-16 ***
+#TreatmentTreated         -0.7360588  0.2225099  -3.308  0.00094 ***
+#TreatmentUninvaded       -0.2207424  0.1613103  -1.368  0.17118    
+#Depth                    -0.0053382  0.0028801  -1.853  0.06382 .  
+#TreatmentTreated:Depth    0.0061432  0.0051889   1.184  0.23645    
+#TreatmentUninvaded:Depth  0.0004237  0.0041350   0.102  0.91839    
+
 
 #Correlation of Fixed Effects:
-#(Intr) TrtmnT
-#TretmntTrtd -0.440       
-#TrtmntUnnvd -0.393  0.508
+#            (Intr) TrtmnT TrtmnU Depth  TrtT:D
+#TretmntTrtd -0.412                            
+#TrtmntUnnvd -0.575  0.422                     
+#Depth       -0.768  0.494  0.659              
+#TrtmntTrt:D  0.346 -0.936 -0.383 -0.519       
+#TrtmntUnn:D  0.456 -0.345 -0.891 -0.629  0.373
+#optimizer (Nelder_Mead) convergence code: 0 (OK)
+#boundary (singular) fit: see ?isSingular
+
+anova(rich.glmm)
+
+#  Analysis of Variance Table
+#                npar Sum Sq Mean Sq F value
+#Treatment          2 37.953 18.9765 18.9765
+#Depth              1  3.867  3.8673  3.8673
+#Treatment:Depth    2  1.570  0.7849  0.7849
+
 
 r.squaredGLMM(rich.glmm)
 
-#      R2m       R2c
-# 0.2865247 0.5295009
+#            R2m       R2c
+#delta     0.3594343 0.5813962
+#lognormal 0.3633659 0.5877556
+#trigamma  0.3553815 0.5748407
 
 # examine the residuals 
 
@@ -379,37 +241,40 @@ qqline(resid(rich.glmm))
 
 ### null abundance model 
 
-rich.null <- lmer(rich ~ (1|Year) + (1|N), 
-                data = invert, REML = FALSE) 
+rich.null <- glmer(rich ~ (1|Year) + (1|N),
+                   family = poisson, data = invert) 
 
 summary(rich.null)
 
+#Generalized linear mixed model fit by maximum likelihood (Laplace
+#Approximation) [glmerMod]
+#Family: poisson  ( log )
 #Formula: rich ~ (1 | Year) + (1 | N)
 #Data: invert
 
 #AIC      BIC   logLik deviance df.resid 
-#361.0    368.9   -176.5    353.0       49 
+#372.9    378.8   -183.4    366.9       50 
 
 #Scaled residuals: 
 #  Min       1Q   Median       3Q      Max 
-#-2.03558 -0.82443 -0.03973  0.78934  1.88792 
+#-2.65232 -1.13678  0.08907  1.05232  2.72149 
 
 #Random effects:
-#Groups   Name        Variance Std.Dev.
-#N        (Intercept) 14.48    3.806   
-#Year     (Intercept)  0.00    0.000   
-#Residual             40.60    6.372   
+#Groups Name        Variance  Std.Dev. 
+#N      (Intercept) 3.803e-02 1.950e-01
+#Year   (Intercept) 2.037e-09 4.513e-05
 #Number of obs: 53, groups:  N, 5; Year, 2
 
 #Fixed effects:
-#Estimate Std. Error t value
-#(Intercept)   19.041      2.146   8.874
+#  Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)   2.9085     0.1038   28.03   <2e-16 ***
 
 r.squaredGLMM(rich.null)
 
-#R2m       R2c
-#0     0.2629343
-
+#          R2m       R2c
+#delta       0 0.4153653
+#lognormal   0 0.4217383
+#trigamma    0 0.4088534
 
 ## Comparison 
 
@@ -420,173 +285,105 @@ aictab(cand.set = models, modnames = names,
        sort = TRUE, c.hat = 1, second.ord = TRUE,
        nobs = NULL)
 
-#K   AICc Delta_AICc AICcWt Cum.Wt      LL
-#6  342.63       0.00      1      1 -164.40
-#4  361.86      19.23      0      1 -176.51
-# or do it this way and get info re: test statistic
+#Model selection based on AICc:
+  
+#  K   AICc Delta_AICc AICcWt Cum.Wt      LL
+#1 8 341.62       0.00      1      1 -161.17
+#2 3 373.39      31.76      0      1 -183.45
 
 anova(rich.glmm, rich.null)
 
-#npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
-#rich.null    4 361.02 368.91 -176.51   353.02                         
-#rich.glmm    6 340.80 352.62 -164.40   328.80 24.221  2  5.502e-06 ***
+#Data: invert
+#Models:
+#  rich.null: rich ~ (1 | Year) + (1 | N)
+#rich.glmm: rich ~ Treatment * Depth + (1 | Year) + (1 | N)
+
+#          npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
+#rich.null    3 372.90 378.81 -183.45   366.90                         
+#rich.glmm    8 338.35 354.11 -161.17   322.35 44.547  5  1.793e-08 ***
 
 
 # Univariate Figures ------------------------------------------------------
 
-colnames(invert)
-
-# Abundance
-
-abundance <- ggplot(data = invert, 
-                    aes(x = Treatment, 
-                        y = abundance,
-                        shape = Year, colour = Treatment),
-                    size = 4) +
-  geom_violin(trim = FALSE, 
-              lwd = 0.75, 
-              position = position_dodge(0.5),
-              colour = "black") +
-  geom_jitter(position = position_jitterdodge(jitter.width = 0.1, 
-                                              dodge.width = 0.5), size = 3) +
-  stat_summary(aes(shape = Year), 
-               colour = "black", 
-               fun.data = "mean_se", 
-               fun.args = list(mult = 1), 
-               geom = "pointrange", 
-               size = 1, position = position_dodge(0.5)) +
+rich <- ggplot(invert, aes(x = Depth, y = rich, 
+                                group = Treatment,
+                                colour = Treatment,
+                                shape = Treatment)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
   theme_classic() +
-  labs(x = " ",
-       y = expression(paste("Invertebrate Abundance"))) +
+  labs(x = "Water Depth (cm) ",
+       y = "Taxonomic Richness") +
+  scale_colour_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(text = element_text(size = 14),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14)) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16)) +
-  guides(color = "none") 
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0, 50)
 
 
-richness <- ggplot(data = invert.univariate, 
-                   aes(x = Treatment, 
-                       y = rich, 
-                       shape = Year, colour = Treatment), size = 4) +
-  geom_violin(trim = FALSE,
-              lwd = 0.75, 
-              position = position_dodge(0.8),
-              colour = "black") +
-  geom_jitter(position = position_jitterdodge(jitter.width = 0.1, 
-                                              dodge.width = 0.8), size = 3) +
-  stat_summary(aes(shape = Year), 
-               colour = "black", 
-               fun.data = "mean_se", 
-               fun.args = list(mult = 1),
-               geom = "pointrange", size = 1,
-               position = position_dodge(0.8)) +
+
+
+shannon <- ggplot(invert, aes(x = Depth, y = H, 
+                   group = Treatment,
+                   colour = Treatment,
+                   shape = Treatment)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
   theme_classic() +
-  labs(x = " ",
-       y = expression(paste("Taxonomic Richness"))) +
+  labs(x = "Water Depth (cm) ",
+       y = "Shannon-Weiner (H')") +
+  scale_colour_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(text = element_text(size = 14),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14)) +
-  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15, 16)) +
-  guides(color = "none") +
-  theme(legend.position = "right") 
-
-richness +
-  annotate("text", x = 1:3, y = c(4600, 12000, 4600),
-           label = c("a", "b", "a"),
-           size = 4.5)
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0, 3)
 
 
-uni.panel <- ggarrange(abundance, richness,
-                       common.legend = TRUE,
-                       legend = "bottom",
-                       labels = "AUTO",
-                       hjust = c(-7,-6),
-                       vjust = 2)
 
 
-ggsave("Figures/emerging_invert_unipanel.jpeg", uni.panel,
-       height = 5.49,
-       width = 9.58,
-       units = "in")
-
-
-### without year
-
-ab.hab <- ggplot(data = invert, 
-                 aes(x = Treatment, 
-                     y = abundance,
-                     colour = Treatment),
-                 size = 4) +
-  geom_violin(trim = FALSE, lwd = 1) +
-  geom_point() +
-  stat_summary(aes(shape = Treatment), 
-               colour = "black", 
-               fun.data = "mean_se", 
-               fun.args = list(mult = 1), 
-               geom = "pointrange", 
-               size = 1) +
+simpson <- ggplot(invert, aes(x = Depth, y = D1, 
+                   group = Treatment,
+                   colour = Treatment,
+                   shape = Treatment)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
   theme_classic() +
-  labs(x = " ",
-       y = expression(paste("Invertebrate Abundance"))) +
+  labs(x = "Water Depth (cm) ",
+       y = "Simpsons Diversity (1-D)") +
+  scale_colour_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(text = element_text(size = 14),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14)) +
-  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) +
-  guides(color = "none") +
-  annotate("text", x = 1:3, y = c(4600, 8000, 4600),
-           label = c("a", "b", "a"),
-           size = 4.5)
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0,1)
 
-ab.hab
 
-rich.hab <- ggplot(data = invert, 
-                 aes(x = Treatment, 
-                     y = rich,
-                     colour = Treatment),
-                 size = 4) +
-  geom_violin(trim = FALSE, lwd = 1) +
-  geom_point() +
-  stat_summary(aes(shape = Treatment), 
-               colour = "black", 
-               fun.data = "mean_se", 
-               fun.args = list(mult = 1), 
-               geom = "pointrange", 
-               size = 1) +
+
+
+pielou <- ggplot(invert, aes(x = Depth, y = J, 
+                   group = Treatment,
+                   colour = Treatment,
+                   shape = Treatment)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
   theme_classic() +
-  labs(x = " ",
-       y = expression(paste("Invertebrate Abundance"))) +
+  labs(x = "Water Depth (cm) ",
+       y = "Pielou's Evenness (J)") +
+  scale_colour_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(text = element_text(size = 14),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14)) +
-  scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) +
-  guides(color = "none") +
-  annotate("text", x = 1:3, y = c(55, 35, 55),
-           label = c("a", "b", "a"),
-           size = 4.5)
-
-rich.hab
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0, 1)
 
 
+panel <- ggarrange(rich, shannon,
+          simpson, pielou,
+          common.legend = TRUE,
+          legend = "right",
+          align = "hv",
+          labels = "AUTO")
 
-uni.hab.panel <- ggarrange(ab.hab, rich.hab,
-                       common.legend = TRUE,
-                       legend = "bottom",
-                       labels = "AUTO",
-                       hjust = c(-7,-6),
-                       vjust = 2)
-
-
-ggsave("Figures/emerging_invert_unipanel.jpeg",
-       uni.hab.panel,
-       height = 5.49,
-       width = 9.58,
-       units = "in")
+ggsave("Figures/invert_hab_depth.jpeg", panel)
