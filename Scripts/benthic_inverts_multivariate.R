@@ -20,7 +20,7 @@ library(EcolUtils)
 
 # Load Data ---------------------------------------------------------------
 
-benthic <- read.csv("Data/aquatic_inverts_rares2.csv") # occurrences <=2 removed
+benthic <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <=2 removed
 benthic <- benthic[1:25,]
 
 
@@ -37,7 +37,7 @@ benthic.env <- benthic %>% select(Site.ID:Collection.date)
 
 benthic.rel <- decostand(benthic.data, "max", 2, na.rm = NULL) # divide by column max
 
-write.csv(benthic.rel, "Data/benthic_inverts_relativized.csv")
+write.csv(benthic.rel, "Data/Aquatic/benthic_inverts_relativized.csv")
 
 #### perMANOVA #####
 
@@ -164,7 +164,7 @@ col_order <- c("Site", "Habitat", "NMDS1", "NMDS2", "NMDS3")
 scores <- scr[, col_order] # put the categorical values in order
 
 
-write.csv(scores,"Data/NMDS_benthic_inverts_scores.csv") # save this as a csv
+write.csv(scores,"Data/Aquatic/NMDS/NMDS_benthic_inverts_scores.csv") # save this as a csv
 
 
 ### Vectors correlated with Axis 1 & 2 
@@ -194,7 +194,7 @@ species.12 <- as.data.frame(corrtaxa12$vectors$arrows*sqrt(corrtaxa12$vectors$r)
 species.12$species <- rownames(species.12)
 
 
-write.csv(species.12, "Data/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
+write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
 
 
 #### Vectors correlated with axis 1 & 3 
@@ -224,7 +224,7 @@ corrtaxa13
 species.13 <- as.data.frame(corrtaxa13$vectors$arrows*sqrt(corrtaxa13$vectors$r)) #scaling vectors so they correspond with r2
 species.13$species <- rownames(species.13)
 
-write.csv(species.13, "Data/NMDS_benthic_vectors_axis13.csv")
+write.csv(species.13, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 
 
 # Base R plots ------------------------------------------------------------
@@ -255,9 +255,9 @@ plot(alltaxa, p.max = 0.013, col = "black")
 
 # load data from above 
 
-benth.scores <- read.csv("Data/NMDS_benthic_inverts_scores.csv")
-vector.12 <- read.csv("Data/NMDS_benthic_vectors_axis12.csv")
-vector.13 <- read.csv("Data/NMDS_benthic_vectors_axis13.csv")
+benth.scores <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_inverts_scores.csv")
+vector.12 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv")
+vector.13 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 
 
 benth.scores <- benth.scores %>% mutate(Habitat = fct_recode(Habitat,
