@@ -17,7 +17,7 @@ library(AICcmodavg)
 
 # Data Import -------------------------------------------------------------
 
-invert <- read.csv("Data/emerging_invertebrates.csv")
+invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
 str(invert)
 unique(invert$Treatment)
 
@@ -50,11 +50,11 @@ invert.uni$J <- J
 
 invert.univariate <- invert.uni
 
-write.csv(invert.univariate, "Data/emerging_invertebrate_univariate.csv")
+write.csv(invert.univariate, "Data/Emerging/emerging_invertebrate_univariate.csv")
 
 
 # Histograms ---------------------------------------------------------------
-invert <- read.csv("Data/emerging_invertebrate_univariate.csv")
+invert <- read.csv("Data/Emerging/emerging_invertebrate_univariate.csv")
 
 invert$Year <- as.factor(invert$Year)
 invert$logAb <- log(invert$abundance)
