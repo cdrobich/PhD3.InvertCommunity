@@ -15,31 +15,19 @@ library(devtools)
 install_github("GuillemSalazar/EcolUtils")
 library(EcolUtils)
 
+library(Hmisc)
 
 # Load data ---------------------------------------------------------------
 
-data <- read.csv("Data/Emerging/emerging_invert_dates.csv")
-head(data)
-str(data)
+inverts.date <- read.csv("Data/Emerging/ermerging_time_rares.csv") # Occurences <= 2 removed
+head(inverts.date)
+str(inverts.date)
 
-unique(data$Treatment)
+unique(inverts.date$Treatment)
+colnames(inverts.date)
 
-
-taxa <- data %>% select(Araneae:Hesperiidae)
-env <- data %>% select(ID:YrCol)
-
-
-## Remove rares
-
-taxa.occur <- as.data.frame(sapply(taxa, function(col) length(unique(col)))) # how many unique values in column
-
-
-rares <- taxa[, sapply(taxa, function(col) length(unique(col))) > 2] # remove those with fewer than 2 occurrences 
-rare.removes <- as.data.frame(sapply(rares, function(col) length(unique(col)))) # check to make sure that worked
-min(rare.removes)
-
-
-write.csv(rares, "Data/Emerging/inverts_dates_rares.csv")
+taxa <- inverts.date %>% select(Araneae:Crambidae)
+env <- inverts.date %>% select(ID:YrCol)
 
 # Collection periods -----------------------------------------------
 
@@ -49,9 +37,6 @@ unique(env$Date)
 
 #                        "19-Jun-17" "28-Jun-17" "08-Jul-17" "21-Jul-17" 
 #"20-May-18" "05-Jun-18" "16-Jun-18" "25-Jun-18" "04-Jul-18" "23-Jul-18"
-
-
-inverts.date <- read.csv("Data/Emerging/inverts_dates_rares_env.csv")
 
 
 # NMDS Collection June 19 2017 and June 16 2018 Collection -----------------------------------------
@@ -66,56 +51,36 @@ write.csv(invert.col.1, "Data/Emerging/NMDS/Col.1/inverts_collection1.csv")
 invert.col1.rares <- read.csv("Data/Emerging/NMDS/Col.1/inverts_collection1_zerosremoved.csv")
 
 
-# just taxa and env 
-taxa.col1 <- invert.col1.rares %>% select(Araneae:Crambidae)
-env.col1 <- invert.col1.rares %>% select(ID:YrCol)
+# Empty columns removed, relativized by col max. 
 
-# Relativize by column max
+col1.data <- read.csv("Data/Emerging/NMDS/Col.1/col1_zeroes_relativized.csv")
+colnames(col1.data)
 
-taxa.col1rel <- decostand(taxa.col1, "max", 2, na.rm = NULL)
+taxa.col1 <- col1.data %>% select(Araneae:Crambidae)
+env.col1 <- col1.data %>% select(Sites:YrCol)
 
-write.csv(taxa.col1rel, "Data/Emerging/NMDS/Col.1/inverts_col1_raresrel.csv")
-
-# NMDS Col.1  -------------------------------------------------------------
-
-k_vec <- 1:10 #dimensions 1 - 10
-stress <- numeric(length(k_vec)) # stress of each model put here
-dune_dij <- metaMDSdist(taxa.col1rel)
-
-set.seed(25)
-
-for(i in seq_along(k_vec)) {
-  sol <- metaMDSiter(dune_dij, k = i, 
-                     trace = FALSE)
-  stress[i] <- sol$stress
-}
-
-plot(stress) # 3D makes sense
+taxa.col1 <- taxa.col1[1:51,]
+env.col1 <- env.col1[1:51,]
+# NMDS Col.1 
 
 #### NMDS analysis 
 
 set.seed(120) 
 
-nms.col1 <- metaMDS(taxa.col1rel, distance = "bray", # species data, bray-curtis dissimilarity
+nms.col1 <- metaMDS(taxa.col1, distance = "bray", # species data, bray-curtis dissimilarity
                       autotransform = FALSE,  # NMDS will do autotransformations for you
                       k = 3, trymax = 1000)   # k = number of axes
 nms.col1
 
-#Call:
-#metaMDS(comm = taxa.col1rel, distance = "bray", k = 3, trymax = 1000, autotransform = FALSE) 
-
-#global Multidimensional Scaling using monoMDS
-#Data:     taxa.col1rel 
+#Data:     taxa.col1 
 #Distance: bray 
 
 #Dimensions: 3 
-#Stress:     0.1892989 
+#Stress:     0.1933805 
 #Stress type 1, weak ties
-#Two convergent solutions found after 33 tries
+#Two convergent solutions found after 26 tries
 #Scaling: centring, PC rotation, halfchange scaling 
-#Species: expanded scores based on ‘taxa.col1rel’ 
-
-
+#Species: expanded scores based on ‘taxa.col1’ 
 
 # look at points and the stress real quick
 layout(matrix(1:2, ncol = 2))
@@ -137,10 +102,10 @@ nms.col1$iters # 127
 
 # Goodness of fit
 (g <- goodness(nms.col1)) # smaller the number the better the fit
-sum(g^2) 0.03583409
+sum(g^2) #0.037396
 nms.col1$stress^2  
 
-1-nms.col1$stress^2 # 0.9641659 #analogous to square correlation coefficient
+1-nms.col1$stress^2 # 0.962604
 
 
 ## extract the scores for plotting 
@@ -156,7 +121,7 @@ write.csv(env.col1,"Data/Emerging/NMDS/Col.1/emerging_inverts_col1_NMDSscores.cs
 
 ### Taxa correlated with Axis 1 & 2 
 
-col1.12 <- envfit(nms.col1, taxa.col1rel,
+col1.12 <- envfit(nms.col1, taxa.col1,
                     choices = c(1,2)) #produces a list with r2, p value, and NMDS coordinates
 
 col1.df12 <- data.frame((col1.12$vectors)$arrows,
@@ -170,7 +135,7 @@ write.csv(col1.df12, "Data/Emerging/NMDS/Col.1/NMDS_emerg_col1_vector12.csv") # 
 
 ## Taxa correlated with Axis 1 & 3
 
-col1.13 <- envfit(nms.col1, taxa.col1rel, 
+col1.13 <- envfit(nms.col1, taxa.col1, 
                      permutations = 999, choices = c(1,3)) 
 
 
@@ -188,7 +153,7 @@ colnames(col1.df12)
 col1.corrsp.12 <- col1.df12 %>% filter(X.col1.12.vectors..r > 0.2) #those r>0.2
 target12.c1 <- col1.corrsp.12$Taxa # string of the Family names
 
-axis12.vectors.c1 <- taxa.col1rel %>% select(all_of(target12.c1)) # make a matrix of just those
+axis12.vectors.c1 <- taxa.col1 %>% select(all_of(target12.c1)) # make a matrix of just those
 
 
 # Selecting taxa for vectors on axis 1, 3
@@ -196,7 +161,7 @@ colnames(col1.df13)
 col1.corrsp.13 <- col1.df13 %>% filter(X.col1.13.vectors..r > 0.2) 
 target13.c1 <- col1.corrsp.13$Taxa # string of the Family names
 
-axis13.vectors.c1 <- taxa.col1rel %>% select(all_of(target13.c1)) # make a matrix of just those
+axis13.vectors.c1 <- taxa.col1 %>% select(all_of(target13.c1)) # make a matrix of just those
 
 
 # Fit vectors to NMDS
@@ -222,8 +187,7 @@ corr.c1.vectors.13$Taxa <- rownames(corr.c1.vectors.13)
 
 write.csv(corr.c1.vectors.13, "Data/Emerging/NMDS/Col.1/NMDS_emerg_col1_vector13_final.csv")
 
-# NMDS Emerging Invert Figure Collection 1 ------------------------------------------------------------
-
+# NMDS Emerging Invert Figure Collection 1 
 col1.scores <- read.csv("Data/Emerging/NMDS/Col.1/emerging_inverts_col1_NMDSscores.csv")
 col1.scores$Year <- as.factor(col1.scores$Year)
 
@@ -238,8 +202,9 @@ invert.12.c1 <- ggplot(data = col1.scores,
                     aes(x = NMDS1, y = NMDS2)) +
   geom_point(data = col1.scores, 
              aes(x = NMDS1, y = NMDS2, 
-                 colour = Treatment, shape = Year),
-             size = 4, stroke = 1.5) + # sites as points
+                 fill = Treatment, shape = Year),
+             size = 5, stroke = 1.5,
+             alpha = 0.7) + # sites as points
   stat_ellipse(data = col1.scores, 
                aes(x = NMDS1,y = NMDS2,
                    linetype = Treatment, colour = Treatment), 
@@ -257,9 +222,11 @@ invert.12.c1 <- ggplot(data = col1.scores,
   geom_text_repel(data = col1.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
-                  size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+                  size = 6)  +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(legend.position = "none") 
 
 invert.12.c1
 
@@ -269,8 +236,9 @@ invert.13.c1 <- ggplot(data = col1.scores,
                        aes(x = NMDS1, y = NMDS3)) +
   geom_point(data = col1.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Treatment, shape = Year),
-             size = 4, stroke = 1.5) + # sites as points
+                 fill = Treatment, shape = Year),
+             size = 5, stroke = 1.5,
+             alpha = 0.7) + # sites as points
   stat_ellipse(data = col1.scores, 
                aes(x = NMDS1,y = NMDS3,
                    linetype = Treatment, colour = Treatment), 
@@ -288,9 +256,11 @@ invert.13.c1 <- ggplot(data = col1.scores,
   geom_text_repel(data = col1.axis13, 
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
-                  size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+                  size = 6) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(legend.position = "none") 
 
 invert.13.c1
 
@@ -315,27 +285,22 @@ invert.col.2 <- inverts.date %>% filter(Date %in% col.2)
 
 write.csv(invert.col.2, "Data/Emerging/NMDS/Col.2/inverts_collection2.csv")
 
-# remove zeros in excel because i dont have the time
-invert.col2.rares <- read.csv("Data/Emerging/NMDS/Col.2/inverts_collection2_zeros.csv")
-colnames(invert.col2.rares)
+# relativized by col max and removed empty columns 
+
+col2.data <- read.csv("Data/Emerging/NMDS/Col.2/col2_zeroes_relativized.csv")
 
 # just taxa and env 
-taxa.col2 <- invert.col2.rares %>% select(Araneae:Noctuidae)
-env.col2 <- invert.col2.rares %>% select(ID:YrCol)
+colnames(col2.data)
 
-# Relativize by column max
+taxa.col2 <- col2.data %>% select(Araneae:Noctuidae)
+env.col2 <- col2.data %>% select(Site:YrCol)
 
-taxa.col1re2 <- decostand(taxa.col2, "max", 2, na.rm = NULL)
-
-write.csv(taxa.col1re2, "Data/Emerging/NMDS/Col.2/inverts_col2_raresrel.csv") # use for NMDS
 
 ### NMDS "Col 2" 
 
-data.col2 <- read.csv("Data/Emerging/NMDS/Col.2/inverts_col2_raresrel.csv")
-
 k_vec <- 1:10 #dimensions 1 - 10
 stress <- numeric(length(k_vec)) # stress of each model put here
-dune_dij <- metaMDSdist(data.col2)
+dune_dij <- metaMDSdist(taxa.col2)
 
 set.seed(25)
 
@@ -351,22 +316,37 @@ plot(stress) # 3D
 
 set.seed(120) 
 
-nms.col2 <- metaMDS(data.col2, distance = "bray", # species data, bray-curtis dissimilarity
+nms.col2 <- metaMDS(taxa.col2, distance = "bray", # species data, bray-curtis dissimilarity
                     autotransform = FALSE,  # NMDS will do autotransformations for you
                     k = 3, trymax = 1000)   # k = number of axes
 nms.col2
 
+
+#global Multidimensional Scaling using monoMDS
+
+#Data:     taxa.col2 
+#Distance: bray 
+
 #Dimensions: 3 
-#Stress:     0.02987563 
+#Stress:     0.2153085 
 #Stress type 1, weak ties
-#Two convergent solutions found after 718 tries
-#Scaling: centring, PC rotation, halfchange scaling 
-#Species: expanded scores based on ‘data.col2’
+#Two convergent solutions found after 20 tries
 
-nms.col2$iters #200
+# look at points and the stress real quick
+layout(matrix(1:2, ncol = 2))
+plot(nms.col2, main = "Invertebrate NMDS plot"); stressplot(nms.col2, main = "Shepard plot")
+layout(1)
 
-nms.col2$stress^2   #0.0008925531
-1-nms.col2$stress^2 #0.9991074
+ordiplot(nms.col2, type = "n")
+orditorp(nms.col2, display = "species")
+orditorp(nms.col2, display = "sites")
+
+
+
+nms.col2$iters #97
+
+nms.col2$stress^2   #0.04635775
+1-nms.col2$stress^2 #0.9536422
 
 scr2 <- as.data.frame(scores(nms.col2, display = "sites")) # extract NMDS scores
 colnames(scr2)
@@ -460,8 +440,9 @@ invert.12.c2 <- ggplot(data = nmds.col2.scores,
                        aes(x = NMDS1, y = NMDS2)) +
   geom_point(data = nmds.col2.scores, 
              aes(x = NMDS1, y = NMDS2, 
-                 colour = Treatment, shape = Year),
-             size = 4, stroke = 1.5) + # sites as points
+                 fill = Treatment, shape = Year),
+             size = 4, stroke = 1.5,
+             alpha = 0.7) + # sites as points
   stat_ellipse(data = nmds.col2.scores, 
                aes(x = NMDS1,y = NMDS2,
                    linetype = Treatment, colour = Treatment), 
@@ -480,8 +461,10 @@ invert.12.c2 <- ggplot(data = nmds.col2.scores,
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
                   size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(legend.position = "none") 
 
 invert.12.c2
 
@@ -490,8 +473,9 @@ invert.13.c2 <- ggplot(data = nmds.col2.scores,
                        aes(x = NMDS1, y = NMDS3)) +
   geom_point(data = nmds.col2.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Treatment, shape = Year),
-             size = 4, stroke = 1.5) + # sites as points
+                 fill = Treatment, shape = Year),
+             size = 4, stroke = 1.5,
+             alpha = 0.7) + # sites as points
   stat_ellipse(data = nmds.col2.scores, 
                aes(x = NMDS1,y = NMDS3,
                    linetype = Treatment, colour = Treatment), 
@@ -502,7 +486,7 @@ invert.13.c2 <- ggplot(data = nmds.col2.scores,
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
-  ylab("NMDS 2") +
+  ylab("NMDS 3") +
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
@@ -510,8 +494,10 @@ invert.13.c2 <- ggplot(data = nmds.col2.scores,
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
                   size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(legend.position = "none") 
 
 invert.13.c2
 
