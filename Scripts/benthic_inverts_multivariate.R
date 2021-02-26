@@ -20,10 +20,14 @@ library(EcolUtils)
 
 # Load Data ---------------------------------------------------------------
 
-benthic <- read.csv("Data/Benthic_vegetation_QCC.csv") # occurrences = 1 removed
-str(benthic)
+benthic <- read.csv("Data/aquatic_inverts_rares2.csv") # occurrences <=2 removed
+benthic <- benthic[1:25,]
 
-benthic.data <- benthic %>% select(Oligochaeta:Hydroptilidae)
+
+unique(benthic$Habitat)
+
+
+benthic.data <- benthic %>% select(Oligochaeta:Leptoceridae)
 benthic.env <- benthic %>% select(Site.ID:Collection.date)
 
 
@@ -41,15 +45,11 @@ write.csv(benthic.rel, "Data/benthic_inverts_relativized.csv")
                      permutations = 999, method = "bray"))
 
 
-#Permutation test for adonis under reduced model
-#Terms added sequentially (first to last)
-#Permutation: free
-#Number of permutations: 999
-
 #         Df SumOfSqs      R2      F Pr(>F)    
-#Habitat   2   2.2541 0.28114 4.3021  0.001 ***
-#Residual 22   5.7636 0.71886                  
-#Total    24   8.0177 1.00000                  
+#Habitat   2   2.2286 0.28475 4.3791  0.001 ***
+#Residual 22   5.5981 0.71525                  
+#Total    24   7.8267 1.00000                  
+               
 
 
 # homogeneity of groups dispersion
@@ -68,9 +68,13 @@ groups <- factor(benthic$Habitat)
 #No. of Negative Eigenvalues: 4
 
 #Average distance to median:
-#Invaded   Treated Uninvaded 
-#0.4496    0.4673    0.4983 
+#  Invaded  Restored Uninvaded 
+#0.4468    0.4572    0.4892 
 
+#Eigenvalues for PCoA axes:
+#  (Showing 8 of 24 eigenvalues)
+#PCoA1  PCoA2  PCoA3  PCoA4  PCoA5  PCoA6  PCoA7  PCoA8 
+#1.5564 1.2761 1.0024 0.7142 0.5957 0.5086 0.4733 0.4548 
 
 plot(dispersion)
 boxplot(dispersion) # actually look really good!
@@ -78,11 +82,10 @@ boxplot(dispersion) # actually look really good!
 
 (adonis.pair(bugs.b, groups, nper = 1000, corr.method = "bonferroni"))
 
-#      combination   SumsOfSqs   MeanSqs  F.Model        R2    P.value  P.value.corrected
-#1 Invaded <-> Treated 0.9702695 0.9702695 3.869514 0.2050670 0.000999001       0.002997003
-#2 Invaded <-> Uninvaded 1.0981493 1.0981493 4.193700 0.2305029 0.000999001       0.002997003
-#3 Treated <-> Uninvaded 1.3110559 1.3110559 4.796596 0.2422940 0.000999001       0.002997003
-
+#              combination SumsOfSqs   MeanSqs  F.Model        R2     P.value P.value.corrected
+#1   Invaded <-> Restored 0.9649239 0.9649239 3.946800 0.2083096 0.000999001       0.002997003
+#2  Invaded <-> Uninvaded 1.0586760 1.0586760 4.140050 0.2282270 0.000999001       0.002997003
+#3 Restored <-> Uninvaded 1.3160709 1.3160709 4.999042 0.2499641 0.000999001       0.002997003
 
 
 # NMDS  -------------------------------------------------------------------
@@ -120,10 +123,10 @@ nms.invert
 #Distance: bray 
 
 #Dimensions: 3 
-#Stress:     0.1437523
+#Stress:     0.1442894 
 #Stress type 1, weak ties
 #Two convergent solutions found after 20 tries
-#3Scaling: centring, PC rotation, halfchange scaling 
+#Scaling: centring, PC rotation, halfchange scaling 
 #Species: expanded scores based on ‘benthic.rel’ 
 
 # look at points and the stress real quick
@@ -136,14 +139,14 @@ orditorp(nms.invert, display = "species")
 orditorp(nms.invert, display = "sites")
 
 # how many iterations of the NMDS
-nms.invert$iters # 56
+nms.invert$iters # 100
 
 # Goodness of fit
 (g <- goodness(nms.invert)) # smaller the number the better the fit
 sum(g^2)
-nms.invert$stress^2  # 0.02066487
+nms.invert$stress^2  # 0.02081944
 
-1-nms.invert$stress^2 #0.9793351 #analogous to square correlation coefficient
+1-nms.invert$stress^2 #0.9791806 #analogous to square correlation coefficient
 
 
 # Scores and vectors for plotting -----------------------------------------
@@ -174,7 +177,7 @@ all.taxa.df <- data.frame((alltaxa$vectors)$arrows,
                           (alltaxa$vectors)$pvals) #take list and make into dataframe
 
 
-corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.2)
+corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.25)
 corr.spp12$species <- rownames(corr.spp12)
 
 corr.species12 <- corr.spp12$species # string of the Family names
@@ -205,7 +208,7 @@ all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows,
                             (alltaxa.13$vectors)$pvals)
 
 
-corr.spp13 <- all.taxa13.df %>% filter(X.alltaxa.13.vectors..r > 0.2)
+corr.spp13 <- all.taxa13.df %>% filter(X.alltaxa.13.vectors..r > 0.25)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
@@ -222,8 +225,6 @@ species.13 <- as.data.frame(corrtaxa13$vectors$arrows*sqrt(corrtaxa13$vectors$r)
 species.13$species <- rownames(species.13)
 
 write.csv(species.13, "Data/NMDS_benthic_vectors_axis13.csv")
-
-
 
 
 # Base R plots ------------------------------------------------------------
@@ -258,6 +259,11 @@ benth.scores <- read.csv("Data/NMDS_benthic_inverts_scores.csv")
 vector.12 <- read.csv("Data/NMDS_benthic_vectors_axis12.csv")
 vector.13 <- read.csv("Data/NMDS_benthic_vectors_axis13.csv")
 
+
+benth.scores <- benth.scores %>% mutate(Habitat = fct_recode(Habitat,
+                                             Treated = "Restored"))
+str(benth.scores)
+
 ## NMDS Axis 1, 2 
 
 benthic.12 <- ggplot(data = benth.scores,
@@ -273,7 +279,7 @@ benthic.12 <- ggplot(data = benth.scores,
                size = 1, level = 0.90) + # a 95% CI ellipses
   geom_segment(data = vector.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_minimal() + # no background
+  theme_classic() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
@@ -301,7 +307,7 @@ benthic.13 <- ggplot(data = benth.scores,
   geom_segment(data = vector.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
-  theme_minimal() +
+  theme_classic() +
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +

@@ -6,13 +6,15 @@ library(Hmisc)
 library(car)
 library(viridis) # colours
 
+library(emmeans)
+library(rstatix)
 
 # Load Data ---------------------------------------------------------------
 
-benthic <- read.csv("Data/Benthic_vegetation_QCC.csv") # occurrences = 1 removed
+benthic <- read.csv("Data/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
 str(benthic)
 
-benthic.data <- benthic %>% select(Oligochaeta:Hydroptilidae)
+benthic.data <- benthic %>% select(Oligochaeta:Leptoceridae)
 benthic.env <- benthic %>% select(Site.ID:Collection.date)
 
 
@@ -21,7 +23,7 @@ richness <- rowSums(benthic.data > 0) # species richness
 rich <- specnumber(benthic.data) # species richness in vegan
 abundance <- rowSums(benthic.data) # abundance
 H <- diversity(benthic.data) # Shannon Weiner
-D1 <- diversity(benthic.data, index = "simpson") #default is base log, but can change it
+D1 <- diversity(benthic.data, index = "simpson") # 1 - D
 J <- H/log(specnumber(benthic.data))
 
 
@@ -33,25 +35,43 @@ benthic.uni$H <- H
 benthic.uni$D1 <- D1
 benthic.uni$J <- J
 
+benthic.uni1 <- benthic.uni
+
 write.csv(benthic.uni, "Data/benthic_invertebrates_univariate.csv")
 
 colnames(benthic.uni)
 
-benthic.uni %>% group_by(Habitat) %>% 
-  summarise(ab.mean = mean(abundance),
-            ab.N = length(abundance),
-            std.ab = sd(abundance),
-            str.ab = (std.ab)/(sqrt(ab.N)),
-            S.mean = mean(rich),
-            S.N = length(rich),
-            std.S = sd(rich),
-            str.S = (std.S)/(sqrt(S.N)))
+install.packages("plotrix")
+library(plotrix)
 
-#Habitat   ab.mean  ab.N std.ab str.ab S.mean   S.N std.S str.S
-#1 Invaded      584.     8   622.  220.    15       8  1.31 0.463
-#2 Treated     3375      9  2920.  973.    16       9  3.16 1.05 
-#3 Uninvaded    445.     8   159.   56.1   19.1     8  4.82 1.71 
+summary <- benthic.uni %>% group_by(Habitat) %>% 
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = list(Mean = mean, SD = sd, SE = std.error), na.rm = TRUE,
+    .names = "{col}_{fn}"
+  ))
 
+sum <- summary %>% t %>% as.data.frame
+
+#Habitat           Invaded    Treated  Uninvaded
+#Depth_Mean       39.92500   32.05556   22.93750
+#Depth_SD         17.86719   11.11925   10.80317
+#Depth_SE         6.317005   3.706418   3.819496
+#rich_Mean        15.00000   15.66667   18.50000
+#rich_SD          1.309307   3.201562   4.440077
+#rich_SE          0.462910   1.067187   1.569804
+#abundance_Mean    583.875   3374.667    444.625
+#abundance_SD     622.1540  2920.5174   158.4297
+#abundance_SE    219.96464  973.50579   56.01337
+#H_Mean           1.426528   1.766169   1.909067
+#H_SD            0.3773256  0.2415291  0.1909684
+#H_SE           0.13340473 0.08050969 0.06751754
+#D1_Mean         0.6058429  0.7555122  0.7799573
+#D1_SD          0.13679184 0.09687545 0.05650638
+#D1_SE          0.04836322 0.03229182 0.01997802
+#J_Mean          0.5294864  0.6506698  0.6606395
+#J_SD           0.15016095 0.10256570 0.05272685
+#J_SE           0.05308991 0.03418857 0.01864176
 
 # Histograms --------------------------------------------------------------
 
@@ -64,109 +84,284 @@ ggplot(benthic.uni, aes(x = abundance)) +
 
 #richness histogram
 ggplot(benthic.uni, aes(x = rich)) + 
-  geom_histogram(binwidth = 1,
+  geom_histogram(binwidth = 1.5,
+                 color="black", fill="white")
+
+# shannon # looks ok, bit left skewed
+
+ggplot(benthic.uni, aes(x = H)) + 
+  geom_histogram(binwidth = 0.25,
+                 color="black", fill="white")
+
+#simp # bit left skewed
+
+ggplot(benthic.uni, aes(x = D1)) + 
+  geom_histogram(binwidth = 0.1,
                  color="black", fill="white")
 
 
+#pie  # looks nice
+ggplot(benthic.uni, aes(x = J)) + 
+  geom_histogram(binwidth = 0.1,
+                 color="black", fill="white")
 
+
+## Transformations
 benthic.uni$logAb <- log(benthic.uni$abundance)
+benthic.uni$sqH <- sqrt(benthic.uni$H)
+benthic.uni$sqD1 <- log(benthic.uni$D1 + 1)
+benthic.uni$sqJ <- sqrt(benthic.uni$J)
+benthic.uni$sqrich <- sqrt(benthic.uni$rich)
+
 
 # abundance histogram
 ggplot(benthic.uni, aes(x = logAb)) + 
   geom_histogram(binwidth = 1,
                  color="black", fill="white")
 
+ggplot(benthic.uni, aes(x = sqH)) + 
+  geom_histogram(binwidth = 0.1,
+                 color="black", fill="white")
+
+ggplot(benthic.uni, aes(x = sqD1)) + 
+  geom_histogram(binwidth = 0.1,
+                 color="black", fill="white")
+
+ggplot(benthic.uni, aes(x = sqJ)) + 
+  geom_histogram(binwidth = 0.1,
+                 color="black", fill="white")
+
+ggplot(benthic.uni, aes(x = sqrich)) + 
+  geom_histogram(binwidth = 0.2,
+                 color="black", fill="white")
+
 # Univariate Analyses -----------------------------------------------------
 
-abundance.lm <- lm(abundance ~ Habitat, data = benthic.uni)
-Anova(abundance.lm, type = 3)
+# ANCOVA with habitat and water depth, richness prob poisson distribution
 
-abundance.hsd <- HSD.test(abundance.lm, "Habitat")
+richness <- glm(rich ~ Habitat * Depth, data = benthic.uni, 
+                x = TRUE, family = poisson)
 
-#Anova Table (Type III tests)
+summary(richness)
+anova(richness)
 
-#Response: abundance
-#               Sum Sq Df F value   Pr(>F)   
-#(Intercept)  2726112  1  0.8434 0.368396   
-#Habitat     47207700  2  7.3022 0.003696 **
-#Residuals   71113597 22  
+#Analysis of Deviance Table
 
-#          abundance       std r Min  Max  Q25    Q50     Q75
-#Invaded      583.75  622.2551 8  73 1767  233  320.5  661.25
-#Treated     3375.00 2920.3388 9  42 9851 2194 2472.0 3180.00
-#Uninvaded    445.25  158.6368 8 234  781  381  406.5  476.00
-
-
-#           abundance groups
-#Treated   3375.00      a
-#Invaded      583.75      b
-#Uninvaded    445.25      b
-
-# examine the residuals 
-
-plot(abundance.lm)
-qqnorm(resid(abundance.lm))
-qqline(resid(abundance.lm))
-
-
-logabundance.lm <- lm(logAb ~ Habitat, data = benthic.uni)
-Anova(logabundance.lm, type = 3)
-
-#Response: logAb
-#Sum Sq Df  F value    Pr(>F)    
-#(Intercept) 277.499  1 218.0867 6.721e-13 ***
-#Habitat      14.830  2   5.8276  0.009313 ** 
-#Residuals    27.993 22   
-
-abundance.hsd <- HSD.test(logabundance.lm, "Habitat")
-
-#logAb groups
-#Treated   7.567666      a
-#Uninvaded 6.047326      b
-#Invaded   5.889604      b
-
-plot(logabundance.lm)
-qqnorm(resid(logabundance.lm))
-qqline(resid(logabundance.lm))
-
-
-# Richness
-
-rich.lm <- lm(rich ~ Habitat, data = benthic.uni)
-Anova(rich.lm, type = 3)
-
-#Anova Table (Type III tests)
+#Model: poisson, link: log
 
 #Response: rich
-#             Sum Sq Df  F value   Pr(>F)    
-#(Intercept) 1800.00  1 155.3703 1.91e-11 ***
-#Habitat       74.57  2   3.2181  0.05944 .  
-#Residuals    254.87 22 
+
+#Terms added sequentially (first to last)
 
 
-benthic.uni %>% 
-  group_by(Habitat) %>% 
-  mutate(mean.s = mean(rich),
-         median.s = median(rich),
-         N = length(abundance),
-         sd.s = sd(rich),
-         sterr.s = (sd.s/(sqrt(N))),
-         mean.ab = mean(abundance),
-         median.ab = median(abundance),
-         sd.ab = sd(abundance),
-         sterr.ab = (sd.ab/sqrt(N))) -> benthic.uni
+#              Df Deviance Resid. Df Resid. Dev
+#NULL                             24    17.2028
+#Habitat        2   3.3466        22    13.8562
+#Depth          1   0.1013        21    13.7549
+#Habitat:Depth  2   3.8007        19     9.9542
+
+plot(richness)
+
+
+richness2 <- lm(sqrich ~ Habitat * Depth, data = benthic.uni)
+summary(richness2)
+anova(richness2)
+
+
+#Anova Table (Type II tests)
+
+#Response: sqrich
+#               Sum Sq Df F value  Pr(>F)  
+#Habitat       0.67417  2  2.5380 0.10547  
+#Depth         0.00843  1  0.0635 0.80378  
+#Habitat:Depth 0.99305  2  3.7384 0.04275 *
+#Residuals     2.52351 19  
+
+plot(richness2)
+
+
+# Pairwise comparisons
+pwc.rich <- benthic.uni %>% 
+  emmeans_test(
+    rich ~ Habitat, covariate = Depth,
+    p.adjust.method = "bonferroni"
+  )
+
+#   term          .y.   group1  group2       df statistic      p p.adj p.adj.signif
+#1 Depth*Habitat rich  Invaded Treated      21    -0.496 0.625  1     ns          
+#2 Depth*Habitat rich  Invaded Uninvaded    21    -2.04  0.0536 0.161 ns          
+#3 Depth*Habitat rich  Treated Uninvaded    21    -1.80  0.0867 0.260 ns 
+
+get_emmeans(pwc.rich)
+
+#   Depth Habitat   emmean    se    df conf.low conf.high method     
+#1  31.7 Invaded     14.8  1.25    21     12.2      17.4 Emmeans test
+#2  31.7 Treated     15.7  1.10    21     13.4      18.0 Emmeans test
+#3  31.7 Uninvaded   18.7  1.26    21     16.1      21.3 Emmeans test
+
+## Shannon Weiner
+
+shannon.lm <- lm(H ~ Habitat * Depth, data = benthic.uni)
+summary(shannon.lm)
+anova(shannon.lm)
+
+#Analysis of Variance Table
+
+#Response: H
+#               Df  Sum Sq Mean Sq F value   Pr(>F)   
+#Habitat        2 0.98712 0.49356  6.0367 0.009342 **
+#Depth          1 0.00074 0.00074  0.0091 0.924956   
+#Habitat:Depth  2 0.16442 0.08221  1.0055 0.384504   
+#Residuals     19 1.55343 0.08176  
+
+shannon <- HSD.test(shannon.lm, "Habitat", group = TRUE)
+plot(shannon)
+
+# H groups
+#Uninvaded 1.909067      a
+#Treated   1.766169     ab
+#Invaded   1.426528      b
+
+
+# Residuals
+plot(shannon.lm)
+
+
+
+
+# Simpsons
+
+simp.lm <- lm(D1 ~ Habitat * Depth, data = benthic.uni)
+summary(simp.lm)
+anova(simp.lm)
+
+#Analysis of Variance Table
+
+#Response: D1
+#              Df   Sum Sq  Mean Sq F value   Pr(>F)   
+#Habitat        2 0.143844 0.071922  6.2542 0.008187 **
+#Depth          1 0.000028 0.000028  0.0024 0.961364   
+#Habitat:Depth  2 0.009890 0.004945  0.4300 0.656688   
+#Residuals     19 0.218496 0.011500  
+
+simp <- HSD.test(simp.lm, "Habitat", group = TRUE)
+plot(simp)
+
+# D1 groups
+#Uninvaded 0.7799573      a
+#Treated   0.7555122      a
+#Invaded   0.6058429      b
+
+# Residuals
+plot(simp.lm)
+
+# Pielous J
+
+pie.lm <- lm(J ~ Habitat * Depth, data = benthic.uni)
+summary(pie.lm)
+anova(pie.lm)
+
+#Analysis of Variance Table
+
+#Response: J
+#              Df   Sum Sq  Mean Sq F value  Pr(>F)  
+#Habitat        2 0.086615 0.043308  3.3800 0.05549 .
+#Depth          1 0.000067 0.000067  0.0052 0.94331  
+#Habitat:Depth  2 0.017942 0.008971  0.7002 0.50887  
+#Residuals     19 0.243448 0.012813 
+
+plot(pie.lm)
+
+
+pie.lm.t <- lm(sqJ ~ Habitat * Depth, data = benthic.uni)
+summary(pie.lm.t)
+anova(pie.lm.t)
+
+plot(pie.lm.t)
 
 
 # Univariate Figures ------------------------------------------------------
 
-ggplot(data = benthic.uni, 
-       aes(y = abundance, x = Habitat)) +
-  geom_point()
+# ANCOVA plots ------------------------------------------------------------
 
-ggplot(data = benthic.uni, 
-       aes(y = rich, x = Habitat)) +
-  geom_point()
+rich <- ggplot(benthic.uni, aes(x = Depth, y = rich, 
+                      group = Habitat,
+                      colour = Habitat,
+                      shape = Habitat)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
+  theme_classic() +
+  labs(x = "Water Depth (cm) ",
+       y = "Taxonomic Richness") +
+  scale_colour_viridis(discrete = TRUE) +
+  theme(panel.border = element_rect(fill = NA)) +
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) 
+  #theme(legend.position = "blank")
 
+
+div <- ggplot(benthic.uni, aes(x = Depth, y = H, 
+                        group = Habitat,
+                        colour = Habitat,
+                        shape = Habitat)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
+  theme_classic() +
+  labs(x = "Water Depth (cm) ",
+       y = "Shannon-Weiner (H')") +
+  scale_colour_viridis(discrete = TRUE) +
+  theme(panel.border = element_rect(fill = NA)) +
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0,3)
+
+
+
+domin <- ggplot(benthic.uni, aes(x = Depth, y = D1, 
+                        group = Habitat,
+                        colour = Habitat,
+                        shape = Habitat)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
+  theme_classic() +
+  labs(x = "Water Depth (cm) ",
+       y = "Simpson's Diversity (1 - D)") +
+  scale_colour_viridis(discrete = TRUE) +
+  theme(panel.border = element_rect(fill = NA)) +
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0, 1)
+
+
+even <- ggplot(benthic.uni, aes(x = Depth, y = J, 
+                        group = Habitat,
+                        colour = Habitat,
+                        shape = Habitat)) +
+  geom_point(size = 4) +
+  geom_smooth(method = lm,
+              stat = "smooth",
+              level = 0.95) +
+  theme_classic() +
+  labs(x = "Water Depth (cm) ",
+       y = "Pielou's Evenness (J)") +
+  scale_colour_viridis(discrete = TRUE) +
+  theme(panel.border = element_rect(fill = NA)) +
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  ylim(0, 1)
+
+
+uni.panel <- ggarrange(rich, div,
+          domin, even,
+          common.legend = TRUE,
+          legend = "right",
+          labels = "AUTO")
+
+ggsave("Figures/aquatic_invert_ANCOVApanels.jpeg", uni.panel)
+
+# ANOVA plots -------------------------------------------------------------
 
 # Density plots 
 
@@ -181,7 +376,8 @@ abundance <- ggplot(data = benthic.uni,
              size = 1,
              show.legend = FALSE) +
   scale_fill_viridis(discrete = TRUE) +
-  scale_colour_viridis(discrete = TRUE)
+  scale_colour_viridis(discrete = TRUE) +
+  xlim(0, 11000)
 
 
 richness <- ggplot(data = benthic.uni, 
@@ -189,7 +385,7 @@ richness <- ggplot(data = benthic.uni,
   geom_density(adjust = 1.5, alpha = 0.6) +
   xlim(0, 42) +
   theme_classic() +
-  xlab("Species Richness") +
+  xlab("Taxa Richness") +
   ylab("Density") +
   theme(legend.position = c(0.8, 0.8)) +
   geom_vline(aes(xintercept = mean.s, colour = Habitat),
@@ -198,122 +394,9 @@ richness <- ggplot(data = benthic.uni,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE)
 
-
+ggsave("Figures/aquatic_invert_richness_density.jpeg", richness)
 
 ggarrange(abundance, richness,
           labels = "AUTO",
           hjust = c(-5.5),
           vjust = 2)
-
-# Violin Plots
-
-(violin.s <- ggplot(data = benthic.uni, 
-                    aes(x = Habitat, y = rich, group = Habitat, colour = Habitat)) +
-    geom_violin(trim = FALSE, lwd = 1) +
-    geom_point(size = 3) +
-    theme_classic(base_size = 14) +
-    xlab(" ") +
-    ylab("Species Richness") +
-    theme(legend.position = "none",
-          axis.text = element_text(size = 14)) +
-    ylim(0, 30) +
-    scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
-    stat_summary(     
-      aes(shape = Habitat),
-      colour = "black",
-      fun.data = "mean_se", fun.args = list(mult = 1), 
-      geom = "pointrange", size = 1,
-      position = position_dodge(0.8)) +
-    theme(panel.border = element_rect(fill = NA)))
-
-
-
-(violin.ab <- ggplot(data = benthic.uni, 
-                     aes(x = Habitat, y = abundance, group = Habitat, colour = Habitat)) +
-    geom_violin(trim = FALSE, lwd = 1) +
-    geom_point(size = 3) +
-    theme_classic(base_size = 14) +
-    xlab(" ") +
-    ylab("Abundance") +
-    theme(legend.position = "none",
-          axis.text = element_text(size = 14)) +
-    scale_colour_manual(values = c("#969696","#35978f", "#2166ac")) +
-    annotate("text", x = 1:3, y = c(4600, 12000, 4600),
-             label = c("a", "b", "a"),
-             size = 4.5) +
-    stat_summary(     
-      aes(shape = Habitat),
-      colour = "black",
-      fun.data = "mean_se", fun.args = list(mult = 1), 
-      geom = "pointrange", size = 1,
-      position = position_dodge(0.8)) +
-    theme(panel.border = element_rect(fill = NA)))
-
-(violin.benthic <- ggarrange(violin.ab, violin.s,
-                             labels = "AUTO",
-                             hjust = c(-8, -5.5),
-                             vjust = 2))
-
-ggsave("Figures/benthic_violin.jpeg", violin.benthic,
-       dpi = 300,
-       height = 6.1,
-       width = 11.9,
-       units = "in")
-
-# Ridge Plots
-
-library(ggridges)
-
-ggplot(benthic.uni, aes(x = abundance, y = Habitat, fill = Habitat)) +
-  geom_density_ridges() +
-  theme_ridges() + 
-  theme(legend.position = "none") +
-  scale_fill_viridis(discrete = TRUE)
-
-
-ggplot(benthic.uni, aes(x = rich, y = Habitat, fill = Habitat)) +
-  geom_density_ridges() +
-  theme_ridges() + 
-  theme(legend.position = "none") +
-  scale_fill_viridis(discrete = TRUE)
-
-
-
-### Additional Diversity Indices ####
-
-(H.vio <- ggplot(data = benthic.uni, 
-                 aes(x = Habitat, y = H, group = Habitat, fill = Habitat)) +
-   geom_violin(trim = FALSE) +
-   theme_classic(base_size = 14) +
-   xlab(" ") +
-   ylab("Shannon Weiner (H)") +
-   theme(legend.position = "none",
-         axis.text = element_text(size = 14)) +
-   scale_fill_viridis(discrete = TRUE))
-
-(D.vio <- ggplot(data = benthic.uni, 
-                 aes(x = Habitat, y = D1, group = Habitat, fill = Habitat)) +
-    geom_violin(trim = FALSE) +
-    theme_classic(base_size = 14) +
-    xlab(" ") +
-    ylab("Simpson's Diversity") +
-    theme(legend.position = "none",
-          axis.text = element_text(size = 14)) +
-    scale_fill_viridis(discrete = TRUE))
-
-(J.vio <- ggplot(data = benthic.uni, 
-                 aes(x = Habitat, y = J, group = Habitat, fill = Habitat)) +
-    geom_violin(trim = FALSE) +
-    theme_classic(base_size = 14) +
-    xlab(" ") +
-    ylab("Pielou's J") +
-    theme(legend.position = "none",
-          axis.text = element_text(size = 14)) +
-    scale_fill_viridis(discrete = TRUE))
-
-
-ggarrange(H.vio, D.vio, J.vio,
-          nrow = 3,
-          labels = "AUTO",
-          hjust = -6)
-
