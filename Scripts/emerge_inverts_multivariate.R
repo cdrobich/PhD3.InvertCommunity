@@ -17,7 +17,7 @@ library(EcolUtils)
 
 # Load data ---------------------------------------------------------------
 
-invert <- read.csv("Data/emerging_invertebrates.csv")
+invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
 
 invert$Year <- as.factor(invert$Year)
 invert <- invert %>% unite("TrtYr", Treatment,Year, remove = FALSE)
@@ -31,7 +31,7 @@ invert.env <- invert %>% select(Site:N)
 # Multivariate Analyses ---------------------------------------------------
 
 invert.rel <- decostand(invert.data, "max", 2, na.rm = NULL) # relativize by column max
-write.csv(invert.rel, "Data/emerging_invert_relativized.csv")
+write.csv(invert.rel, "Data/Emerging/emerging_invert_relativized.csv")
 
 ##### perMANVOA ####
 
@@ -169,7 +169,7 @@ invert.env$NMDS3 <- scr$NMDS3
 
 scores <- invert.env %>% select(Site:Habitat,NMDS1:NMDS3)
 
-write.csv(scores,"Data/NMDS_emerging_inverts_NMDSscores.csv") # save this as a csv
+write.csv(scores,"Data/Emerging/NMDS/NMDS_emerging_inverts_NMDSscores.csv") # save this as a csv
 
 ### Vectors correlated with Axis 1 & 2 
 
@@ -180,7 +180,7 @@ all.taxa.df <- data.frame((alltaxa12$vectors)$arrows,
                           (alltaxa12$vectors)$r,
                           (alltaxa12$vectors)$pvals) #take list and make into data frame
 
-write.csv(all.taxa.df, "Data/NMDS_emerg_vectors_axis12.csv") # save vector scores as csv
+write.csv(all.taxa.df, "Data/Emerging/NMDS/NMDS_emerg_vectors_axis12.csv") # save vector scores as csv
 
 
 #### Vectors correlated with axis 1 & 3 
@@ -193,14 +193,14 @@ all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows,
                             (alltaxa.13$vectors)$r,
                             (alltaxa.13$vectors)$pvals)
 
-write.csv(all.taxa13.df, "Data/NMDS_emerging_vectors_axis13.csv")
+write.csv(all.taxa13.df, "Data/Emerging/NMDS/NMDS_emerging_vectors_axis13.csv")
 
 
 
 ## Picking the vectors we want for the figure based on fit (r > 0.2)
 
-nmds.axis12 <- read.csv("Data/NMDS_emerg_vectors_axis12.csv")
-nmds.axis13 <- read.csv("Data/NMDS_emerging_vectors_axis13.csv")
+nmds.axis12 <- read.csv("Data/Emerging/NMDS/NMDS_emerg_vectors_axis12.csv")
+nmds.axis13 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_vectors_axis13.csv")
 
 colnames(nmds.axis13)
 
@@ -227,7 +227,7 @@ axis13.vectors <- invert.rel %>% select(all_of(target13)) # make a matrix of jus
 corr.vectors.12 <- as.data.frame(nmds.vectors.12$vectors$arrows*sqrt(nmds.vectors.12$vectors$r)) #scaling vectors
 corr.vectors.12$species <- rownames(corr.vectors.12) # add Family as a column
 
-write.csv(corr.vectors.12, "Data/NMDS_emerging_correlatedvectors_axis12.csv")
+write.csv(corr.vectors.12, "Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12.csv")
 
 # axis 1, 3
 (nmds.vectors.13 <- envfit(nms.invert$points, axis13.vectors,
@@ -237,7 +237,7 @@ write.csv(corr.vectors.12, "Data/NMDS_emerging_correlatedvectors_axis12.csv")
 corr.vectors.13 <- as.data.frame(nmds.vectors.13$vectors$arrows*sqrt(nmds.vectors.13$vectors$r)) #scaling vectors
 corr.vectors.13$species <- rownames(corr.vectors.13) # add Family as a column
 
-write.csv(corr.vectors.13, "Data/NMDS_emerging_correlatedvectors_axis13.csv")
+write.csv(corr.vectors.13, "Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13.csv")
 
 ## plotting with base R ##
 # I don't like base R but it has some nice things built in for ordinations
@@ -271,13 +271,13 @@ plot(alltaxa13, p.max = 0.013, col = "black")
 
 # load the data so you don't have to redo it every time
 
-nmds.scores <- read.csv("Data/NMDS_emerging_inverts_NMDSscores.csv") #points
+nmds.scores <- read.csv("Data/Emerging/NMDS/NMDS_emerging_inverts_NMDSscores.csv") #points
 nmds.scores$Year <- as.factor(nmds.scores$Year)
 
 
 #vectors r > 0.2
-vectors.12 <- read.csv("Data/NMDS_emerging_correlatedvectors_axis12.csv") 
-vectors.13 <- read.csv("Data/NMDS_emerging_correlatedvectors_axis13.csv")
+vectors.12 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12.csv") 
+vectors.13 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13.csv")
 
 ## NMDS Axis 1, 2 
 
