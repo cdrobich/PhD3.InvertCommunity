@@ -14,7 +14,7 @@ library(car)
 library(lme4) # GLMM
 library(MuMIn)
 library(AICcmodavg)
-
+library(viridis)
 # Data Import -------------------------------------------------------------
 
 invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
@@ -306,17 +306,20 @@ anova(rich.glmm, rich.null)
 # Univariate Figures ------------------------------------------------------
 
 rich <- ggplot(invert, aes(x = Depth, y = rich, 
-                                group = Treatment,
-                                colour = Treatment,
-                                shape = Treatment)) +
-  geom_point(size = 4) +
+                                group = Treatment)) +
+  geom_point(data = invert,
+             aes(fill = Treatment, shape = Treatment),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
-  theme_classic() +
+              level = 0.95,
+              colour = "black") +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Taxonomic Richness") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
   ylim(0, 50)
@@ -325,55 +328,62 @@ rich <- ggplot(invert, aes(x = Depth, y = rich,
 
 
 shannon <- ggplot(invert, aes(x = Depth, y = H, 
-                   group = Treatment,
-                   colour = Treatment,
-                   shape = Treatment)) +
-  geom_point(size = 4) +
+                              group = Treatment)) +
+  geom_point(data = invert,
+             aes(fill = Treatment, shape = Treatment),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
-  theme_classic() +
+              level = 0.95,
+              colour = "black") +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Shannon-Weiner (H')") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
   ylim(0, 3)
 
 
 
-
 simpson <- ggplot(invert, aes(x = Depth, y = D1, 
-                   group = Treatment,
-                   colour = Treatment,
-                   shape = Treatment)) +
-  geom_point(size = 4) +
+                              group = Treatment)) +
+  geom_point(data = invert,
+             aes(fill = Treatment, shape = Treatment),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
-  theme_classic() +
+              level = 0.95,
+              colour = "black") +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
-       y = "Simpsons Diversity (1-D)") +
-  scale_colour_viridis(discrete = TRUE) +
+       y = "Simpson's Diversity (1-D)") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0,1)
-
+  ylim(0, 1)
 
 
 
 pielou <- ggplot(invert, aes(x = Depth, y = J, 
-                   group = Treatment,
-                   colour = Treatment,
-                   shape = Treatment)) +
-  geom_point(size = 4) +
+                             group = Treatment)) +
+  geom_point(data = invert,
+             aes(fill = Treatment, shape = Treatment),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
-  theme_classic() +
+              level = 0.95,
+              colour = "black") +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Pielou's Evenness (J)") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
   ylim(0, 1)

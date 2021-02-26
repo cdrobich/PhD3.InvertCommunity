@@ -283,74 +283,85 @@ plot(pie.lm.t)
 # Univariate Figures ------------------------------------------------------
 
 # ANCOVA plots ------------------------------------------------------------
+unique(benthic.uni$Habitat)
 
 rich <- ggplot(benthic.uni, aes(x = Depth, y = rich, 
-                      group = Habitat,
-                      colour = Habitat,
-                      shape = Habitat)) +
-  geom_point(size = 4) +
+                           group = Habitat)) +
+  geom_point(data = benthic.uni,
+             aes(fill = Habitat, shape = Habitat),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
+              level = 0.95,
+              colour = "black") +
   theme_classic() +
   labs(x = "Water Depth (cm) ",
        y = "Taxonomic Richness") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) 
   #theme(legend.position = "blank")
 
 
 div <- ggplot(benthic.uni, aes(x = Depth, y = H, 
-                        group = Habitat,
-                        colour = Habitat,
-                        shape = Habitat)) +
-  geom_point(size = 4) +
+                               group = Habitat)) +
+  geom_point(data = benthic.uni,
+             aes(fill = Habitat, shape = Habitat),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
+              level = 0.95,
+              colour = "black") +
   theme_classic() +
   labs(x = "Water Depth (cm) ",
        y = "Shannon-Weiner (H')") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0,3)
-
-
+  ylim(0, 3)
 
 domin <- ggplot(benthic.uni, aes(x = Depth, y = D1, 
-                        group = Habitat,
-                        colour = Habitat,
-                        shape = Habitat)) +
-  geom_point(size = 4) +
+                                 group = Habitat)) +
+  geom_point(data = benthic.uni,
+             aes(fill = Habitat, shape = Habitat),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
+              level = 0.95,
+              colour = "black") +
   theme_classic() +
   labs(x = "Water Depth (cm) ",
-       y = "Simpson's Diversity (1 - D)") +
-  scale_colour_viridis(discrete = TRUE) +
+       y = "Simpson's Diversity (1-D)") +
+  scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0, 1)
+  ylim(0,1)
 
 
 even <- ggplot(benthic.uni, aes(x = Depth, y = J, 
-                        group = Habitat,
-                        colour = Habitat,
-                        shape = Habitat)) +
-  geom_point(size = 4) +
+                                group = Habitat)) +
+  geom_point(data = benthic.uni,
+             aes(fill = Habitat, shape = Habitat),
+             size = 5,
+             stroke = 1.5) +
   geom_smooth(method = lm,
               stat = "smooth",
-              level = 0.95) +
+              level = 0.95,
+              colour = "black") +
   theme_classic() +
   labs(x = "Water Depth (cm) ",
        y = "Pielou's Evenness (J)") +
-  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
+  scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0, 1)
+  ylim(0,1)
 
 
 uni.panel <- ggarrange(rich, div,
