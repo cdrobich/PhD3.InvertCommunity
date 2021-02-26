@@ -271,11 +271,12 @@ benthic.12 <- ggplot(data = benth.scores,
   geom_point(data = benth.scores, 
              aes(x = NMDS1, 
                  y = NMDS2, 
-                 colour = Habitat, 
-                 shape = Habitat),
-             size = 4) + # sites as points
+                 fill = Habitat, 
+                 shape = Habitat,
+                 stroke = 1.5),
+             size = 5) + # sites as points
   stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
-                                  linetype = Habitat, colour = Habitat), 
+                                        colour = Habitat), 
                size = 1, level = 0.90) + # a 95% CI ellipses
   geom_segment(data = vector.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
@@ -283,13 +284,14 @@ benthic.12 <- ggplot(data = benth.scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  theme(legend.position = "none") +
+  theme(legend.position = "right") +
   geom_text_repel(data = vector.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
-                  size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) 
+                  size = 6) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) 
 
 
 benthic.12
@@ -300,9 +302,11 @@ benthic.13 <- ggplot(data = benth.scores,
                     aes(x = NMDS1, y = NMDS3)) +
   geom_point(data = benth.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Habitat, shape = Habitat), size = 4) +
+                 fill = Habitat, shape = Habitat), 
+             size = 5,
+             stroke = 1.5) +
   stat_ellipse(data = benth.scores, 
-               aes(x = NMDS1,y = NMDS3,linetype = Habitat, 
+               aes(x = NMDS1,y = NMDS3,
                    colour = Habitat), size = 1, level = 0.9) +
   geom_segment(data = vector.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
@@ -315,9 +319,10 @@ benthic.13 <- ggplot(data = benth.scores,
   geom_text_repel(data = vector.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
-                  size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(17, 18, 15)) 
+                  size = 6) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) 
 
 benthic.13
 
