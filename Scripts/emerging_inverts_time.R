@@ -547,8 +547,6 @@ write.csv(invert.col.3, "Data/Emerging/NMDS/Col.3/inverts_collection3.csv")
 
 invert.col3.rares <- read.csv("Data/Emerging/NMDS/Col.3/inverts_collection3_zeros.csv")
 
-
-
 # just taxa and env 
 colnames(invert.col3.rares)
 taxa.col3 <- invert.col3.rares %>% select(Araneae:Crambidae)
@@ -559,6 +557,206 @@ env.col3 <- invert.col3.rares %>% select(ID:YrCol)
 taxa.col1re3 <- decostand(taxa.col3, "max", 2, na.rm = NULL)
 
 write.csv(taxa.col1re3, "Data/Emerging/NMDS/Col.3/inverts_col3_raresrel.csv")
+
+# NMDS collection 3
+
+data.col3 <- read.csv("Data/Emerging/NMDS/Col.3/inverts_col3_raresrel.csv")
+
+k_vec <- 1:10 #dimensions 1 - 10
+stress <- numeric(length(k_vec)) # stress of each model put here
+dune_dij <- metaMDSdist(data.col3)
+
+set.seed(25)
+
+for(i in seq_along(k_vec)) {
+  sol <- metaMDSiter(dune_dij, k = i, 
+                     trace = FALSE)
+  stress[i] <- sol$stress
+}
+plot(stress) # 3D
+
+
+# Actual NMDS
+
+set.seed(120) 
+
+nms.col3 <- metaMDS(data.col3, distance = "bray", # species data, bray-curtis dissimilarity
+                    autotransform = FALSE,  # NMDS will do autotransformations for you
+                    k = 3, trymax = 1000)   # k = number of axes
+nms.col3
+
+#Dimensions: 3 
+#Stress:     0.03830475 
+#Stress type 1, weak ties
+#Two convergent solutions found after 33 tries
+#Scaling: centring, PC rotation, halfchange scaling 
+#Species: expanded scores based on ‘data.col3’ 
+
+nms.col3$iters #200
+
+nms.col3$stress^2   #0.001467254
+1-nms.col3$stress^2 #0.9985327
+
+scr3 <- as.data.frame(scores(nms.col3, display = "sites")) # extract NMDS scores
+colnames(scr3)
+
+env.col3$NMDS1 <- scr3$NMDS1
+env.col3$NMDS2 <- scr3$NMDS2
+env.col3$NMDS3 <- scr3$NMDS3
+
+write.csv(env.col3,"Data/Emerging/NMDS/Col.3/emerging_col3_NMDSscores.csv") # save this as a csv
+
+# Vector Taxa
+
+# Axis 1 and 2
+taxa.col3.axis12 <- envfit(nms.col3, taxa.col3,
+                           choices = c(1,2))
+
+taxa.col3.axis12df <- data.frame((taxa.col3.axis12$vectors)$arrows,
+                                 (taxa.col3.axis12$vectors)$r,
+                                 (taxa.col3.axis12$vectors)$pvals)
+
+taxa.col3.axis12df <- tibble::rownames_to_column(taxa.col3.axis12df, "Taxa")
+
+write.csv(taxa.col3.axis12df, "Data/Emerging/NMDS/Col.3/col3_allvectors_axis12.csv") # save vecto
+
+
+# Axis 1 and 3
+
+
+taxa.col3.axis13 <- envfit(nms.col3, taxa.col3,
+                           choices = c(1,3))
+
+taxa.col3.axis13df <- data.frame((taxa.col3.axis13$vectors)$arrows,
+                                 (taxa.col3.axis13$vectors)$r,
+                                 (taxa.col3.axis13$vectors)$pvals)
+
+taxa.col3.axis13df <- tibble::rownames_to_column(taxa.col3.axis13df, "Taxa")
+
+write.csv(taxa.col3.axis13df, "Data/Emerging/NMDS/Col.3/col3_allvectors_axis13.csv") # save vector scores as csv
+
+# Correlated taxa
+
+# Axis 1 and 2
+colnames(taxa.col3.axis12df)
+
+corrspp.col3.axis12 <- taxa.col3.axis12df %>% filter(X.taxa.col3.axis12.vectors..r > 0.2)
+target12.c3 <- corrspp.col3.axis12$Taxa # string of the Family names
+
+
+axis12.vectors.c3 <- taxa.col3 %>% select(all_of(target12.c3)) # make a matrix of just those
+
+(nmds.c3.vectors.12 <- envfit(nms.col3$points, axis12.vectors.c3,
+                              permutations = 999, choices = c(1,2)))                        
+
+
+corr.c3.vectors.12 <- as.data.frame(nmds.c3.vectors.12$vectors$arrows*sqrt(nmds.c3.vectors.12$vectors$r)) #scaling vectors
+corr.c3.vectors.12$Taxa <- rownames(corr.c3.vectors.12)
+
+write.csv(corr.c3.vectors.12, "Data/Emerging/NMDS/Col.3/emerging_correlated_vector12.csv")
+
+# Axis 1 and 3
+
+colnames(taxa.col3.axis13df)
+
+corrspp.col3.axis13 <- taxa.col3.axis13df %>% filter(X.taxa.col3.axis13.vectors..r > 0.2)
+target13.c3 <- corrspp.col3.axis13$Taxa # string of the Family names
+
+
+axis13.vectors.c3 <- taxa.col3 %>% select(all_of(target13.c3)) # make a matrix of just those
+
+(nmds.c3.vectors.13 <- envfit(nms.col3$points, axis13.vectors.c3,
+                              permutations = 999, choices = c(1,3)))                        
+
+
+corr.c3.vectors.13 <- as.data.frame(nmds.c3.vectors.13$vectors$arrows*sqrt(nmds.c3.vectors.13$vectors$r)) #scaling vectors
+corr.c3.vectors.13$Taxa <- rownames(corr.c3.vectors.13)
+
+write.csv(corr.c3.vectors.13, "Data/Emerging/NMDS/Col.3/emerging_correlated_vector13.csv")
+
+## Figure 
+nmds.col3.scores <- read.csv("Data/Emerging/NMDS/Col.3/emerging_col3_NMDSscores.csv")
+nmds.col3.scores$Year <- as.factor(nmds.col3.scores$Year)
+
+col3.axis12 <- read.csv("Data/Emerging/NMDS/Col.3/emerging_correlated_vector12.csv")
+col3.axis13 <- read.csv("Data/Emerging/NMDS/Col.3/emerging_correlated_vector13.csv")
+
+
+
+invert.12.c3 <- ggplot(data = nmds.col3.scores,
+                       aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = nmds.col3.scores, 
+             aes(x = NMDS1, y = NMDS2, 
+                 colour = Treatment, shape = Year),
+             size = 4, stroke = 1.5) + # sites as points
+  stat_ellipse(data = nmds.col3.scores, 
+               aes(x = NMDS1,y = NMDS2,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = col3.axis12, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_text_repel(data = col3.axis12, 
+                  aes(x = MDS1, y = MDS2, label = Taxa),
+                  color="black",
+                  size = 5) +
+  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+
+invert.12.c3
+
+
+
+invert.13.c3 <- ggplot(data = nmds.col3.scores,
+                       aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = nmds.col3.scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 colour = Treatment, shape = Year),
+             size = 4, stroke = 1.5) + # sites as points
+  stat_ellipse(data = nmds.col3.scores, 
+               aes(x = NMDS1,y = NMDS3,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = col3.axis13, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_text_repel(data = col3.axis13, 
+                  aes(x = MDS1, y = MDS3, label = Taxa),
+                  color="black",
+                  size = 5) +
+  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
+  scale_shape_manual(values = c(17, 16, 1, 17, 2, 18, 5)) 
+
+invert.13.c3
+
+
+(NMS.emerging.panel.c3 <- ggarrange(invert.12.c3, invert.13.c3,
+                                    common.legend = TRUE,
+                                    legend = "bottom",
+                                    labels = c("C", ""),
+                                    align = "hv"))
+
+NMDS.col3 <- annotate_figure(NMS.emerging.panel.c3,
+                             top = text_grob("Collection 08-Jul-17 and 04-JUL-18"))
+
+
+ggsave("Figures/NMDS_emerging_08Jul17_04Jul18.jpeg", NMDS.col3)
+
+
 
 # NMDS Collection 21-Jul-17 and 23-Jul-18 -----------------------------------
 
