@@ -226,7 +226,9 @@ invert.12.c1 <- ggplot(data = col1.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.12.c1
 
@@ -260,14 +262,16 @@ invert.13.c1 <- ggplot(data = col1.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.13.c1
 
 (NMS.emerging.panel.c1 <- ggarrange(invert.12.c1, invert.13.c1,
                                  common.legend = TRUE,
                                  legend = "none",
-                                 labels = c("A", ""),
+                                 labels = c("C", ""),
                                  align = "hv"))
 
 NMDS.col1 <- annotate_figure(NMS.emerging.panel.c1,
@@ -464,7 +468,9 @@ invert.12.c2 <- ggplot(data = nmds.col2.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.12.c2
 
@@ -497,7 +503,9 @@ invert.13.c2 <- ggplot(data = nmds.col2.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.13.c2
 
@@ -505,11 +513,11 @@ invert.13.c2
 (NMS.emerging.panel.c2 <- ggarrange(invert.12.c2, invert.13.c2,
                                     common.legend = TRUE,
                                     legend = "none",
-                                    labels = c("B", ""),
+                                    labels = c("D", ""),
                                     align = "hv"))
 
-NMDS.col2 <- annotate_figure(NMS.emerging.panel.c2,
-                top = text_grob("Collection 28-Jun-17 and 25-JUN-18"))
+(NMDS.col2 <- annotate_figure(NMS.emerging.panel.c2,
+                top = text_grob("Collection 28-Jun-17 and 25-JUN-18")))
 
 
 ggsave("Figures/NMDS_emerging_28Jun17_15Jun18.jpeg", NMDS.col2)
@@ -690,7 +698,9 @@ invert.12.c3 <- ggplot(data = nmds.col3.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.12.c3
 
@@ -724,7 +734,9 @@ invert.13.c3 <- ggplot(data = nmds.col3.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 
 invert.13.c3
@@ -733,7 +745,7 @@ invert.13.c3
 (NMS.emerging.panel.c3 <- ggarrange(invert.12.c3, invert.13.c3,
                                     common.legend = TRUE,
                                     legend = "none",
-                                    labels = c("C", ""),
+                                    labels = c("E", ""),
                                     align = "hv"))
 
 NMDS.col3 <- annotate_figure(NMS.emerging.panel.c3,
@@ -915,7 +927,9 @@ invert.12.c4 <- ggplot(data = nmds.col4.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.12.c4
 
@@ -948,14 +962,16 @@ invert.13.c4 <- ggplot(data = nmds.col4.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8)
 
 invert.13.c4
 
 
 
 (NMS.emerging.panel.c4 <- ggarrange(invert.12.c4, invert.13.c4,
-                                    labels = c("D", ""),
+                                    labels = c("E", ""),
                                     align = "hv"))
 
 NMDS.col4 <- annotate_figure(NMS.emerging.panel.c4,
@@ -965,11 +981,218 @@ NMDS.col4 <- annotate_figure(NMS.emerging.panel.c4,
 ggsave("Figures/NMDS_emerging_21Jul17_23Jul18.jpeg", NMDS.col3)
 
 
-NMDS.panel <- ggarrange(NMDS.col1, NMDS.col2,
-          NMDS.col3, NMDS.col4)
+
+# May 20 2018 -------------------------------------------------------------
+
+invert.May <- inverts.date %>% filter(Date == "20-May-18")
+
+write.csv(invert.May, "Data/Emerging/NMDS/inverts_20-May-18.csv")
+
+
+
+may.data <- read.csv("Data/Emerging/NMDS/may_zeros_rares.csv")
+colnames(may.data)
+
+taxa.may <- may.data %>% select(Araneae:Limnephilida)
+env.may <- may.data %>% select(Sites:YrCol)
+
+
+
+
+k_vec <- 1:10 #dimensions 1 - 10
+stress <- numeric(length(k_vec)) # stress of each model put here
+dune_dij <- metaMDSdist(taxa.may)
+
+set.seed(25)
+
+for(i in seq_along(k_vec)) {
+  sol <- metaMDSiter(dune_dij, k = i, 
+                     trace = FALSE)
+  stress[i] <- sol$stress
+}
+plot(stress) # Going with two based on PCORD
+
+
+
+set.seed(120) 
+
+nms.may <- metaMDS(taxa.may, distance = "bray", # species data, bray-curtis dissimilarity
+                    autotransform = FALSE,  # NMDS will do autotransformations for you
+                    k = 2, trymax = 1000)   # k = number of axes
+nms.may
+
+#Data:     taxa.may 
+#Distance: bray 
+
+#Dimensions: 2 
+#Stress:     0.2425735 
+#Stress type 1, weak ties
+#Two convergent solutions found after 20 tries
+#Scaling: centring, PC rotation, halfchange scaling 
+#Species: expanded scores based on ‘taxa.may’
+
+layout(matrix(1:2, ncol = 2))
+plot(nms.may, main = "Invertebrate NMDS plot"); stressplot(nms.may, main = "Shepard plot")
+layout(1)
+
+ordiplot(nms.may, type = "n")
+orditorp(nms.may, display = "species")
+orditorp(nms.may, display = "sites")
+
+
+nms.may$iters #82
+
+nms.may$stress^2   # 0.0588419
+1-nms.may$stress^2 # 0.9411581
+
+scr.may <- as.data.frame(scores(nms.may, display = "sites")) # extract NMDS scores
+colnames(scr.may)
+
+env.may$NMDS1 <- scr.may$NMDS1
+env.may$NMDS2 <- scr.may$NMDS2
+env.may$NMDS3 <- scr.may$NMDS3
+
+
+write.csv(env.may,"Data/Emerging/NMDS/emerging_May18_NMDSscores.csv") # save this as a csv
+
+
+
+## Taxa for vectors
+
+# Axis 1 and 2
+taxa.may.axis12 <- envfit(nms.may, taxa.may,
+                           choices = c(1,2))
+
+taxa.may.axis12df <- data.frame((taxa.may.axis12$vectors)$arrows,
+                                 (taxa.may.axis12$vectors)$r,
+                                 (taxa.may.axis12$vectors)$pvals)
+
+taxa.may.axis12df <- tibble::rownames_to_column(taxa.may.axis12df, "Taxa")
+
+write.csv(taxa.may.axis12df, "Data/Emerging/NMDS/may_allvectors_axis12.csv") # save vector scores as csv
+
+# Axis 1 and 3
+
+taxa.may.axis13 <- envfit(nms.may, taxa.may,
+                           choices = c(1,3))
+
+taxa.may.axis13df <- data.frame((taxa.may.axis13$vectors)$arrows,
+                                 (taxa.may.axis13$vectors)$r,
+                                 (taxa.may.axis13$vectors)$pvals)
+
+taxa.may.axis13df <- tibble::rownames_to_column(taxa.may.axis13df, "Taxa")
+
+write.csv(taxa.may.axis13df, "Data/Emerging/NMDS/may_allvectors_axis13.csv") # save vector scores as csv
+
+
+# Correlated taxa
+
+# Axis 1 and 2
+
+colnames(taxa.may.axis12df)
+
+corrspp.may.axis12 <- taxa.may.axis12df %>% filter(X.taxa.may.axis12.vectors..r > 0.2)
+target12.may <- corrspp.may.axis12$Taxa # string of the Family names
+
+
+axis12.vectors.may <- taxa.may %>% select(all_of(target12.may)) # make a matrix of just those
+
+(nmds.may.vectors.12 <- envfit(nms.may$points, axis12.vectors.may,
+                              permutations = 999, choices = c(1,2)))                        
+
+
+corr.may.vectors.12 <- as.data.frame(nmds.may.vectors.12$vectors$arrows*sqrt(nmds.may.vectors.12$vectors$r)) #scaling vectors
+corr.may.vectors.12$Taxa <- rownames(corr.may.vectors.12)
+
+
+write.csv(corr.may.vectors.12, "Data/Emerging/NMDS/May_emerging_correlated_vector12.csv")
+
+## Axis 1 and 3
+
+colnames(taxa.may.axis13df)
+
+corrspp.may.axis13 <- taxa.may.axis13df %>% filter(X.taxa.may.axis13.vectors..r > 0.2)
+target13.may <- corrspp.may.axis13$Taxa # string of the Family names
+
+
+axis13.vectors.may <- taxa.may %>% select(all_of(target13.may)) # make a matrix of just those
+
+(nmds.may.vectors.13 <- envfit(nms.may$points, axis13.vectors.may,
+                              permutations = 999, choices = c(1,3)))                        
+
+
+corr.may.vectors.13 <- as.data.frame(nmds.may.vectors.13$vectors$arrows*sqrt(nmds.may.vectors.13$vectors$r)) #scaling vectors
+corr.may.vectors.13$Taxa <- rownames(corr.may.vectors.13)
+
+
+write.csv(corr.may.vectors.13, "Data/Emerging/NMDS/May_emerging_correlated_vector13.csv")
+
+
+## Actual figure
+nmds.may.scores <- read.csv("Data/Emerging/NMDS/emerging_May18_NMDSscores.csv")
+nmds.may.scores$Year <- as.factor(nmds.may.scores$Year)
+
+may.axis12 <- read.csv("Data/Emerging/NMDS/May_emerging_correlated_vector12.csv")
+may.axis13 <- read.csv("Data/Emerging/NMDS/May_emerging_correlated_vector13.csv")
+
+
+
+invert.12.may <- ggplot(data = nmds.may.scores,
+                       aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = nmds.may.scores, 
+             aes(x = NMDS1, y = NMDS2, 
+                 fill = Treatment, shape = Year),
+             size = 5, stroke = 1.5,
+             alpha = 0.7) + # sites as points
+  stat_ellipse(data = nmds.may.scores, 
+               aes(x = NMDS1,y = NMDS2,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = may.axis12, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_text_repel(data = may.axis12, 
+                  aes(x = MDS1, y = MDS2, label = Taxa),
+                  color="black",
+                  size = 6) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(legend.position = "none")
+  
+
+nmds.may <- ggarrange(invert.12.may,
+          labels = "A")
+
+NMDS.may <- annotate_figure(nmds.may,
+                top = text_grob("Collection 20-May-18"))
+
+ggsave("Figures/May_emerging_NMDS.jpeg")
+
+# 5 June 2018 -------------------------------------------------------------
+
+invert.June <- inverts.date %>% filter(Date == "05-Jun-18")
+
+write.csv(invert.June, "Data/Emerging/NMDS/inverts_05-Jun-18.csv")
+
+
+
+
+# Panel all together ------------------------------------------------------
+
+ggarrange(NMDS.may, NMDS.col1, NMDS.col2, NMDS.col3, NMDS.col4)
 
 
 ggsave("Figures/NMDS.panel.jpeg", NMDS.panel,
        height = 9.24,
        width = 17.5,
        unit = "in")
+
+
