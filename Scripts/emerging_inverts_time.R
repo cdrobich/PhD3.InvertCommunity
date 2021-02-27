@@ -204,7 +204,7 @@ invert.12.c1 <- ggplot(data = col1.scores,
              aes(x = NMDS1, y = NMDS2, 
                  fill = Treatment, shape = Year),
              size = 5, stroke = 1.5,
-             alpha = 0.7) + # sites as points
+             alpha = 0.8) + # sites as points
   stat_ellipse(data = col1.scores, 
                aes(x = NMDS1,y = NMDS2,
                    linetype = Treatment, colour = Treatment), 
@@ -219,7 +219,7 @@ invert.12.c1 <- ggplot(data = col1.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col1.axis12, 
+  geom_label_repel(data = col1.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
                   size = 6)  +
@@ -255,7 +255,7 @@ invert.13.c1 <- ggplot(data = col1.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col1.axis13, 
+  geom_label_repel(data = col1.axis13, 
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
                   size = 6) +
@@ -461,7 +461,7 @@ invert.12.c2 <- ggplot(data = nmds.col2.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col2.axis12, 
+  geom_label_repel(data = col2.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
                   size = 5) +
@@ -496,7 +496,7 @@ invert.13.c2 <- ggplot(data = nmds.col2.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col2.axis13, 
+  geom_label_repel(data = col2.axis13, 
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
                   size = 5) +
@@ -691,10 +691,10 @@ invert.12.c3 <- ggplot(data = nmds.col3.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col3.axis12, 
+  geom_label_repel(data = col3.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
@@ -727,10 +727,10 @@ invert.13.c3 <- ggplot(data = nmds.col3.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col3.axis13, 
+  geom_label_repel(data = col3.axis13, 
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
@@ -920,16 +920,16 @@ invert.12.c4 <- ggplot(data = nmds.col4.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col4.axis12, 
+  geom_label_repel(data = col4.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_shape_manual(values = c(21, 24)) +
   theme(legend.position = "none") +
-  ylim(-0.8, 0.8) +
-  xlim(-0.8, 0.8)
+  ylim(-0.6, 0.6) +
+  xlim(-0.6, 0.6)
 
 invert.12.c4
 
@@ -955,23 +955,23 @@ invert.13.c4 <- ggplot(data = nmds.col4.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = col4.axis13, 
+  geom_label_repel(data = col4.axis13, 
                   aes(x = MDS1, y = MDS3, label = Taxa),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_shape_manual(values = c(21, 24)) +
   theme(legend.position = "none") +
-  ylim(-0.8, 0.8) +
-  xlim(-0.8, 0.8)
+  ylim(-0.6, 0.6) +
+  xlim(-0.6, 0.6)
 
 invert.13.c4
 
 
 
 (NMS.emerging.panel.c4 <- ggarrange(invert.12.c4, invert.13.c4,
-                                    labels = c("E", ""),
+                                    labels = c("F", ""),
                                     align = "hv"))
 
 NMDS.col4 <- annotate_figure(NMS.emerging.panel.c4,
@@ -1158,18 +1158,22 @@ invert.12.may <- ggplot(data = nmds.may.scores,
   #ylim(-1, 1.5) +
   #xlim(-1.45, 1) +
   #theme(legend.position = "none") +
-  geom_text_repel(data = may.axis12, 
+  geom_label_repel(data = may.axis12, 
                   aes(x = MDS1, y = MDS2, label = Taxa),
                   color="black",
-                  size = 6) +
+                  size = 5) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
-  theme(legend.position = "none")
-  
+  scale_shape_manual(values = c(24)) +
+  theme(legend.position = "none") +
+  ylim(-0.8, 0.8) +
+  xlim(-0.8, 0.8) 
 
-nmds.may <- ggarrange(invert.12.may,
-          labels = "A")
+invert.12.may 
+
+nmds.may <- ggarrange(legends, invert.12.may,
+          labels = "A",
+          widths = c(0.25,1))
 
 NMDS.may <- annotate_figure(nmds.may,
                 top = text_grob("Collection 20-May-18"))
@@ -1184,15 +1188,277 @@ write.csv(invert.June, "Data/Emerging/NMDS/inverts_05-Jun-18.csv")
 
 
 
+june.data <- read.csv("Data/Emerging/NMDS/june18_zeros_rel.csv")
+colnames(june.data)
+
+taxa.june <- june.data %>% select(Araneae:Crambidae)
+env.june <- june.data %>% select(Sites:YrCol)
+
+
+
+set.seed(120) 
+
+nms.june <- metaMDS(taxa.june, distance = "bray", # species data, bray-curtis dissimilarity
+                    autotransform = FALSE,  # NMDS will do autotransformations for you
+                    k = 3, trymax = 1000)   # k = number of axes
+nms.june
+
+#global Multidimensional Scaling using monoMDS
+
+#Data:     taxa.june 
+#Distance: bray 
+
+#Dimensions: 3 
+#Stress:     0.1581744 
+#Stress type 1, weak ties
+#Two convergent solutions found after 48 tries
+#Scaling: centring, PC rotation, halfchange scalin
+
+layout(matrix(1:2, ncol = 2))
+plot(nms.june , main = "Invertebrate NMDS plot"); stressplot(nms.june , main = "Shepard plot")
+layout(1)
+
+nms.june$iters #118
+
+nms.june$stress^2   #0.02500559
+1-nms.june$stress^2 #0.9749944
+
+
+scr.june <- as.data.frame(scores(nms.june, display = "sites")) # extract NMDS scores
+colnames(scr.june)
+
+env.june$NMDS1 <- scr.june$NMDS1
+env.june$NMDS2 <- scr.june$NMDS2
+env.june$NMDS3 <- scr.june$NMDS3
+
+write.csv(env.june,"Data/Emerging/NMDS/emerging_june_NMDSscores.csv") # save this as a csv
+
+
+
+## Taxa for vectors
+
+# Axis 1 and 2
+taxa.june.axis12 <- envfit(nms.june, taxa.june,
+                           choices = c(1,2))
+
+taxa.june.axis12df <- data.frame((taxa.june.axis12$vectors)$arrows,
+                                 (taxa.june.axis12$vectors)$r,
+                                 (taxa.june.axis12$vectors)$pvals)
+
+taxa.june.axis12df <- tibble::rownames_to_column(taxa.june.axis12df, "Taxa")
+
+write.csv(taxa.june.axis12df, "Data/Emerging/NMDS/june_allvectors_axis12.csv") # save vector scores as csv
+
+# Axis 1 and 3
+
+taxa.june.axis13 <- envfit(nms.june, taxa.june,
+                           choices = c(1,3))
+
+taxa.june.axis13df <- data.frame((taxa.june.axis13$vectors)$arrows,
+                                 (taxa.june.axis13$vectors)$r,
+                                 (taxa.june.axis13$vectors)$pvals)
+
+taxa.june.axis13df <- tibble::rownames_to_column(taxa.june.axis13df, "Taxa")
+
+write.csv(taxa.june.axis13df, "Data/Emerging/NMDS/june_allvectors_axis13.csv") # save vector scores as csv
+
+
+
+# Correlated taxa
+
+# Axis 1 and 2
+
+colnames(taxa.june.axis12df)
+
+corrspp.june.axis12 <- taxa.june.axis12df %>% filter(X.taxa.june.axis12.vectors..r > 0.2)
+target12.june <- corrspp.june.axis12$Taxa # string of the Family names
+
+
+axis12.vectors.june <- taxa.june %>% select(all_of(target12.june)) # make a matrix of just those
+
+(nmds.june.vectors.12 <- envfit(nms.june$points, axis12.vectors.june,
+                              permutations = 999, choices = c(1,2)))                        
+
+
+corr.june.vectors.12 <- as.data.frame(nmds.june.vectors.12$vectors$arrows*sqrt(nmds.june.vectors.12$vectors$r)) #scaling vectors
+corr.june.vectors.12$Taxa <- rownames(corr.june.vectors.12)
+
+
+write.csv(corr.june.vectors.12, "Data/Emerging/NMDS/june_emerging_correlated_vector12.csv")
+
+## Axis 1 and 3
+
+colnames(taxa.june.axis13df)
+
+corrspp.june.axis13 <- taxa.june.axis13df %>% filter(X.taxa.june.axis13.vectors..r > 0.2)
+target13.june <- corrspp.june.axis13$Taxa # string of the Family names
+
+
+axis13.vectors.june <- taxa.june %>% select(all_of(target13.june)) # make a matrix of just those
+
+(nmds.june.vectors.13 <- envfit(nms.june$points, axis13.vectors.june,
+                              permutations = 999, choices = c(1,3)))                        
+
+
+corr.june.vectors.13 <- as.data.frame(nmds.june.vectors.13$vectors$arrows*sqrt(nmds.june.vectors.13$vectors$r)) #scaling vectors
+corr.june.vectors.13$Taxa <- rownames(corr.june.vectors.13)
+
+
+write.csv(corr.june.vectors.13, "Data/Emerging/NMDS/june_emerging_correlated_vector13.csv")
+
+
+
+## Actual figure
+nmds.june.scores <- read.csv("Data/Emerging/NMDS/emerging_june_NMDSscores.csv")
+nmds.june.scores$Year <- as.factor(nmds.june.scores$Year)
+
+june.axis12 <- read.csv("Data/Emerging/NMDS/june_emerging_correlated_vector12.csv")
+june.axis13 <- read.csv("Data/Emerging/NMDS/june_emerging_correlated_vector13.csv")
+
+
+
+invert.12.june <- ggplot(data = nmds.june.scores,
+                       aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = nmds.june.scores, 
+             aes(x = NMDS1, y = NMDS2, 
+                 fill = Treatment, shape = Year),
+             size = 4, stroke = 1.5,
+             alpha = 0.7) + # sites as points
+  stat_ellipse(data = nmds.june.scores, 
+               aes(x = NMDS1,y = NMDS2,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = june.axis12, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_label_repel(data = june.axis12, 
+                  aes(x = MDS1, y = MDS2, label = Taxa),
+                  color="black",
+                  size = 5) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(24)) +
+  theme(legend.position = "none") 
+
+invert.12.june
+
+
+invert.13.june <- ggplot(data = nmds.june.scores,
+                       aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = nmds.june.scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 fill = Treatment, shape = Year),
+             size = 4, stroke = 1.5,
+             alpha = 0.7) + # sites as points
+  stat_ellipse(data = nmds.june.scores, 
+               aes(x = NMDS1,y = NMDS3,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = june.axis13, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_label_repel(data = june.axis13, 
+                  aes(x = MDS1, y = MDS3, label = Taxa),
+                  color="black",
+                  size = 5) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(24)) +
+  theme(legend.position = "none") 
+
+invert.13.june
+
+nmds.june <- ggarrange(invert.12.june, invert.13.june,
+                      labels = c("B", ""))
+
+
+NMDS.june <- annotate_figure(nmds.june,
+                top = text_grob("Collection 05-June-18"))
+
+ggsave("Figures/NMDS_emerging_5Jun18.jpeg")
+
 
 # Panel all together ------------------------------------------------------
 
-ggarrange(NMDS.may, NMDS.col1, NMDS.col2, NMDS.col3, NMDS.col4)
+NMDS.panel <- ggarrange(NMDS.may, NMDS.june, NMDS.col1, 
+                        NMDS.col2, NMDS.col3, NMDS.col4,
+                        widths = c(0.7, 1))
 
 
 ggsave("Figures/NMDS.panel.jpeg", NMDS.panel,
-       height = 9.24,
-       width = 17.5,
-       unit = "in")
+       width = 20,
+       height = 9.5,
+       units = "in")
+
+
+
+### get a legend 
+test <- ggplot(data = nmds.col4.scores,
+                       aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = nmds.col4.scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 colour = Treatment, shape = Year),
+             size = 4) + # sites as points
+  stat_ellipse(data = nmds.col4.scores, 
+               aes(x = NMDS1,y = NMDS3,
+                   linetype = Treatment, colour = Treatment), 
+               size = 1, level = 0.9) + 
+  geom_segment(data = col4.axis13, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  #ylim(-1, 1.5) +
+  #xlim(-1.45, 1) +
+  #theme(legend.position = "none") +
+  geom_label_repel(data = col4.axis13, 
+                   aes(x = MDS1, y = MDS3, label = Taxa),
+                   color="black",
+                   size = 5) +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(19, 17)) +
+  ylim(-0.6, 0.6) +
+  xlim(-0.6, 0.6)
+
+
+
+legend <- get_legend(test)
+legends <- as_ggplot(legend)
+
+
+
+
+
+
+# try patchwork -----------------------------------------------------------
+library(patchwork)
+
+(NMDS.may | NMDS.june | NMDS.col1) /
+  (NMDS.col2 | NMDS.col4)
+
+
+
+
+
+
+
+
 
 
