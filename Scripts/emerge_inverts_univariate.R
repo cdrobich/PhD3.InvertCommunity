@@ -15,6 +15,11 @@ library(lme4) # GLMM
 library(MuMIn)
 library(AICcmodavg)
 library(viridis)
+
+library(effects)
+library(lmerTest)
+
+library(sjPlot)
 # Data Import -------------------------------------------------------------
 
 invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
@@ -165,7 +170,7 @@ ggplot(invert, aes(x = J)) +
   geom_histogram(binwidth = .1,
                  color="black", fill="white")
 
-# General Linear Mixed Models ---------------------------------------------
+# General Linear Mixed Models (glmer) ---------------------------------------------
 
 invert$depthst <- scale(invert$Depth,
                            center = TRUE,
@@ -174,48 +179,22 @@ invert$depthst <- scale(invert$Depth,
 
 # Richness GLMM -----------------------------------------------------------
 
-rich.glmm <- glmer(rich ~ Treatment * Depth + (1|Year) + (1|N),
+rich.glmm <- glmer(rich ~ Treatment * depthst + (1|Year) + (1|N),
                      data = invert, family = poisson)
 
 summary(rich.glmm)
 
-#Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
-#Family: poisson  ( log )
-#Formula: rich ~ Treatment * Depth + (1 | Year) + (1 | N)
-#Data: invert
 
-#AIC      BIC   logLik deviance df.resid 
-#338.3    354.1   -161.2    322.3       45 
+anova(rich.glmm)
 
-#Scaled residuals: 
-#  Min       1Q   Median       3Q      Max 
-#-1.98152 -0.63385 -0.09725  0.65619  2.10744 
-
-#Random effects:
-#Groups Name        Variance Std.Dev.
-#N      (Intercept) 0.02838  0.1685  
-#Year   (Intercept) 0.00000  0.0000  
-#Number of obs: 53, groups:  N, 5; Year, 2
-
-#Fixed effects:
-#                            Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)               3.3774627  0.1582589  21.341  < 2e-16 ***
-#TreatmentTreated         -0.7360588  0.2225099  -3.308  0.00094 ***
-#TreatmentUninvaded       -0.2207424  0.1613103  -1.368  0.17118    
-#Depth                    -0.0053382  0.0028801  -1.853  0.06382 .  
-#TreatmentTreated:Depth    0.0061432  0.0051889   1.184  0.23645    
-#TreatmentUninvaded:Depth  0.0004237  0.0041350   0.102  0.91839    
+#Response: rich
+#                     Chisq Df Pr(>Chisq)    
+#(Intercept)       969.5694  1  < 2.2e-16 ***
+#Treatment          39.6564  2  2.448e-09 ***
+#depthst             3.4350  1    0.06383 .  
+#Treatment:depthst   1.5353  2    0.46410  
 
 
-#Correlation of Fixed Effects:
-#            (Intr) TrtmnT TrtmnU Depth  TrtT:D
-#TretmntTrtd -0.412                            
-#TrtmntUnnvd -0.575  0.422                     
-#Depth       -0.768  0.494  0.659              
-#TrtmntTrt:D  0.346 -0.936 -0.383 -0.519       
-#TrtmntUnn:D  0.456 -0.345 -0.891 -0.629  0.373
-#optimizer (Nelder_Mead) convergence code: 0 (OK)
-#boundary (singular) fit: see ?isSingular
 
 anova(rich.glmm)
 
@@ -224,7 +203,6 @@ anova(rich.glmm)
 #Treatment          2 37.953 18.9765 18.9765
 #Depth              1  3.867  3.8673  3.8673
 #Treatment:Depth    2  1.570  0.7849  0.7849
-
 
 r.squaredGLMM(rich.glmm)
 
@@ -239,7 +217,149 @@ plot(rich.glmm)
 qqnorm(resid(rich.glmm))
 qqline(resid(rich.glmm))
 
-### null abundance model 
+tab_model(rich.glmm,
+          string.ci = "95% CI",
+          string.pred = "Coefficients",
+          string.p = "P value",
+          dv.labels = c("Taxa Richness"))
+
+plot(allEffects(rich.glmm))
+
+
+# Linear models -----------------------------------------------------------
+
+## Output table 
+# https://link.springer.com/article/10.3758/s13428-016-0809-y
+
+rich.glmm <- glmer(rich ~ Treatment * depthst + (1|Year) + (1|N),
+                   data = invert, family = poisson)
+
+summary(rich.glmm)
+
+
+
+
+
+
+
+# Linear model for this one (non-integer)
+
+shannon.lmm <- lmer(H ~ Treatment * depthst + (1|Year) + (1|N),
+                   data = invert, REML = TRUE)
+
+summary(shannon.lmm)
+
+anova(shannon.lmm)
+
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                   Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment         14.9768  7.4884     2    47 23.6600 7.782e-08 ***
+#depthst            0.0190  0.0190     1    47  0.0599    0.8077    
+#Treatment:depthst  0.2158  0.1079     2    47  0.3409    0.7129 
+
+library(lmerTest)
+anova(shannon.lmm)
+
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                   Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment         14.9768  7.4884     2    47 23.6600 7.782e-08 ***
+#depthst            0.0190  0.0190     1    47  0.0599    0.8077    
+#Treatment:depthst  0.2158  0.1079     2    47  0.3409    0.7129  
+
+
+r.squaredGLMM(shannon.lmm)
+
+#            R2m       R2c
+#      0.4821051 0.4821051
+
+# examine the residuals 
+
+plot(shannon.lmm)
+qqnorm(resid(shannon.lmm))
+qqline(resid(shannon.lmm))
+
+plot(allEffects(shannon.lmm))
+
+
+### Linear model for Diversity
+
+
+simp.lmm <- lmer(D1 ~ Treatment * depthst + (1|Year) + (1|N),
+                    data = invert, REML = TRUE)
+
+summary(simp.lmm)
+
+
+anova(simp.lmm)
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                   Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment         1.99192 0.99596     2    47 22.5335 1.374e-07 ***
+#depthst           0.00005 0.00005     1    47  0.0012    0.9730    
+#Treatment:depthst 0.01207 0.00604     2    47  0.1365    0.8727
+
+r.squaredGLMM(simp.lmm)
+
+#           R2m       R2c
+#    0.4671788 0.4671788
+
+plot(simp.lmm)
+qqnorm(resid(simp.lmm))
+qqline(resid(simp.lmm))
+
+plot(allEffects(simp.lmm))
+
+
+
+## Linear model for Pielous 
+
+pie.lmm <- lmer(J ~ Treatment * depthst + (1|Year) + (1|N),
+                 data = invert, REML = TRUE)
+
+summary(pie.lmm)
+anova(pie.lmm)
+
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                   Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment         1.33479 0.66739     2    47 22.9776 1.096e-07 ***
+#depthst           0.00834 0.00834     1    47  0.2871    0.5946    
+#Treatment:depthst 0.01340 0.00670     2    47  0.2306    0.7949    
+
+
+r.squaredGLMM(pie.lmm)
+
+#           R2m       R2c
+#    0.4710541 0.4710541
+
+plot(pie.lmm)
+qqnorm(resid(pie.lmm))
+qqline(resid(pie.lmm))
+
+plot(allEffects(pie.lmm))
+
+
+tab_model(shannon.lmm, simp.lmm, pie.lmm,
+          string.ci = "95% CI",
+          string.pred = "Coefficients",
+          string.p = "P value",
+          dv.labels = c("Shannon-Weiner (H')",
+                        "Simpson's Diversity (1-D)",
+                        "Pielou's Evenness (J)"),
+          file = "Data/Emerging/lmm_output.html")
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Null models -------------------------------------------------------------
+ 
 
 rich.null <- glmer(rich ~ (1|Year) + (1|N),
                    family = poisson, data = invert) 
@@ -301,6 +421,7 @@ anova(rich.glmm, rich.null)
 #          npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)    
 #rich.null    3 372.90 378.81 -183.45   366.90                         
 #rich.glmm    8 338.35 354.11 -161.17   322.35 44.547  5  1.793e-08 ***
+
 
 
 # Univariate Figures ------------------------------------------------------
