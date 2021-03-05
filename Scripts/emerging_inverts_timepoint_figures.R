@@ -244,7 +244,7 @@ invert.12.c3 <- ggplot(data = nmds.col3.scores,
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(legend.position = "none") +
-  ylim(-0.8, 0.8) +
+  ylim(-0.85, 0.85) +
   xlim(-0.8, 0.8)
 
 invert.12.c3
@@ -280,7 +280,7 @@ invert.13.c3 <- ggplot(data = nmds.col3.scores,
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(legend.position = "none") +
-  ylim(-0.8, 0.8) +
+  ylim(-0.85, 0.85) +
   xlim(-0.8, 0.8)
 
 
@@ -381,7 +381,7 @@ invert.13.c4 <- ggplot(data = nmds.col4.scores,
   ylim(-0.6, 0.6) +
   xlim(-0.6, 0.6)
 
-invert.13.c4
+invert.13.c4 
 
 
 
@@ -544,35 +544,48 @@ ggsave("Figures/NMDS_emerging_5Jun18.jpeg")
 
 # Legend ------------------------------------------------------
 
+nmds.col4.scores <- nmds.col4.scores %>% 
+  unite("trtyr", Treatment, Year, remove = FALSE) 
+
+
+colours = c("Invaded_2017" = "#440C53", 
+            "Invaded_2018" = "#440C53",
+            "Treated_2017" = "#24908C",
+            "Treated_2018" = "#24908C", 
+            "Uninvaded_2017" = "#FDE825",
+            "Uninvaded_2018" = "#FDE825")
+
+shape = c("Invaded_2017" = 19, 
+          "Invaded_2018" = 17,
+          "Treated_2017" = 19,
+          "Treated_2018" = 17, 
+          "Uninvaded_2017" = 19,
+          "Uninvaded_2018" = 17)
+
+
 test <- ggplot(data = nmds.col4.scores,
                aes(x = NMDS1, y = NMDS3)) +
   geom_point(data = nmds.col4.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Treatment, shape = Year),
-             size = 4) + # sites as points
-  stat_ellipse(data = nmds.col4.scores, 
-               aes(x = NMDS1,y = NMDS3,
-                   linetype = Treatment, colour = Treatment), 
-               size = 1, level = 0.9) + 
-  geom_segment(data = col4.axis13, 
-               aes(x = 0, xend = MDS1, y = 0, yend = MDS3), # adding in the vectors, c
-               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_minimal() + # no background
-  theme(panel.border = element_rect(fill = NA)) + # full square around figure
-  xlab("NMDS 1") +
-  ylab("NMDS 3") +
-  #ylim(-1, 1.5) +
-  #xlim(-1.45, 1) +
-  #theme(legend.position = "none") +
-  geom_label_repel(data = col4.axis13, 
-                   aes(x = MDS1, y = MDS3, label = Taxa),
-                   color="black",
-                   size = 5) +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(19, 17)) +
-  ylim(-0.6, 0.6) +
-  xlim(-0.6, 0.6)
+                 colour = trtyr, shape = trtyr),
+             size = 4) + 
+  theme_classic(base_size = 16) +
+   scale_shape_manual(name = " ",
+                      labels = c("Invaded_2017",
+                                 "Invaded_2018",
+                                 "Treated_2017",
+                                 "Treated_2018",
+                                 "Uninvaded_2017",
+                                 "Uninvaded_2018"),
+                      values = shape) +
+  scale_colour_manual(name = " ",
+            labels = c("Invaded_2017",
+                      "Invaded_2018",
+                      "Treated_2017",
+                      "Treated_2018",
+                      "Uninvaded_2017",
+                      "Uninvaded_2018"),
+                      values = colours)
 
 
 
@@ -596,3 +609,49 @@ ggsave("Figures/NMDS.panel.jpeg", NMDS.panel,
 # Patchwork ---------------------------------------------------------------
 
 library(patchwork)
+
+# Single collections 
+
+may.nms <- invert.12.may + ggtitle("Collection 20-May-18")
+invert.13.june <- invert.13.june + ggtitle("Collection 05-June-18")
+invert.12.june
+
+collection.once <- may.nms | (invert.13.june / invert.12.june) 
+
+ggsave("Figures/May_June_2018_NMDS.jpeg", collection.once)
+
+# Both years 
+
+invert.12.c1 <- invert.12.c1 + 
+  ggtitle("Collection 19-June-2017 and 16-June-2018")
+
+col1 <- invert.12.c1 + invert.13.c1
+
+invert.12.c2 <- invert.12.c2 +
+  ggtitle("Collection 8-June-17 and 25-June-18")
+invert.13.c2 
+
+col2 <- invert.12.c2 + invert.13.c2
+
+
+invert.12.c3 <- invert.12.c3 + 
+  ggtitle("Collection 08-July-17 and 04-July-18")
+invert.13.c3 
+
+col3 <- invert.12.c3 + invert.13.c3
+
+invert.12.c4 <- invert.12.c4 +
+  ggtitle("Collection 21-July-17 and 23-July-18")
+invert.13.c4 
+
+col4 <- invert.12.c4 + invert.13.c4
+
+
+(panel.nms <- ggarrange(col1, col2, col3, col4,
+          labels = "AUTO"))
+
+ggsave("Figures/NMDS_panels_twovisists.jpeg",
+       panel.nms,
+       width = 15,
+       height = 9.24,
+       units = "in")

@@ -39,17 +39,13 @@ unique(env$Date)
 #"20-May-18" "05-Jun-18" "16-Jun-18" "25-Jun-18" "04-Jul-18" "23-Jul-18"
 
 
-# Collection June 19 2017 and June 16 2018  -----------------------------------------
+# Collection 1:Str June 19 2017 and June 16 2018  -----------------------------------------
 
 col.1 <- c("19-Jun-17","16-Jun-18")
 
 invert.col.1 <- inverts.date %>% filter(Date %in% col.1)
 
 write.csv(invert.col.1, "Data/Emerging/NMDS/Col.1/inverts_collection1.csv")
-
-
-invert.col1.rares <- read.csv("Data/Emerging/NMDS/Col.1/inverts_collection1_zerosremoved.csv")
-
 
 # Empty columns removed, relativized by col max. in PCORD
 
@@ -59,12 +55,21 @@ colnames(col1.data)
 taxa.col1 <- col1.data %>% select(Araneae:Crambidae)
 env.col1 <- col1.data %>% select(Sites:YrCol)
 
-taxa.col1 <- taxa.col1[1:51,]
-env.col1 <- env.col1[1:51,]
-
-
 
 ## perMANOVA
+taxa.col1
+
+(per.col1 <- adonis2(taxa.col1 ~ Treatment * Year, data = col1.data,
+                      permutations = 999, method = "bray"))
+
+
+#               Df SumOfSqs      R2      F Pr(>F)    
+#Treatment       2   1.9848 0.09578 2.6608  0.001 ***
+#Year            1   0.8817 0.04255 2.3641  0.001 ***
+#Treatment:Year  2   1.0734 0.05180 1.4390  0.025 *  
+#Residual       45  16.7839 0.80988                  
+#Total          50  20.7239 1.00000
+
 
 
 #### NMDS analysis 
@@ -193,7 +198,7 @@ write.csv(corr.c1.vectors.13, "Data/Emerging/NMDS/Col.1/NMDS_emerg_col1_vector13
 
 
 
-# Collection 28-Jun-17 and 25-JUN-18 ---------------------------------
+# Collection 2: 28-Jun-17 and 25-JUN-18 ---------------------------------
 
 col.2 <- c("28-Jun-17","25-Jun-18")
 
@@ -213,7 +218,35 @@ env.col2 <- col2.data %>% select(Site:YrCol)
 
 ## perMANOVA
 
+(per.col2 <- adonis2(taxa.col2 ~ Treatment * Year, data = col2.data,
+                     permutations = 999, method = "bray"))
 
+#adonis2(formula = taxa.col2 ~ Treatment * Year, data = col2.data, permutations = 999, method = "bray")
+#               Df SumOfSqs      R2      F Pr(>F)    
+#Treatment       2   1.7543 0.08037 2.2080  0.001 ***
+#Year            1   0.7473 0.03423 1.8811  0.003 ** 
+#Treatment:Year  2   1.0525 0.04822 1.3247  0.058 .  
+#Residual       46  18.2736 0.83718                  
+#Total          51  21.8276 1.00000
+
+
+
+col2.b <- vegdist(taxa.col2, method = "bray")
+
+trt.col2 <- factor(env.col2$Treatment)
+yr.col2 <- factor(env.col2$Year)
+
+(dispersion <- betadisper(col2.b, trt.col2))
+plot(dispersion)
+
+(adonis.pair(col2.b, trt.col2, 
+             nper = 1000, corr.method = "bonferroni"))
+
+
+#            combination SumsOfSqs   MeanSqs  F.Model         R2     P.value P.value.corrected
+#1   Invaded <-> Treated 1.0171130 1.0171130 2.567345 0.07427083 0.000999001       0.002997003
+#2 Invaded <-> Uninvaded 0.6503846 0.6503846 1.520858 0.04281592 0.031968032       0.095904096
+#3 Treated <-> Uninvaded 0.9772179 0.9772179 2.418616 0.07027058 0.001998002       0.005994006
 
 
 
@@ -356,7 +389,7 @@ write.csv(corr.c2.vectors.13, "Data/Emerging/NMDS/Col.2/emerging_correlated_vect
 
 
 
-# Collection 08-Jul-17 and 04-Jul-18 -----------------------------------
+# Collection 3: 08-Jul-17 and 04-Jul-18 -----------------------------------
 
 col.3 <- c("08-Jul-17","04-Jul-18")
 
@@ -370,6 +403,34 @@ col3.data <- read.csv("Data/Emerging/NMDS/Col.3/col3_zeros_rares.csv")
 colnames(col3.data)
 taxa.col3 <- col3.data %>% select(Araneae:Crambidae)
 env.col3 <- col3.data %>% select(ID:YrCol)
+
+### perMANOVA
+
+(per.col3 <- adonis2(taxa.col3 ~ Treatment * Year, data = col3.data,
+                     permutations = 999, method = "bray"))
+
+#               Df SumOfSqs      R2      F Pr(>F)    
+#Treatment       2   2.0057 0.09061 2.6004  0.001 ***
+#Year            1   0.6452 0.02915 1.6729  0.018 *  
+#Treatment:Year  2   0.9722 0.04392 1.2605  0.071 .  
+#Residual       48  18.5116 0.83632                  
+#Total          53  22.1348 1.00000    
+
+col3.b <- vegdist(taxa.col3, method = "bray")
+
+trt.col3 <- factor(env.col3$Treatment)
+
+
+(dispersion <- betadisper(col3.b, trt.col3))
+plot(dispersion)
+
+(adonis.pair(col3.b, trt.col3, 
+             nper = 1000, corr.method = "bonferroni"))
+
+#             combination SumsOfSqs   MeanSqs  F.Model         R2     P.value P.value.corrected
+#1   Invaded <-> Treated 1.2138287 1.2138287 3.240205 0.08700825 0.000999001       0.002997003
+#2 Invaded <-> Uninvaded 0.8156821 0.8156821 1.996619 0.05546685 0.000999001       0.002997003
+#3 Treated <-> Uninvaded 0.9790501 0.9790501 2.442039 0.06701160 0.000999001       0.002997003
 
 # NMDS collection 3
 
@@ -488,7 +549,7 @@ corr.c3.vectors.13$Taxa <- rownames(corr.c3.vectors.13)
 write.csv(corr.c3.vectors.13, "Data/Emerging/NMDS/Col.3/emerging_correlated_vector13.csv")
 
 
-# Collection 21-Jul-17 and 23-Jul-18 -----------------------------------
+# Collection 4: 21-Jul-17 and 23-Jul-18 -----------------------------------
 
 col.4 <- c("21-Jul-17","23-Jul-18")
 
@@ -498,11 +559,24 @@ write.csv(invert.col.4, "Data/Emerging/NMDS/Col.4/inverts_collection4.csv")
 
 col4.data <- read.csv("Data/Emerging/NMDS/Col.4/col4_zeros_rares.csv")
 
-
 # just taxa and env 
 colnames(col4.data)
 taxa.col4 <- col4.data  %>% select(Araneae:Crambidae)
 env.col4 <- col4.data  %>% select(ID:YrCol)
+
+
+## perMANOVA
+(per.col4 <- adonis2(taxa.col4 ~ Treatment * Year, data = col4.data,
+                     permutations = 999, method = "bray"))
+
+
+#               Df SumOfSqs      R2      F Pr(>F)    
+#Treatment       2   1.7464 0.08366 2.3216  0.001 ***
+#Year            1   0.8085 0.03873 2.1496  0.001 ***
+#Treatment:Year  2   1.3951 0.06683 1.8545  0.001 ***
+#Residual       45  16.9259 0.81078                  
+#Total          50  20.8759 1.00000 
+
 
 
 # NMDS collection 4
@@ -638,7 +712,36 @@ taxa.may <- may.data %>% select(Araneae:Limnephilida)
 env.may <- may.data %>% select(Sites:YrCol)
 
 
+## perMANOVA
+(per.may <- adonis2(taxa.may ~ Treatment * Year, data = may.data,
+                     permutations = 999, method = "bray"))
 
+
+#           Df SumOfSqs      R2      F Pr(>F)    
+#Treatment  2   2.1306 0.23086 3.1517  0.001 ***
+#Residual  21   7.0984 0.76914                  
+#Total     23   9.2290 1.00000 
+
+
+
+may.b <- vegdist(taxa.may, method = "bray")
+
+trt.may <- factor(env.may$Treatment)
+
+
+(dispersion <- betadisper(may.b,trt.may))
+plot(dispersion)
+
+(adonis.pair(may.b, trt.may, 
+             nper = 1000, corr.method = "bonferroni"))
+
+
+#           combination SumsOfSqs   MeanSqs  F.Model        R2     P.value P.value.corrected
+#1   Invaded <-> Treated 1.3545809 1.3545809 4.062205 0.2249008 0.000999001       0.002997003
+#2 Invaded <-> Uninvaded 0.6701022 0.6701022 1.946093 0.1220420 0.032967033       0.098901099
+#3 Treated <-> Uninvaded 1.1712700 1.1712700 3.483203 0.1992314 0.000999001       0.002997003
+
+## NMDS
 
 k_vec <- 1:10 #dimensions 1 - 10
 stress <- numeric(length(k_vec)) # stress of each model put here
@@ -783,8 +886,34 @@ colnames(june.data)
 taxa.june <- june.data %>% select(Araneae:Crambidae)
 env.june <- june.data %>% select(Sites:YrCol)
 
+## perMANOVA
+(per.june <- adonis2(taxa.june ~ Treatment * Year, data = june.data,
+                    permutations = 999, method = "bray"))
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Treatment  2   1.9636 0.20714 2.8739  0.001 ***
+#Residual  22   7.5157 0.79286                  
+#Total     24   9.4793 1.00000 
+
+june.b <- vegdist(taxa.june, method = "bray")
+
+trt.june <- factor(env.june$Treatment)
 
 
+(dispersion <- betadisper(june.b,trt.june))
+plot(dispersion)
+
+(adonis.pair(june.b,trt.june, 
+             nper = 1000, corr.method = "bonferroni"))
+
+#            combination SumsOfSqs   MeanSqs  F.Model         R2     P.value P.value.corrected
+#1  Invaded <-> Treated 1.4088944 1.4088944 4.417348 0.22749492 0.001998002       0.005994006
+#2 Invaded <-> Uninvaded 0.5323191 0.5323191 1.474066 0.08947798 0.076923077       0.230769231
+#3 Treated <-> Uninvaded 1.0055694 1.0055694 2.914424 0.17230408 0.001998002       0.005994006
+
+
+
+## NMDS
 set.seed(120) 
 
 nms.june <- metaMDS(taxa.june, distance = "bray", # species data, bray-curtis dissimilarity

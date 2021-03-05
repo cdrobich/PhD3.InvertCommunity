@@ -20,6 +20,11 @@ library(effects)
 library(lmerTest)
 
 library(sjPlot)
+
+library(performance)
+library(see)
+
+
 # Data Import -------------------------------------------------------------
 
 invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
@@ -62,7 +67,33 @@ write.csv(invert.univariate, "Data/Emerging/emerging_invertebrate_univariate.csv
 invert <- read.csv("Data/Emerging/emerging_invertebrate_univariate.csv")
 
 invert$Year <- as.factor(invert$Year)
+invert$Factor <- as.factor(invert$Factor)
 invert$logAb <- log(invert$abundance)
+
+
+test.year <- lm(rich ~ Treatment * Year, data = invert)
+anova(test.year)
+
+#Response: rich
+#                Df  Sum Sq Mean Sq F value    Pr(>F)    
+#Treatment       2  855.11  427.56 13.4213 2.345e-05 ***
+#Year            1  504.17  504.17 15.8262 0.0002336 ***
+#Treatment:Year  2   87.11   43.56  1.3672 0.2645521    
+#Residuals      48 1529.11   31.86 
+                
+
+year.hsd <- HSD.test(test.year, "Year")
+
+#rich groups
+#2018 23.55556      a
+#2017 17.44444      b
+
+trt.hsd <- HSD.test(test.year, "Treatment")
+
+#rich groups
+#Invaded   24.72222      a
+#Uninvaded 21.61111      a
+#Treated   15.16667      b
 
 install.packages("plotrix")
 library(plotrix)
@@ -179,10 +210,48 @@ invert$depthst <- scale(invert$Depth,
 
 # Richness GLMM -----------------------------------------------------------
 
-rich.glmm <- glmer(rich ~ Treatment * depthst + (1|Year) + (1|N),
-                     data = invert, family = poisson)
+# Factor; a = Uninvaded, b = invaded, c = treated
+
+rich.glmm <- glmer(rich ~ Factor * depthst + (1|Year) + (1|N),
+                     data = invert, family = poisson(link = "log"))
 
 summary(rich.glmm)
+
+#Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) [
+#  glmerMod]
+#Family: poisson  ( log )
+#Formula: rich ~ Factor * depthst + (1 | Year) + (1 | N)
+#Data: invert
+
+#AIC      BIC   logLik deviance df.resid 
+#338.3    354.1   -161.2    322.3       45 
+
+#Scaled residuals: 
+#  Min       1Q   Median       3Q      Max 
+#-1.98150 -0.63386 -0.09725  0.65624  2.10746 
+
+#Random effects:
+#Groups Name        Variance  Std.Dev. 
+#N      (Intercept) 2.839e-02 1.685e-01
+#Year   (Intercept) 2.199e-10 1.483e-05
+#Number of obs: 53, groups:  N, 5; Year, 2
+
+#Fixed effects:
+#                  Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)       2.964115   0.104975  28.236  < 2e-16 ***
+#  Factorb         0.204141   0.075341   2.710 0.006737 ** 
+#  Factorc         -0.291153   0.083748  -3.477 0.000508 ***
+#  depthst         -0.087461   0.057416  -1.523 0.127684    
+#Factorb:depthst -0.007538   0.073597  -0.102 0.918416    
+#Factorc:depthst  0.101778   0.094209   1.080 0.279991    
+
+#Correlation of Fixed Effects:
+#             (Intr) Factrb Factrc dpthst Fctrb:
+#Factorb     -0.401                            
+#Factorc     -0.410  0.515                     
+#depthst      0.200 -0.362 -0.293              
+#Fctrb:dpths -0.184  0.242  0.230 -0.720       
+#Fctrc:dpths -0.191  0.207  0.139 -0.548  0.416
 
 
 anova(rich.glmm)
@@ -193,8 +262,6 @@ anova(rich.glmm)
 #Treatment          39.6564  2  2.448e-09 ***
 #depthst             3.4350  1    0.06383 .  
 #Treatment:depthst   1.5353  2    0.46410  
-
-
 
 anova(rich.glmm)
 
@@ -211,19 +278,67 @@ r.squaredGLMM(rich.glmm)
 #lognormal 0.3633659 0.5877556
 #trigamma  0.3553815 0.5748407
 
+
+?r2_nakagawa
+r2_nakagawa(rich.glmm)
+
+# Conditional R2: 0.583
+# Marginal R2: 0.361
+
+
+
 # examine the residuals 
 
 plot(rich.glmm)
 qqnorm(resid(rich.glmm))
 qqline(resid(rich.glmm))
 
+# Default if ""Incidence Rate Ratios"" for Poisson (estimates)
 tab_model(rich.glmm,
           string.ci = "95% CI",
           string.pred = "Coefficients",
           string.p = "P value",
-          dv.labels = c("Taxa Richness"))
+          dv.labels = c("Taxa Richness"),
+          file = "Data/Emerging/glmer_output.html")
 
 plot(allEffects(rich.glmm))
+
+
+plot_model(
+  rich.glmm, 
+  type = "pred", 
+  terms = c("depthst", "Factor"), 
+  colors = "bw",
+  ci.lvl = NA
+)
+
+
+check_overdispersion(rich.glmm) # no overdispersion detected
+check_singularity(rich.glmm) # FALSE
+check_model(rich.glmm)
+
+
+
+rich.null <- glmer(rich ~ 1 + (1|Year) + (1|N),
+                   data = invert, family = poisson(link = "log"))
+
+summary(rich.null)
+
+anova(rich.glmm,rich.null)
+
+compare_performance(rich.glmm,rich.null)
+
+plot(compare_performance(rich.glmm,rich.null))
+
+### glmmTMB
+
+library(glmmTMB)
+
+rich.glm <- glmmTMB(rich ~ Treatment * depthst + (1|Year) + (1|N),
+                    data = invert, family = poisson,
+                    REML = TRUE)
+summary(rich.glm)
+
 
 
 # Linear models -----------------------------------------------------------
@@ -231,23 +346,29 @@ plot(allEffects(rich.glmm))
 ## Output table 
 # https://link.springer.com/article/10.3758/s13428-016-0809-y
 
-rich.glmm <- glmer(rich ~ Treatment * depthst + (1|Year) + (1|N),
-                   data = invert, family = poisson)
-
-summary(rich.glmm)
-
-
-
-
-
-
 
 # Linear model for this one (non-integer)
 
-shannon.lmm <- lmer(H ~ Treatment * depthst + (1|Year) + (1|N),
+shannon.lmm <- lmer(H ~ Factor * depthst + (1|Year) + (1|N),
                    data = invert, REML = TRUE)
 
 summary(shannon.lmm)
+
+#Random effects:
+#  Groups   Name        Variance  Std.Dev. 
+#N        (Intercept) 0.000e+00 0.000e+00
+#Year     (Intercept) 7.506e-17 8.664e-09
+#Residual             3.165e-01 5.626e-01
+#Number of obs: 53, groups:  N, 5; Year, 2
+
+#Fixed effects:
+#                Estimate Std. Error       df t value Pr(>|t|)    
+#(Intercept)      1.36055    0.13973 47.00000   9.737 7.52e-13 ***
+#Factorb          0.28019    0.19659 47.00000   1.425    0.161    
+#Factorc         -0.97680    0.19360 47.00000  -5.045 7.21e-06 ***
+#depthst         -0.05188    0.12989 47.00000  -0.399    0.691    
+#Factorb:depthst -0.03501    0.18645 47.00000  -0.188    0.852    
+#Factorc:depthst  0.13077    0.20484 47.00000   0.638    0.526   
 
 anova(shannon.lmm)
 
@@ -266,6 +387,7 @@ anova(shannon.lmm)
 #depthst            0.0190  0.0190     1    47  0.0599    0.8077    
 #Treatment:depthst  0.2158  0.1079     2    47  0.3409    0.7129  
 
+r2_nakagawa(shannon.lmm, tolerance = 1e-05)
 
 r.squaredGLMM(shannon.lmm)
 
@@ -280,11 +402,37 @@ qqline(resid(shannon.lmm))
 
 plot(allEffects(shannon.lmm))
 
+check_model(shannon.lmm)
 
-### Linear model for Diversity
+### Shannon ANCOVA
+
+shannon.lm <- lm(H ~ Treatment * depthst,
+                    data = invert)
+
+anova(shannon.lm)
+
+#Response: H
+#                  Df  Sum Sq Mean Sq F value   Pr(>F)    
+#Treatment          2 15.6869  7.8435 24.9907 3.65e-08 ***
+#depthst            1  0.0287  0.0287  0.0915   0.7636    
+#Treatment:depthst  2  0.1808  0.0904  0.2880   0.7511    
+#Residuals         48 15.0650  0.3139 
+
+shannon.hsd <- HSD.test(shannon.lm, "Treatment")
+
+# H groups
+#Invaded   1.6472675      a
+#Uninvaded 1.3781480      a
+#Treated   0.3933663      b
+
+check_model(shannon.lm)
 
 
-simp.lmm <- lmer(D1 ~ Treatment * depthst + (1|Year) + (1|N),
+
+### Linear model for Simps Diversity
+
+
+simp.lmm <- lmer(D1 ~ Factor * depthst + (1|Year) + (1|N),
                     data = invert, REML = TRUE)
 
 summary(simp.lmm)
@@ -308,11 +456,38 @@ qqline(resid(simp.lmm))
 
 plot(allEffects(simp.lmm))
 
+check_model(simp.lmm)
+
+
+### ANCOVA simp
+
+simp.lm <- lm(D1 ~ Treatment * depthst,
+                 data = invert)
+
+anova(simp.lm)
+
+#Response: D1
+#                   Df  Sum Sq Mean Sq F value    Pr(>F)    
+#Treatment          2 2.10245 1.05122 23.8917 6.293e-08 ***
+#depthst            1 0.00001 0.00001  0.0001    0.9911    
+#Treatment:depthst  2 0.00684 0.00342  0.0777    0.9254    
+#Residuals         48 2.11198 0.04400 
+
+simp.hsd <- HSD.test(simp.lm, "Treatment")
+
+#D1 groups
+#Invaded   0.6171321      a
+#Uninvaded 0.5095815      a
+#Treated   0.1552774      b
+
+check_model(simp.lm)
+
+
 
 
 ## Linear model for Pielous 
 
-pie.lmm <- lmer(J ~ Treatment * depthst + (1|Year) + (1|N),
+pie.lmm <- lmer(J ~ Factor * depthst + (1|Year) + (1|N),
                  data = invert, REML = TRUE)
 
 summary(pie.lmm)
@@ -336,6 +511,35 @@ qqline(resid(pie.lmm))
 
 plot(allEffects(pie.lmm))
 
+check_model(pie.lmm)
+
+## ANCOVA Pielous
+
+pie.lm <- lm(J ~ Treatment * depthst,
+              data = invert)
+
+anova(pie.lm)
+
+#Response: J
+#                  Df  Sum Sq Mean Sq F value    Pr(>F)    
+#Treatment          2 1.39235 0.69618 24.0383 5.848e-08 ***
+#depthst            1 0.00883 0.00883  0.3049    0.5834    
+#Treatment:depthst  2 0.00959 0.00480  0.1656    0.8478    
+#Residuals         48 1.39014 0.02896              
+
+pie.hsd <- HSD.test(pie.lm, "Treatment")
+
+#J groups
+#Invaded   0.5181020      a
+#Uninvaded 0.4479636      a
+#Treated   0.1478616      b
+
+check_model(pie.lm)
+
+
+
+
+## all LMM results
 
 tab_model(shannon.lmm, simp.lmm, pie.lmm,
           string.ci = "95% CI",

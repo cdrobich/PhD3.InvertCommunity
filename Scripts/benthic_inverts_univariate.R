@@ -9,6 +9,9 @@ library(viridis) # colours
 library(emmeans)
 library(rstatix)
 
+library(performance)
+library(see)
+
 # Load Data ---------------------------------------------------------------
 
 benthic <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
@@ -162,6 +165,10 @@ anova(richness)
 
 plot(richness)
 
+check_model(richness)
+
+
+
 
 richness2 <- lm(sqrich ~ Habitat * Depth, data = benthic.uni)
 summary(richness2)
@@ -179,6 +186,11 @@ anova(richness2)
 
 plot(richness2)
 
+# this looks way better than GLM
+
+check_model(richness2)
+check_heteroscedasticity(richness2) #p = 0.675
+check_normality(richness2) # p = 0.704
 
 # Pairwise comparisons
 pwc.rich <- benthic.uni %>% 
