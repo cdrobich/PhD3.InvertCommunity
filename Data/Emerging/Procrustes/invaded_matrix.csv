@@ -1,0 +1,17 @@
+"","ID","Habitat","Type","Lampyridae","Cecidomyiidae","Phoridae","Ceratopogonidae","Chironomidae","Culicidae","Chaoboridae","Dolichopodidae","Ephydridae","Stratiomyidae","Tipulidae","Dixidae","Syrphidae","Caenidae","Pteromalidae","Eulophidae","Scelionidae","Ichneumonidae","Libellulidae","Lestidae","Coenagrionidae","Hydroptilidae","Leptoceridae","Polycentropodidae","Phryganeidae","Limnephilidae","Cosmopterigidae","Crambidae"
+"1","IN1","Invaded","Emerging",1,1,0,13,115,1,0,0,7,0,0,0,0,0,0,0,0,0,0,0,15,0,3,1,0,3,0,0
+"2","IN2","Invaded","Emerging",0,1,1,0,40,44,0,0,37,0,0,0,1,0,0,0,0,0,2,0,23,0,4,0,0,0,0,0
+"3","IN3","Invaded","Emerging",0,0,7,8,167,4,0,0,2,2,9,7,0,0,0,1,1,0,0,2,17,0,0,1,1,1,0,0
+"4","IN4","Invaded","Emerging",0,1,1,21,530,3,0,8,2,0,2,3,0,1,0,2,1,0,9,1,17,0,4,0,0,13,0,1
+"5","IN5","Invaded","Emerging",2,0,11,1,93,61,2,0,2,3,0,0,0,1,1,3,2,0,7,1,62,1,3,0,1,4,0,0
+"6","IN6","Invaded","Emerging",0,0,2,2,109,0,0,0,1,0,0,0,0,0,1,0,1,0,12,0,10,5,3,0,0,2,0,0
+"7","IN7","Invaded","Emerging",0,1,4,0,120,56,9,0,13,0,4,2,0,1,1,0,0,0,4,2,30,0,5,0,2,17,1,0
+"8","IN8","Invaded","Emerging",2,0,0,0,385,11,0,0,10,1,0,0,1,0,0,0,0,1,7,0,30,6,0,0,0,17,0,0
+"9","IN1","Invaded","Aquatic",0,1,0,2,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"10","IN2","Invaded","Aquatic",0,0,0,0,6,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,2,0,0
+"11","IN3","Invaded","Aquatic",0,3,0,8,38,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,4,0,0
+"12","IN4","Invaded","Aquatic",0,0,0,2,22,0,0,0,0,0,4,0,0,2,0,0,0,0,0,0,2,0,1,0,0,2,0,0
+"13","IN5","Invaded","Aquatic",0,0,0,0,12,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,0
+"14","IN6","Invaded","Aquatic",0,0,0,8,26,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,4,0,0,3,0,0
+"15","IN7","Invaded","Aquatic",0,1,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,3,0,0
+"16","IN8","Invaded","Aquatic",0,0,0,3,380,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,2,0,0
