@@ -25,7 +25,7 @@ benthic <- read.csv("Data/Aquatic/benthic_inverts_relativized.csv") # occurrence
 unique(benthic$Habitat)
 colnames(benthic)
 
-benthic.data <- benthic %>% select(Oligochaeta:Leptoceridae)
+benthic.data <- benthic %>% select(Oligochaetae:Leptoceridae)
 benthic.env <- benthic %>% select(ID:Collection.date)
 
 
@@ -184,15 +184,11 @@ write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv") # sav
 alltaxa.13 <- envfit(nms.invert, benthic.data, 
                      permutations = 999, choices = c(1,3)) 
 
+all.taxa.df.13 <- data.frame((alltaxa.13$vectors)$arrows,
+                          (alltaxa.13$vectors)$r,
+                          (alltaxa.13$vectors)$pvals)
 
-
-
-all.taxa13.df <- data.frame((alltaxa.13$vectors)$arrows,
-                            (alltaxa.13$vectors)$r2,
-                            (alltaxa.13$vectors)$pvals)
-
-
-corr.spp13 <- all.taxa13.df %>% filter(X.alltaxa.13.vectors..r > 0.2)
+corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.2)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
