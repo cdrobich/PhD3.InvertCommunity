@@ -279,34 +279,55 @@ nmds.scores$Year <- as.factor(nmds.scores$Year)
 vectors.12 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12.csv") 
 vectors.13 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13.csv")
 
+
+fill = c("Invaded_2017" = "#440C53", 
+            "Invaded_2018" = "#440C53",
+            "Treated_2017" = "#24908C",
+            "Treated_2018" = "#24908C", 
+            "Uninvaded_2017" = "#FDE825",
+            "Uninvaded_2018" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Uninvaded" = "#FDE825")
+
+shape = c("Invaded_2017" = 21, 
+          "Invaded_2018" = 24,
+          "Treated_2017" = 21,
+          "Treated_2018" = 24, 
+          "Uninvaded_2017" = 21,
+          "Uninvaded_2018" = 24)
+
+unique(nmds.scores$TrtYr)
+
 ## NMDS Axis 1, 2 
 
 invert.12 <- ggplot(data = nmds.scores,
                     aes(x = NMDS1, y = NMDS2)) +
   geom_point(data = nmds.scores, 
              aes(x = NMDS1, y = NMDS2, 
-                 colour = Treatment, shape = HabYr),
-             size = 4, stroke = 1.5) + # sites as points
+                 shape = TrtYr, fill = TrtYr),
+             size = 4, stroke = 1.5) +
   stat_ellipse(data = nmds.scores, 
                aes(x = NMDS1,y = NMDS2,
-                   linetype = Year, colour = Treatment), 
-               size = 1, level = 0.9) + 
-  geom_segment(data = vectors.12, 
-               aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
-               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+                   colour = Treatment), 
+               size = 1, level = 0.9) +
+    geom_segment(data = vectors.12, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS2),
+               arrow = arrow(length = unit(0.5, "cm")),
+               colour = "black") +
+  geom_label_repel(data = vectors.12, 
+                  aes(x = MDS1, y = MDS2, label = X),
+                  color="black",
+                  size = 5) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  #ylim(-1, 1.5) +
-  #xlim(-1.45, 1) +
-  #theme(legend.position = "none") +
-  geom_text_repel(data = vectors.12, 
-                  aes(x = MDS1, y = MDS2, label = X),
-                  color="black",
-                  size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
+  scale_colour_manual(values = colour) +
+  theme(legend.position = "none")
 
 invert.12
 
@@ -316,10 +337,10 @@ invert.13 <- ggplot(data = nmds.scores,
                     aes(x = NMDS1, y = NMDS3)) +
   geom_point(data = nmds.scores, 
              aes(x = NMDS1, y = NMDS3, 
-                 colour = Treatment, shape = HabYr), 
+                 fill = TrtYr, shape = TrtYr), 
              size = 4, stroke = 1.5) +
   stat_ellipse(data = nmds.scores, 
-               aes(x = NMDS1,y = NMDS3,linetype = Year, 
+               aes(x = NMDS1,y = NMDS3,
                    colour = Treatment), 
                size = 1, level = 0.9) +
   geom_segment(data = vectors.13, 
@@ -327,20 +348,27 @@ invert.13 <- ggplot(data = nmds.scores,
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
   theme_minimal() +
   theme(panel.border = element_rect(fill = NA)) +
-  geom_text_repel(data = vectors.13, 
+  geom_label_repel(data = vectors.13, 
                   aes(x = MDS1, y = MDS3, label = X),
                   color="black",
                   size = 5) +
-  scale_color_manual(values = c("#969696","#35978f", "#2166ac")) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
+  scale_colour_manual(values = colour) +
+  theme(legend.position = "right")
+
 
 invert.13
 
 
 (NMS.emerging.panel <- ggarrange(invert.12, invert.13,
                                  common.legend = TRUE,
-                                 legend = "bottom"))
+                                 legend = "right"))
   
+nmds.emerging <- annotate_figure(NMS.emerging.panel,
+                                 top = "Emerging Invertebrates")
 
 ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
        dpi = 300,
@@ -349,154 +377,18 @@ ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
        units = "in")
 
 
+ggarrange(nmds.emerging,nms.aquatic,
+          nrow = 2)
 
 
-# NMDS Clusters -----------------------------------------------------------
+library(patchwork)
 
-# added the grouping variable derived from the ISA and cluster analysis
+invert.12 <- invert.12 + ggtitle("B.    Emerging Invertebrates")
 
-inverts <- read.csv("Data/ISA_clusters.csv") # clusters
+NMDS.aquatic.benthic <- benthic.12 + benthic.13 + invert.12 + invert.13 
 
-colnames(inverts)
-
-Group3 <- as.factor(inverts$Three)
-Group4 <- as.factor(inverts$Four) 
-
-nmds.scores$Cluster3 <- Group3
-nmds.scores$Cluster4 <- Group4
-
-
-colnames(nmds.scores)
-
-col_order <- c("X", "Site", "Treatment", 
-               "Habitat", "Year", "TrtYr", "HabYr",
-               "Cluster3", "Cluster4", 
-               "NMDS1", "NMDS2", "NMDS3")
-
-nmds.scores <- nmds.scores[, col_order] # put the categorical values in order
-
-write.csv(nmds.scores,"Data/NMDS_emerg_inverts_scores_clusters.csv") 
-
-
-# selecting the ISA with p < N for the NMDS
-
-ISA.clust3 <- read.csv("Data/ISA_three_cluster.csv")
-
-ISA.spp <- ISA.clust3 %>% filter(pvalue < 0.001) 
-target <- ISA.spp$Species # string of species names
-
-ISA <- invert.rel %>% select(all_of(target)) # make a matrix of just those
-
-
-colnames(ISA)
-dim(ISA) # 27 columns and 54 sites
-
-# calculate vectors for Indicator Species ####
-
-(ISA.vector.12 <- envfit(nms.invert$points, ISA,
-                         permutations = 999, choices = c(1,2)))                        
-
-
-ISA.12 <- as.data.frame(ISA.vector.12$vectors$arrows*sqrt(ISA.vector.12$vectors$r)) #scaling vectors
-ISA.12$species <- rownames(ISA.12) # add Family as a column
-
-write.csv(ISA.12, "Data/NMDS_emerg_cluster_vector12.csv")
-
-(ISA.vector.13 <- envfit(nms.invert$points, ISA,
-                         permutations = 999, choices = c(1,3)))   
-
-
-ISA.13 <- as.data.frame(ISA.vector.13$vectors$arrows*sqrt(ISA.vector.13$vectors$r)) #scaling vectors
-ISA.13$species <- rownames(ISA.13)
-
-write.csv(ISA.13, "Data/NMDS_emerg_cluster_vector13.csv")
-
-# NMDS Cluster Figure -----------------------------------------------------
-
-
-# for later ##
-
-ISA.scores <- read.csv("Data/NMDS_emerg_inverts_scores_clusters.csv")
-colnames(ISA.scores)
-
-
-ISA.scores$Cluster4 <- as.factor(ISA.scores$Cluster4)
-ISA.scores$Cluster3 <- as.factor(ISA.scores$Cluster3)
-
-ISA.12 <- read.csv("Data/NMDS_emerg_cluster_vector12.csv")
-ISA.13 <- read.csv("Data/NMDS_emerg_cluster_vector13.csv")
-
-
-
-ISA.invert.12 <- ggplot(data = ISA.scores,
-                        aes(x = NMDS1, y = NMDS2)) +
-  geom_point(data = ISA.scores, aes(x = NMDS1, y = NMDS2, 
-                                colour = Cluster3, shape = HabYr), 
-             size = 4, stroke = 1.5) + # sites as points
-  stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS2,
-                                      colour = Cluster3), 
-               size = 1, type = "norm") + 
-  geom_segment(data = ISA.12, aes(x = 0, xend = MDS1,
-                                  y = 0, yend = MDS2), # adding in the vectors, c
-               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_minimal() + # no background
-  theme(panel.border = element_rect(fill = NA)) + # full square around figure
-  xlab("NMDS 1") +
-  ylab("NMDS 2") +
-  geom_text_repel(data = ISA.12, 
-                  aes(x = MDS1, y = MDS2, label = species),
-                  color="black",
-                  size = 5) +
-  scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5)) 
-
-ISA.invert.12
-
-## NMDS Axis 1, 3
-# same as above
-
-ISA.invert.13 <- ggplot(data = ISA.scores,
-                        aes(x = NMDS1, y = NMDS3)) +
-  geom_point(data = ISA.scores , aes(x = NMDS1, y = NMDS3, 
-                                colour = Cluster3, shape = HabYr),
-             size = 4, stroke = 1.5) + # sites as points
-  stat_ellipse(data = ISA.scores, aes(x = NMDS1,y = NMDS3,
-                                  colour = Cluster3), 
-               size = 1, level = 0.9) + 
-  geom_segment(data = ISA.13, aes(x = 0, xend = MDS1,
-                                  y = 0, yend = MDS3), # adding in the vectors, c
-               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_minimal() + # no background
-  theme(panel.border = element_rect(fill = NA)) + # full square around figure
-  xlab("NMDS 1") +
-  ylab("NMDS 3") +
-  geom_text_repel(data = ISA.13, 
-                  aes(x = MDS1, y = MDS3, label = species),
-                  color="black",
-                  size = 5) +
-  scale_colour_viridis(discrete = TRUE) + 
-  scale_shape_manual(values = c(15,0, 16, 1, 17, 2, 18, 5))
-
-ISA.invert.13
-
-
-
-NMDS.inv.ISA <- ggarrange(ISA.invert.12, ISA.invert.13, 
-                          common.legend = TRUE, 
-                          legend = "bottom",
-                          align = "hv")
-NMDS.inv.ISA
-
-ggsave("Figures/NMDS_invertebrate_ISAgroups.jpeg", NMDS.inv.ISA) 
-
-p <- ggarrange(NMS.emerging.panel, NMDS.inv.ISA,
-          nrow = 2,
-          labels = c("A","B ",""," "),
-          hjust = c(-5,-3.5),
-          vjust = 2)
-p
-
-ggsave("Figures/NMDS_panels.jpeg", p,
-       width = 15,
-       height = 13,
+ggsave("Figures/emerg_aquatic_NMDS_panel.TIFF", NMDS.aquatic.benthic,
+       dpi = 300,
+       width = 14,
+       height = 10,
        units = "in")

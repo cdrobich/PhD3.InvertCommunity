@@ -60,18 +60,23 @@ sum <- summary %>% t %>% as.data.frame
 #Depth_Mean       39.92500   32.05556   22.93750
 #Depth_SD         17.86719   11.11925   10.80317
 #Depth_SE         6.317005   3.706418   3.819496
+
 #rich_Mean        15.00000   15.66667   18.50000
 #rich_SD          1.309307   3.201562   4.440077
 #rich_SE          0.462910   1.067187   1.569804
+
 #abundance_Mean    583.875   3374.667    444.625
 #abundance_SD     622.1540  2920.5174   158.4297
 #abundance_SE    219.96464  973.50579   56.01337
+
 #H_Mean           1.426528   1.766169   1.909067
 #H_SD            0.3773256  0.2415291  0.1909684
 #H_SE           0.13340473 0.08050969 0.06751754
+
 #D1_Mean         0.6058429  0.7555122  0.7799573
 #D1_SD          0.13679184 0.09687545 0.05650638
 #D1_SE          0.04836322 0.03229182 0.01997802
+
 #J_Mean          0.5294864  0.6506698  0.6606395
 #J_SD           0.15016095 0.10256570 0.05272685
 #J_SE           0.05308991 0.03418857 0.01864176
@@ -110,7 +115,7 @@ ggplot(benthic.uni, aes(x = J)) +
 
 
 ## Transformations
-benthic.uni$logAb <- log(benthic.uni$abundance)
+benthic.uni$logAb <- log(benthic.uni$abundance + 1)
 benthic.uni$sqH <- sqrt(benthic.uni$H)
 benthic.uni$sqD1 <- log(benthic.uni$D1 + 1)
 benthic.uni$sqJ <- sqrt(benthic.uni$J)
@@ -211,6 +216,9 @@ get_emmeans(pwc.rich)
 #2  31.7 Treated     15.7  1.10    21     13.4      18.0 Emmeans test
 #3  31.7 Uninvaded   18.7  1.26    21     16.1      21.3 Emmeans test
 
+
+
+
 ## Shannon Weiner
 
 shannon.lm <- lm(H ~ Habitat * Depth, data = benthic.uni)
@@ -285,11 +293,130 @@ anova(pie.lm)
 plot(pie.lm)
 
 
-pie.lm.t <- lm(sqJ ~ Habitat * Depth, data = benthic.uni)
-summary(pie.lm.t)
-anova(pie.lm.t)
+# ANOVAs ------------------------------------------------------------------
 
-plot(pie.lm.t)
+library(lmPerm)
+citation("lmPerm")
+
+### Abundance
+
+abund.aov <- lm(logAb ~ Habitat, data = benthic.uni)
+
+anova(abund.aov)
+Anova(abund.aov, type = "2")
+
+#Response: logAb
+#         Sum Sq Df F value   Pr(>F)   
+#Habitat   14.829  2  5.8298 0.009299 **
+#Residuals 27.980 22 
+
+ab.hsd <-  HSD.test(abund.aov, "Habitat")
+
+#logAb groups
+#Treated   7.567484      a
+#Uninvaded 6.045949      b
+#Invaded   5.890475      b
+
+check_model(abund.aov)
+
+check_homogeneity(abund.aov)
+check_heteroscedasticity(abund.aov)
+
+## Permutational ANOVA
+## stopping rule based on probability, SE very small
+abun.perm <- lmp(abundance ~ Habitat, data = benthic.uni, 
+                 perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(abun.perm)
+Anova(abun.perm)
+
+#Response: abundance
+#            Sum Sq Df F value   Pr(>F)   
+#Habitat1  47205787  2  7.3012 0.003699 **
+#Residuals 71120603 22 
+
+ab.perm <- HSD.test(abun.perm, "Habitat")
+
+#abundance groups
+#Treated    3374.667      a
+#Invaded     583.875      b
+#Uninvaded   444.625      b
+
+#logAb groups
+#Treated   7.570431      a
+#Uninvaded 6.048435      b
+#Invaded   5.894747      b
+
+## Richness
+
+rich.aov <- lm(sqrich ~ Habitat, data = benthic.uni)
+
+anova(rich.aov)
+Anova(rich.aov, type = "2")
+
+#          Df Sum Sq Mean Sq F value Pr(>F)
+#Habitat    2 0.7601 0.38007  2.3721 0.1167
+#Residuals 22 3.5250 0.16023 
+
+check_model(rich.aov)
+check_normality(rich.aov) # residuals normally distributed 
+check_heteroscedasticity(rich.aov) # error variance homoscedastic
+
+## Permutations
+
+rich.perm <- lmp(rich ~ Habitat, data = benthic.uni, 
+                 perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(rich.perm)
+Anova(rich.perm)
+
+#Response: rich
+#Sum Sq Df F value  Pr(>F)  
+#Habitat1   55.76  2  2.6438 0.09355 .
+#Residuals 232.00 22    
+
+
+#Pielou
+
+pie.aov <- lm(J ~ Habitat, data = benthic.uni)
+Anova(pie.aov, type = 2)
+
+#Response: J
+#            Sum Sq Df F value  Pr(>F)  
+#Habitat   0.086615  2  3.6441 0.04296 *
+#Residuals 0.261457 22
+
+pie.t <- HSD.test(pie.aov, "Habitat")
+
+#          J groups
+#Uninvaded 0.6606395      a
+#Treated   0.6506698      a
+#Invaded   0.5294864      a
+
+check_model(pie.aov)
+check_normality(pie.aov) # residuals normally distributed 
+check_heteroscedasticity(pie.aov) # heteroscedasticity
+
+# Pielou permutation
+
+pie.perm <- lmp(J ~ Habitat, data = benthic.uni, 
+                 perm = "Prob", maxIter = 999)
+
+summary(pie.perm)
+
+Anova(pie.perm)
+
+#Response: J
+#           Sum Sq Df F-statistic  Pr(>F)  
+#Habitat1  0.086615  2  3.6441 0.04296 *
+#Residuals 0.261457 22                  
+
+pie.perm.t <- HSD.test(pie.perm, "Habitat")
+
+#J groups
+#Uninvaded 0.6606395      a
+#Treated   0.6506698      a
+#Invaded   0.5294864      a
 
 
 # Univariate Figures ------------------------------------------------------
@@ -307,14 +434,15 @@ rich <- ggplot(benthic.uni, aes(x = Depth, y = rich,
               stat = "smooth",
               level = 0.95,
               colour = "black") +
-  theme_classic() +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Taxonomic Richness") +
   scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) 
-  #theme(legend.position = "blank")
+  scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
+  theme(legend.position = "blank") +
+  ylim(0, 30)
 
 
 div <- ggplot(benthic.uni, aes(x = Depth, y = H, 
@@ -327,14 +455,15 @@ div <- ggplot(benthic.uni, aes(x = Depth, y = H,
               stat = "smooth",
               level = 0.95,
               colour = "black") +
-  theme_classic() +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Shannon-Weiner (H')") +
   scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0, 3)
+  ylim(0, 3) +
+  theme(legend.position = c(0.2, 0.2))
 
 domin <- ggplot(benthic.uni, aes(x = Depth, y = D1, 
                                  group = Habitat)) +
@@ -346,14 +475,15 @@ domin <- ggplot(benthic.uni, aes(x = Depth, y = D1,
               stat = "smooth",
               level = 0.95,
               colour = "black") +
-  theme_classic() +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Simpson's Diversity (1-D)") +
   scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0,1)
+  ylim(0,1) +
+  theme(legend.position = c(0.2, 0.2))
 
 
 even <- ggplot(benthic.uni, aes(x = Depth, y = J, 
@@ -366,23 +496,99 @@ even <- ggplot(benthic.uni, aes(x = Depth, y = J,
               stat = "smooth",
               level = 0.95,
               colour = "black") +
-  theme_classic() +
+  theme_classic(14) +
   labs(x = "Water Depth (cm) ",
        y = "Pielou's Evenness (J)") +
   scale_fill_viridis(discrete = TRUE) +
   theme(panel.border = element_rect(fill = NA)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   scale_x_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80)) +
-  ylim(0,1)
+  ylim(0,1) +
+  theme(legend.position = "none")
 
 
 uni.panel <- ggarrange(rich, div,
           domin, even,
-          common.legend = TRUE,
-          legend = "right",
+          ncol = 4,
           labels = "AUTO")
 
+uni.panel
+
 ggsave("Figures/aquatic_invert_ANCOVApanels.jpeg", uni.panel)
+
+
+uni.panel.td <- ggarrange(rich, domin, 
+                       ncol = ,
+                       labels = "AUTO")
+
+
+# Boxplots ----------------------------------------------------------------
+
+abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
+  stat_boxplot(geom = "errorbar") +
+  geom_boxplot(size = 1) +
+  geom_jitter(data = benthic.uni,
+              aes(fill = Habitat, shape = Habitat),
+              size = 5,
+              stroke = 1.5) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Abundance") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none")
+
+
+rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
+  stat_boxplot(geom = "errorbar") +
+  geom_boxplot(size = 1) +
+  geom_jitter(data = benthic.uni,
+              aes(fill = Habitat, shape = Habitat),
+              size = 5,
+              stroke = 1.5) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Taxanomic Richness") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none") +
+  ylim(0, 30)
+
+
+piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
+  stat_boxplot(geom = "errorbar") +
+  geom_boxplot(size = 1) +
+  geom_jitter(data = benthic.uni,
+              aes(fill = Habitat, shape = Habitat),
+              size = 5,
+              stroke = 1.5) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Pielou's Evenness (J)") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none") +
+  ylim(0, 1)
+
+
+aquatic.panel <- ggarrange(abun.a, rich.a, piel.a,
+          nrow = 1,
+          labels = 'AUTO')
+
+boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
+          nrow = 2)
+
+
+ggsave("Figures/aquatic_invert_ANCOVApanels_2.jpeg", 
+       boxplots,
+       width = 14,
+       height = 9,
+       units = "in")
+
+
 
 # ANOVA plots -------------------------------------------------------------
 
