@@ -49,23 +49,28 @@ benthic.env <- benthic %>% select(ID:Collection.date)
 
 bugs.b <- vegdist(benthic.data, method = "bray")
 
-groups <- factor(benthic$Habitat)
+groupsb <- factor(benthic$Habitat)
 
-(dispersion <- betadisper(bugs.b, groups)) # spatial median default
+(dispersionb <- betadisper(bugs.b, groupsb)) # spatial median default
 
 #Homogeneity of multivariate dispersions
+##
+##Call: betadisper(d = bugs.b, group = groupsb)
+##
+##No. of Positive Eigenvalues: 19
+##No. of Negative Eigenvalues: 5
+##
+##Average distance to median:
+##  Invaded   Treated Uninvaded 
+##0.4468    0.4541    0.4860 
+##
+##Eigenvalues for PCoA axes:
+##  (Showing 8 of 24 eigenvalues)
+##PCoA1  PCoA2  PCoA3  PCoA4  PCoA5  PCoA6  PCoA7  PCoA8 
+#1.5648 1.2761 1.0066 0.7229 0.5963 0.5049 0.4730 0.4529 
 
-#Call: betadisper(d = bugs.b, group = groups)
-
-#No. of Positive Eigenvalues: 19
-#No. of Negative Eigenvalues: 5
-
-#Average distance to median:
-#Invaded   Treated Uninvaded 
-#0.4468    0.4541    0.4860
-
-plot(dispersion)
-boxplot(dispersion) # actually look really good!
+plot(dispersionb)
+boxplot(dispersionb) # actually look really good!
 
 
 (adonis.pair(bugs.b, groups, nper = 1000, corr.method = "bonferroni"))

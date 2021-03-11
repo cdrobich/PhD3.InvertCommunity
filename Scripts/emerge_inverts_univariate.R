@@ -72,51 +72,29 @@ invert$Factor <- as.factor(invert$Factor)
 invert$logAb <- log(invert$abundance + 1)
 invert$sqRich <- sqrt(invert$rich)
 
-test.year <- lm(rich ~ Treatment * Year, data = invert)
-anova(test.year)
+invert.2018 <- invert %>% filter(Year == "2018")
 
-#Response: rich
-#                Df  Sum Sq Mean Sq F value    Pr(>F)    
-#Treatment       2  855.11  427.56 13.4213 2.345e-05 ***
-#Year            1  504.17  504.17 15.8262 0.0002336 ***
-#Treatment:Year  2   87.11   43.56  1.3672 0.2645521    
-#Residuals      48 1529.11   31.86 
-                
-
-year.hsd <- HSD.test(test.year, "Year")
-
-#rich groups
-#2018 23.55556      a
-#2017 17.44444      b
-
-trt.hsd <- HSD.test(test.year, "Treatment")
-
-#rich groups
-#Invaded   24.72222      a
-#Uninvaded 21.61111      a
-#Treated   15.16667      b
-
-invert.2017 <- invert %>% filter(Year == "2017")
-
-ab.water <- lm(logAb ~ Treatment * Depth, data = invert.2017)
+ab.water <- lm(logAb ~ Treatment * Depth, data = invert.2018)
 Anova(ab.water)
 
 #Response: logAb
-#                 Sum Sq Df F value   Pr(>F)   
-#Treatment        7.9593  2  7.2127 0.004126 **
-#Depth            1.2544  1  2.2735 0.146498   
-#Treatment:Depth  0.3602  2  0.3264 0.725086   
-#Residuals       11.5869 21
+#                Sum Sq Df F value    Pr(>F)    
+#Treatment       15.4190  2 14.4869 0.0001113 ***
+#Depth            0.2393  1  0.4497 0.5097983    
+#Treatment:Depth  1.5659  2  1.4713 0.2523595    
+#Residuals       11.1756 21 
 
-s.water <- lm(sqRich ~ Treatment * Depth, data = invert.2017)
+s.water <- lm(sqRich ~ Treatment * Depth, data = invert.2018)
 Anova(s.water)
 
+#Anova Table (Type II tests)
+
 #Response: sqRich
-#                 Sum Sq Df F value   Pr(>F)   
-#Treatment       4.3634  2  6.3206 0.007098 **
-#Depth           1.3329  1  3.8615 0.062773 . 
-#Treatment:Depth 0.6673  2  0.9666 0.396662   
-#Residuals       7.2488 21 
+#                Sum Sq Df F value   Pr(>F)   
+#Treatment       7.1088  2  9.0015 0.001502 **
+#Depth           1.3780  1  3.4897 0.075770 . 
+#Treatment:Depth 0.6979  2  0.8837 0.428047   
+#Residuals       8.2922 21  
 
 install.packages("plotrix")
 library(plotrix)
@@ -204,20 +182,49 @@ invert.habyr %>% t %>% as.data.frame
 #J_SE           0.04178605 0.05141676 0.02940359 0.03502795 0.08486536 0.07549406
 
 
-invert.2017 %>% group_by(TrtYr) %>% 
+
+invert.2018.sum <- invert.2018 %>% group_by(Treatment) %>% 
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = list(Mean = mean, SD = sd, SE = std.error), na.rm = TRUE,
+    .names = "{col}_{fn}"
+  ))
+
+
+invert.2018.sum %>% t %>% as.data.frame
+
+#Treatment         Invaded    Treated  Uninvaded
+#
+#Depth_Mean       44.04444   32.05556   28.72222
+#Depth_SD         20.78606   11.11925   20.08201
+#Depth_SE         6.928687   3.706418   6.694002
+#
+#rich_Mean        27.11111   17.11111   26.44444
+#rich_SD          6.431260   4.136558   7.666667
+#rich_SE          2.143753   1.378853   2.555556
+#
+#abundance_Mean   449.0000  2580.4444   761.4444
+#abundance_SD     201.6290  1252.1426   740.7581
+#abundance_SE     67.20966  417.38086  246.91936
+#
+#J_Mean          0.4940827  0.1358119  0.4481745
+#J_SD            0.1542503  0.1050839  0.2264822
+#J_SE           0.05141676 0.03502795 0.07549406
+
+
+invert.2018 %>% group_by(TrtYr) %>% 
   summarise(depth.min = min(Depth),
             depth.max = max(Depth),
             range = depth.max - depth.min)
 
-#TrtYr          depth.min depth.max range
-#1 Invaded_2017        22.3        75  52.7
-#2 Treated_2017        32.2        75  42.8
-#3 Uninvaded_2017      17          75  58  
+#TrtYr            depth.min depth.max range
+#1 Invaded_2018        22.3        77  54.7
+#2 Treated_2018        21.7        51  29.3
+#3 Uninvaded_2018       7          75  68 
 
 
-water.depth <- ggplot(invert.2017, aes(y = Depth, x = Treatment)) +
-  geom_violin(aes(fill = Treatment),
-              trim = FALSE,
+water.depth <- ggplot(invert.2018, aes(y = Depth, x = Treatment)) +
+  geom_boxplot(aes(fill = Treatment),
               size = 1,
               alpha = 0.8) +
   scale_fill_viridis(discrete = TRUE) +
@@ -228,7 +235,7 @@ water.depth <- ggplot(invert.2017, aes(y = Depth, x = Treatment)) +
   theme(legend.position = "none") +
   theme(axis.text = element_text(size=18))
 
-ggsave("Figures/water_depth_2017.jpeg",
+ggsave("Figures/water_depth_2018.jpeg",
        water.depth)
 
 
@@ -265,52 +272,52 @@ invert$depthst <- scale(invert$Depth,
 
 # Factor; a = Uninvaded, b = invaded, c = treated
 
-rich.glmm <- glmer(rich ~ Factor  + (1|Year) + (1|N),
-                     data = invert, family = poisson(link = "log"))
+rich.glmm <- glmer(rich ~ Factor  + (1|N),
+                     data = invert.2018, family = poisson(link = "log"))
 
 summary(rich.glmm)
 
+#Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
 #Family: poisson  ( log )
-#Formula: rich ~ Factor + (1 | Year) + (1 | N)
-#Data: invert
+#Formula: rich ~ Factor + (1 | N)
+#Data: invert.2018
 #
 #AIC      BIC   logLik deviance df.resid 
-#337.9    347.7   -163.9    327.9       48 
+#169.4    174.4    -80.7    161.4       22 
 #
 #Scaled residuals: 
 #  Min       1Q   Median       3Q      Max 
-#-2.46402 -0.61819  0.01305  0.77866  2.17309 
+#-1.78157 -0.63686  0.05977  0.71619  1.85415 
 #
 #Random effects:
-#  Groups Name        Variance  Std.Dev. 
-#N      (Intercept) 3.279e-02 1.811e-01
-#Year   (Intercept) 1.981e-10 1.407e-05
-#Number of obs: 53, groups:  N, 5; Year, 2
+#  Groups Name        Variance Std.Dev.
+#N      (Intercept) 0.03701  0.1924  
+#Number of obs: 26, groups:  N, 3
 #
 #Fixed effects:
-#              Estimate Std. Error z value Pr(>|z|)    
-#  (Intercept)  2.98531    0.10682  27.946  < 2e-16 ***
-#  Factorb      0.15751    0.07016   2.245   0.0248 *  
-#  Factorc     -0.32178    0.07984  -4.031 5.57e-05 ***
+# Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)  3.08434    0.16209  19.028  < 2e-16 ***
+#Factorb      0.06127    0.09305   0.658 0.510278    
+#Factorc     -0.36949    0.10719  -3.447 0.000567 ***
 #  ---
 #  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
+
 #Correlation of Fixed Effects:
 #  (Intr) Factrb
-#Factorb -0.347       
-#Factorc -0.361  0.461
-
+#Factorb -0.285       
+#Factorc -0.402  0.424
 
 anova(rich.glmm)
 
+#Analysis of Variance Table
 #npar Sum Sq Mean Sq F value
-#Factor    2 37.533  18.767  18.767
+#Factor    2 17.904   8.952   8.952
 
 ?r2_nakagawa
 r2_nakagawa(rich.glmm)
 
-# Conditional R2: 0.580
-# Marginal R2: 0.320
+#Conditional R2: 0.579
+#Marginal R2: 0.293
 
 # examine the residuals 
 
@@ -323,8 +330,7 @@ tab_model(rich.glmm,
           string.ci = "95% CI",
           string.pred = "Coefficients",
           string.p = "P value",
-          dv.labels = c("Taxa Richness"))
-
+          dv.labels = c("Taxa Richness"),
           file = "Data/Emerging/glmer_output.html")
 
 plot(allEffects(rich.glmm))
@@ -436,21 +442,22 @@ check_model(abun.glmm)
 
 ## Linear model for Abundance
 
-ab.lmm <- lmer(logAb ~ Factor + (1|Year) + (1|N),
-                data = invert, REML = TRUE)
+ab.lmm <- lmer(logAb ~ Factor + (1|N),
+                data = invert.2018, REML = TRUE)
 
 summary(ab.lmm)
 anova(ab.lmm)
 
-#Type III Analysis of Variance Table with Satterthwaite's method
-#       Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
-#Factor 20.043  10.021     2 49.002  18.015 1.365e-06 ***
 
+
+#Type III Analysis of Variance Table with Satterthwaite's method
+#       Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Factor 14.446  7.2229     2    23  12.885 0.0001762 ***
 
 r2_nakagawa(ab.lmm)
 
 #Conditional R2: NA
-#Marginal R2: 0.409
+#Marginal R2: 0.508
 
 plot(ab.lmm)
 qqnorm(resid(ab.lmm))
@@ -463,20 +470,20 @@ check_singularity(ab.lmm) # TRUE
 
 # Just ANOVA
 
-ab.lm <- lm(logAb ~ Factor, data = invert)
+ab.lm <- lm(logAb ~ Factor, data = invert.2018)
 Anova(ab.lm)
 
 #Response: logAb
-#         Sum Sq Df F value    Pr(>F)    
-#Factor    20.608  2  14.373 1.121e-05 ***
-#Residuals 36.564 51
+#          Sum Sq Df F value    Pr(>F)    
+#Factor    15.192  2  14.044 9.154e-05 ***
+#Residuals 12.981 24 
 
 ab.hsd <- HSD.test(ab.lm, "Factor")
 
 #logAb groups
 #treated 7.109676      a
-#invaded  5.819395      b
-#uninvaded 5.779883      b
+#invaded  5.819395     b
+#uninvaded 5.779883    b
 
 check_model(ab.lm)
 check_normality(ab.lm) # good
@@ -485,21 +492,21 @@ check_heteroscedasticity(ab.lm) # good
 
 ## Linear model for Pielous 
 
-pie.lmm <- lmer(J ~ Factor + (1|Year) + (1|N),
-                 data = invert, REML = TRUE)
+pie.lmm <- lmer(J ~ Factor +  (1|N),
+                 data = invert.2018, REML = TRUE)
 
 summary(pie.lmm)
 anova(pie.lmm)
 
 #Type III Analysis of Variance Table with Satterthwaite's method
-#       Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
-#Factor  1.326 0.66298     2    50  23.948 5.072e-08 ***  
+#        Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+#Factor 0.61879 0.30939     2    23  10.875 0.0004739 ***
 
 
 r2_nakagawa(pie.lmm)
 
 #Conditional R2: NA
-#Marginal R2: 0.479
+#Marginal R2: 0.465
 
 plot(pie.lmm)
 qqnorm(resid(pie.lmm))
@@ -510,17 +517,17 @@ plot(allEffects(pie.lmm))
 check_model(pie.lmm)
 check_singularity(pie.lmm) #TRUE
 
-## ANCOVA Pielous
+## ANOVA Pielous
 
 pie.lm <- lm(J ~ Treatment,
-              data = invert)
+              data = invert.2018)
 
 anova(pie.lm)
 
 #Response: J
-#          Df Sum Sq Mean Sq F value    Pr(>F)    
-#Treatment  2 1.3923 0.69618  25.207 2.441e-08 ***
-#Residuals 51 1.4086 0.02762            
+#          Df  Sum Sq Mean Sq F value    Pr(>F)    
+#Treatment  2 0.68411 0.34205  11.914 0.0002549 ***
+#  Residuals 24 0.68904 0.02871          
 
 pie.hsd <- HSD.test(pie.lm, "Treatment")
 
@@ -530,31 +537,8 @@ pie.hsd <- HSD.test(pie.lm, "Treatment")
 #Treated   0.1478616      b
 
 check_model(pie.lm)
-
-
-
-
-## all LMM results
-
-tab_model(rich.glmm, pie.lmm,
-          string.ci = "95% CI",
-          string.pred = "Coefficients",
-          string.p = "P value",
-          dv.labels = c("Taxa Richness",
-                        "Abundance",
-                        "Pielou's Evenness (J)"),
-          file = "Data/Emerging/lmm_output.html")
-
-
-
-
-
-
-
-
-
-
-
+check_normality(pie.lm) # good
+check_heteroscedasticity(pie.lm) # good
 
 
 # Null models -------------------------------------------------------------
@@ -728,10 +712,10 @@ panel2 <- ggarrange(riche, simpson,
 
 # Boxplots ----------------------------------------------------------------
 
-abund.box <- ggplot(invert, aes(x = Treatment, y = abundance)) +
+abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(size = 1) +
-  geom_jitter(data = invert,
+  geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
               size = 5,
               stroke = 1.5) +
@@ -741,13 +725,18 @@ abund.box <- ggplot(invert, aes(x = Treatment, y = abundance)) +
   scale_fill_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none")+ 
+  theme(legend.position = "none") +
+  annotate("text", x = 2, y = 4500,
+           label = c("*"),
+           size = 15) +
+  theme(axis.text = element_text(size = 16)) 
 
 
-pielou.box <- ggplot(invert, aes(x = Treatment, y = J)) +
+pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(size = 1) +
-  geom_jitter(data = invert,
+  geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
               size = 5,
               stroke = 1.5) +
@@ -758,12 +747,17 @@ pielou.box <- ggplot(invert, aes(x = Treatment, y = J)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
-  ylim(0, 1)
+  ylim(0, 1) +
+  theme(legend.position = "none") +
+  annotate("text", x = 2, y = 0.8,
+           label = c("*"),
+           size = 15) +
+  theme(axis.text = element_text(size = 16))
 
-riche.box <- ggplot(invert, aes(x = Treatment, y = rich)) +
+riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(size = 1) +
-  geom_jitter(data = invert,
+  geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
               size = 5,
               stroke = 1.5) +
@@ -774,7 +768,12 @@ riche.box <- ggplot(invert, aes(x = Treatment, y = rich)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   ylim(0, 50) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  annotate("text", x = 2, y = 45,
+           label = c("*"),
+           size = 15) +
+  theme(axis.text = element_text(size = 16))
+
 
 emerg.boxplots <- ggarrange(abund.box, riche.box, pielou.box,
           nrow = 1,

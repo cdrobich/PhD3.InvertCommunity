@@ -85,6 +85,23 @@ sum <- summary %>% t %>% as.data.frame
 
 benthic.uni <- read.csv("Data/Aquatic/benthic_invertebrates_univariate.csv")
 
+
+ab.water.b <- lm(logAb ~ Habitat * Depth, data = benthic.uni)
+Anova(ab.water.b)
+
+#Response: logAb
+#               Sum Sq Df F value   Pr(>F)   
+#Habitat       15.0060  2  6.7707 0.006026 **
+#Depth          1.4904  1  1.3449 0.260532   
+#Habitat:Depth  5.1965  2  2.3447 0.123000   
+#Residuals     21.0550 19 
+
+s.water.b <- lm(sqrich ~ Habitat * Depth, data = benthic.uni)
+Anova(s.water.b)
+
+
+
+
 # abundance histogram
 ggplot(benthic.uni, aes(x = abundance)) + 
   geom_histogram(binwidth = 100,
@@ -537,7 +554,12 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   scale_fill_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(legend.position = "none") +
+  annotate("text", x = 2, y = 8000,
+           label = c("*"),
+           size = 15) +
+  theme(axis.text = element_text(size = 16))
 
 
 rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
@@ -554,7 +576,8 @@ rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
-  ylim(0, 30)
+  ylim(0, 30) +
+  theme(axis.text = element_text(size = 16))
 
 
 piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
@@ -571,7 +594,8 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
   scale_shape_manual(values = c(21, 24, 22)) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
-  ylim(0, 1)
+  ylim(0, 1) +
+  theme(axis.text = element_text(size = 16))
 
 
 aquatic.panel <- ggarrange(abun.a, rich.a, piel.a,

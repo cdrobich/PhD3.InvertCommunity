@@ -35,6 +35,8 @@ write.csv(invert.rel, "Data/Emerging/emerging_invert_relativized.csv")
 
 ##### perMANVOA ####
 
+invert.rel <- read.csv("Data/Emerging/emerging_invert_relativized.csv")
+
 # Two-way perMANOVA -------------------------------------------------------
 
 (per.inv <- adonis2(invert.rel ~ Treatment * Year,
@@ -53,19 +55,96 @@ write.csv(invert.rel, "Data/Emerging/emerging_invert_relativized.csv")
 #Residual       48  15.5795 0.77050                  
 #Total          53  20.2199 1.00000
 
+
+# betadisper --------------------------------------------------------------
+# multivariate homogeneity of groups dispersions
+
 bugs.b <- vegdist(invert.rel, method = "bray")
 
 groups <- factor(invert$TrtYr)
 
 (dispersion <- betadisper(bugs.b, groups)) 
 
+#Homogeneity of multivariate dispersions
+#
+#Call: betadisper(d = bugs.b, group = groups)
+#
+#No. of Positive Eigenvalues: 33
+#No. of Negative Eigenvalues: 20
+#
 #Average distance to median:
-#Invaded_2017   Invaded_2018   Treated_2017   Treated_2018 Uninvaded_2017 Uninvaded_2018 
-#0.5381         0.5030         0.5366         0.4939         0.5658         0.5443 
+# Invaded_2017   Invaded_2018   Treated_2017   Treated_2018 Uninvaded_2017 
+#0.40914        0.14508        0.14913        0.07226        0.13264 
+#Uninvaded_2018 
+#0.10442 
+#
+#Eigenvalues for PCoA axes:
+#  (Showing 8 of 53 eigenvalues)
+#PCoA1  PCoA2  PCoA3  PCoA4  PCoA5  PCoA6  PCoA7  PCoA8 
+#3.5783 1.4234 0.4978 0.3054 0.2956 0.2588 0.1874 0.1819 
+
+anova(dispersion)
+
+#Analysis of Variance Table, TrtYr
+
+#Response: Distances
+#Df  Sum Sq  Mean Sq F value    Pr(>F)    
+#Groups     5 0.66138 0.132275  53.522 < 2.2e-16 ***
+#Residuals 48 0.11863 0.002471 
 
 plot(dispersion)
 boxplot(dispersion)
 
+bugs.b <- vegdist(invert.rel, method = "bray")
+
+groups.trt <- factor(invert$Treatment)
+
+(dispersion2 <- betadisper(bugs.b, groups.trt)) 
+
+#Homogeneity of multivariate dispersions
+#
+#Call: betadisper(d = bugs.b, group = groups.trt)
+#
+#No. of Positive Eigenvalues: 33
+#No. of Negative Eigenvalues: 20
+#
+#Average distance to median:
+#  Invaded   Treated Uninvaded 
+#0.4223    0.2742    0.2398 
+#
+#Eigenvalues for PCoA axes:
+#  (Showing 8 of 53 eigenvalues)
+#PCoA1  PCoA2  PCoA3  PCoA4  PCoA5  PCoA6  PCoA7  PCoA8 
+#3.5783 1.4234 0.4978 0.3054 0.2956 0.2588 0.1874 0.1819 
+
+anova(dispersion2)
+
+#Analysis of Variance Table
+
+#Response: Distances
+#Df  Sum Sq  Mean Sq F value    Pr(>F)    
+#Groups     2 0.33851 0.169257  9.5471 0.0003007 ***
+#Residuals 51 0.90416 0.017729 
+
+permutest(dispersion2, pairwise = TRUE, permutations = 99)
+
+#Response: Distances
+#         Df  Sum Sq  Mean Sq      F N.Perm Pr(>F)   
+#Groups     2 0.33851 0.169257 9.5471     99   0.01 **
+#Residuals 51 0.90416 0.017729  
+
+disp2.HSD <- TukeyHSD(dispersion2)
+
+Fit: aov(formula = distances ~ group, data = df)
+
+#$group
+#diff        lwr         upr     p adj
+#Treated-Invaded   -0.14808096 -0.2552203 -0.04094161 0.0044561
+#Uninvaded-Invaded -0.18250022 -0.2896396 -0.07536088 0.0004140
+#Uninvaded-Treated -0.03441926 -0.1415586  0.07272008 0.7196320
+
+plot(dispersion2)
+boxplot(dispersion2)
 
 
 (adonis.pair(bugs.b, groups, nper = 1000, corr.method = "bonferroni"))
@@ -129,7 +208,7 @@ nms.invert
 #Stress:     0.2014684 
 #Stress type 1, weak ties
 #Two convergent solutions found after 99 tries
-#Scaling: centring, PC rotation, halfchange scaling 
+#Scaling: centring, PC rotation, half-change scaling 
 #Species: expanded scores based on ‘invert.rel’
 
 # look at points and the stress real quick
