@@ -69,6 +69,15 @@ groupsb <- factor(benthic$Habitat)
 ##PCoA1  PCoA2  PCoA3  PCoA4  PCoA5  PCoA6  PCoA7  PCoA8 
 #1.5648 1.2761 1.0066 0.7229 0.5963 0.5049 0.4730 0.4529 
 
+anova(dispersionb)
+
+#Analysis of Variance Table
+#
+#Response: Distances
+#Df   Sum Sq   Mean Sq F value Pr(>F)
+#Groups     2 0.007034 0.0035169  0.3297 0.7227
+#Residuals 22 0.234694 0.0106679 
+
 plot(dispersionb)
 boxplot(dispersionb) # actually look really good!
 
@@ -164,7 +173,7 @@ all.taxa.df <- data.frame((alltaxa$vectors)$arrows,
                           (alltaxa$vectors)$pvals) #take list and make into dataframe
 
 
-corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.2)
+corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.25)
 corr.spp12$species <- rownames(corr.spp12)
 
 corr.species12 <- corr.spp12$species # string of the Family names
@@ -193,7 +202,7 @@ all.taxa.df.13 <- data.frame((alltaxa.13$vectors)$arrows,
                           (alltaxa.13$vectors)$r,
                           (alltaxa.13$vectors)$pvals)
 
-corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.2)
+corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.25)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
@@ -265,7 +274,7 @@ benthic.12 <- ggplot(data = benth.scores,
                size = 1, level = 0.90) + # a 95% CI ellipses
   geom_segment(data = vector.12, aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
-  theme_classic() + # no background
+  theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
@@ -277,7 +286,6 @@ benthic.12 <- ggplot(data = benth.scores,
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) 
-
 
 benthic.12
 
@@ -296,11 +304,11 @@ benthic.13 <- ggplot(data = benth.scores,
   geom_segment(data = vector.13, 
                aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
                arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
-  theme_classic() +
+  theme_minimal() +
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  theme(legend.position = "right") +
+  theme(legend.position = "none") +
   geom_label_repel(data = vector.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
@@ -319,7 +327,7 @@ benthic.12 <- benthic.12 + ggtitle("A.    Aquatic Invertebrates")
 (NMS.benthic.panel <- ggarrange(benthic.12, benthic.13,
                                align = "hv",
                                common.legend = TRUE,
-                               legend = "right"))
+                               legend = "none"))
 
 
 
