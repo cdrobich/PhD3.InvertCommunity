@@ -400,6 +400,15 @@ anova(LCBD.benth)
 
 mean(bent.env$LCBD) # 0.04
 
+bent.env %>% group_by(Habitat) %>% 
+  summarise(meanLCBD = mean(LCBD),
+            sdLCBD = sd(LCBD),
+            std.error(LCBD))
+
+#  Habitat   meanLCBD  sdLCBD `std.error(LCBD)`
+#1 Invaded     0.0365 0.00777           0.00275
+#2 Treated     0.0400 0.00775           0.00258
+#3 Uninvaded   0.0435 0.0147            0.00521
 
 ggplot(bent.env, aes(x = Habitat, y = LCBD)) +
   geom_jitter(data = bent.env,

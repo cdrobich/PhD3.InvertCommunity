@@ -529,6 +529,74 @@ boxplot(emerg.disp)
 #3 Restored <-> Uninvaded 0.9740588 0.9740588 3.190785 0.1662665   0.001             0.003
 
 
+
+
+# 2018 LCBD ---------------------------------------------------------------
+(emerg.beta <- beta.div(invert.b, method = "percentdiff",
+                        sqrt.D = FALSE, samp = FALSE,
+                        nperm = 999))
+
+emerg.beta$LCBD[emerg.beta$LCBD > mean(emerg.beta$LCBD)] # LCBD > average
+
+#2          4          5          7          9         10         13         14         15         16 
+#0.04101365 0.04390262 0.04065086 0.04627327 0.04597074 0.03988721 0.04708878 0.05299037 0.04509054 0.05575606 
+
+#17         25 
+#0.04627138 0.06554662 
+
+invert.18.ev$LCBD <- emerg.beta$LCBD 
+
+write.csv(invert.18.ev, "Data/Emerging/LCBD_2018.csv")
+
+emerg.LCBD <- lm(LCBD ~ Treatment, data = invert.18.ev)
+anova(emerg.LCBD)
+
+#Response: LCBD
+#Df     Sum Sq    Mean Sq F value  Pr(>F)  
+#Treatment  2 0.00061547 0.00030773  2.6823 0.08884 .
+#Residuals 24 0.00275342 0.00011473  
+
+mean(invert.18.ev$LCBD) #0.037
+
+invert.18.ev %>% group_by(Treatment) %>% 
+  summarise(meanLCBD = mean(LCBD),
+            sdLCBD = sd(LCBD),
+            std.error(LCBD))
+
+# A tibble: 3 x 4
+#Treatment meanLCBD  sdLCBD `std.error(LCBD)`
+#1 Invaded     0.0364 0.00893           0.00298
+#2 Restored    0.0432 0.00840           0.00280
+#3 Uninvaded   0.0315 0.0139            0.00464
+
+
+ggplot(invert.18.ev, aes(x = Treatment, y = LCBD)) +
+  geom_jitter(data = invert.18.ev,
+              aes(fill = Treatment, shape = Treatment),
+              size = 5,
+              stroke = 1.5,
+              width = 0.25) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Emerging LCBD") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none") +
+  theme(axis.text = element_text(size = 14)) +
+  ylim(0, 0.1) +
+  geom_hline(yintercept = 0.037,
+             linetype = "dashed")
+
+
+
+
+
+
+
+
+
+
 # 2018 NMDS ---------------------------------------------------------------
 
 
