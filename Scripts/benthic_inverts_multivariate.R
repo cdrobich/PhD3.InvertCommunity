@@ -61,7 +61,7 @@ groupsb <- factor(benthic$Habitat)
 ##No. of Negative Eigenvalues: 5
 ##
 ##Average distance to median:
-##  Invaded   Treated Uninvaded 
+##Invaded   Treated Uninvaded 
 ##0.4468    0.4541    0.4860 
 ##
 ##Eigenvalues for PCoA axes:
@@ -77,6 +77,25 @@ anova(dispersionb)
 #Df   Sum Sq   Mean Sq F value Pr(>F)
 #Groups     2 0.007034 0.0035169  0.3297 0.7227
 #Residuals 22 0.234694 0.0106679 
+
+
+permutest(dispersionb, pairwise = TRUE, permutations = 999)
+
+#Permutation test for homogeneity of multivariate dispersions
+#Permutation: free
+#Number of permutations: 999
+#
+#Response: Distances
+#           Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)
+#Groups     2 0.007034 0.0035169 0.3297    999  0.766
+#Residuals 22 0.234694 0.0106679                     
+#
+#Pairwise comparisons:
+#  (Observed p-value below diagonal, permuted p-value above diagonal)
+#Invaded Treated Uninvaded
+#Invaded           0.92000     0.313
+#Treated   0.90261             0.574
+#Uninvaded 0.30650 0.55309  
 
 plot(dispersionb)
 boxplot(dispersionb) # actually look really good!
@@ -369,6 +388,10 @@ unin.bc <- vegdist(aq.uninv.taxa, method = "bray")
 trt.bc <- vegdist(aq.trt.taxa, method = "bray")
 
 
+inv.h <- decostand(aq.inv.taxa, "hellinger")
+unin.h <- decostand(aq.uninv.taxa, "hellinger")
+trt.h <- decostand(aq.trt.taxa, "hellinger")
+
 # Local Contribution to BD
 
 (benth.beta <- beta.div(benthic.bc, method = "percentdiff",
@@ -400,6 +423,7 @@ anova(LCBD.benth)
 
 mean(bent.env$LCBD) # 0.04
 
+
 bent.env %>% group_by(Habitat) %>% 
   summarise(meanLCBD = mean(LCBD),
             sdLCBD = sd(LCBD),
@@ -429,9 +453,29 @@ ggplot(bent.env, aes(x = Habitat, y = LCBD)) +
              linetype = "dashed")
 
 
+### Species contribution
+# degree of variation of individual species
+
+benthic.raw <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <=2 removed
+colnames(benthic.raw)
+
+benth.r.taxa <- benthic.raw %>% select(Oligochaeta:Leptoceridae)
+benth.r.env <- benthic.raw %>% select(Site.ID:Collection.date)
+
+benth.r.h <- decostand(benth.r.taxa, "hellinger")
+
+(benth.SCBD <- beta.div(benth.r.h, method = "hellinger",
+                        sqrt.D = FALSE, samp = FALSE))
+
+taxa.SCBD <- as.data.frame(benth.SCBD$SCBD)
+write.csv(taxa.SCBD, "Data/Aquatic/SCBD_taxa.csv")
+
+# Aquatic inverts by habitat ----------------------------------------------
 
 
 ## Each habitat alone
+
+# Invaded 
 
 (inv.beta <- beta.div(inv.bc, method = "percentdiff",
                    sqrt.D = FALSE, samp = FALSE,
@@ -445,6 +489,15 @@ inv.beta$LCBD[inv.beta$LCBD > mean(inv.beta$LCBD)] # LCBD > average
 #1         2         3         7 
 #0.1635096 0.1573112 0.1288408 0.1386385 
 
+(inv.SCBD <- beta.div(inv.h, method = "hellinger",
+                      sqrt.D = FALSE, samp = FALSE))
+
+
+inv.d.SCBD <- as.data.frame(inv.SCBD$SCBD)
+
+write.csv(inv.d.SCBD, "Data/Aquatic/SCBD_taxa_invaded.csv")
+
+## Uninvaded
 
 (unin.beta <- beta.div(unin.bc, method = "percentdiff",
                       sqrt.D = FALSE, samp = FALSE,
@@ -458,6 +511,17 @@ unin.beta$LCBD[unin.beta$LCBD > mean(unin.beta$LCBD)] # LCBD > average
 #1         3         5         6         7 
 #0.1388476 0.1303577 0.1395451 0.1416225 0.1307846 
 
+(unin.SCBD <- beta.div(unin.h, method = "hellinger",
+                      sqrt.D = FALSE, samp = FALSE))
+
+
+unin.d.SCBD <- as.data.frame(unin.SCBD$SCBD)
+
+write.csv(unin.d.SCBD, "Data/Aquatic/SCBD_taxa_uninvaded.csv")
+
+
+
+## Treated
 
 (trt.beta <- beta.div(trt.bc, method = "percentdiff",
                        sqrt.D = FALSE, samp = FALSE,
@@ -468,8 +532,22 @@ aq.trt.env$LCBD <- trt.beta$LCBD
 
 trt.beta$LCBD[trt.beta$LCBD > mean(trt.beta$LCBD)] # LCBD > average
 
-#9 
-#0.3740378 
+
+# SCBD
+
+(trt.SCBD <- beta.div(trt.h, method = "hellinger",
+                       sqrt.D = FALSE, samp = FALSE))
+
+
+trt.d.SCBD <- as.data.frame(trt.SCBD$SCBD)
+
+write.csv(trt.d.SCBD, "Data/Aquatic/SCBD_taxa_treated.csv")
+
+
+# Combine data
+
+
+
 
 LCBD.data <- rbind(aq.trt.env, aq.inv.env, aq.uninv.env)
 

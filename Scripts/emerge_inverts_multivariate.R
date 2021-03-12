@@ -493,12 +493,39 @@ trt <- factor(invert.18$Treatment)
 
 (emerg.disp <- betadisper(invert.b, trt)) 
 
+
+#Average distance to median:
+#  Invaded  Restored Uninvaded 
+#0.5059    0.4921    0.5407 
+
 anova(emerg.disp)
 
 #Response: Distances
 #Df   Sum Sq   Mean Sq F value Pr(>F)
 #Groups     2 0.011278 0.0056391  0.8156 0.4543
 #Residuals 24 0.165941 0.0069142 
+
+permutest(emerg.disp, pairwise = TRUE, permutations = 999)
+
+
+#Permutation test for homogeneity of multivariate dispersions
+#Permutation: free
+#Number of permutations: 999
+#
+#Response: Distances
+#          Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)
+#Groups     2 0.011278 0.0056391 0.8156    999  0.444
+#Residuals 24 0.165941 0.0069142                     
+#
+#Pairwise comparisons:
+#  (Observed p-value below diagonal, permuted p-value above diagonal)
+#Invaded Restored Uninvaded
+#Invaded            0.73100      0.46
+#Restored  0.72842               0.17
+#Uninvaded 0.44344  0.16809          
+
+
+
 
 boxplot(emerg.disp)
 
@@ -558,6 +585,71 @@ anova(emerg.LCBD)
 
 mean(invert.18.ev$LCBD) #0.037
 
+## SCBD
+
+invert.18.taxa.h <- decostand(invert.18.taxa, "hellinger")
+
+(emerg.SCBD <- beta.div(invert.18.taxa.h, method = "hellinger",
+                        sqrt.D = FALSE, samp = FALSE))
+
+taxa.e.SCBD <- as.data.frame(emerg.SCBD$SCBD)
+write.csv(taxa.e.SCBD, "Data/Emerging/SCBD_taxa18.csv")
+
+## SCBD by habitat type
+
+colnames(invert.18)
+unique(invert.18$Treatment)
+
+em.inv <- invert.18 %>% filter(Treatment == "Invaded")
+em.unin <- invert.18 %>% filter(Treatment == "Uninvaded")
+em.trt <- invert.18 %>% filter(Treatment == "Restored")
+
+
+colnames(em.trt)
+
+em.inv.t <- em.inv %>% select(Araneae:Crambidae)
+em.unin.t <- em.unin %>% select(Araneae:Crambidae)
+em.trt.t <- em.trt %>% select(Araneae:Crambidae)
+
+
+em.inv.h <- decostand(em.inv.t, "hellinger")
+em.unin.h <- decostand(em.unin.t, "hellinger")
+em.trt.h <- decostand(em.trt.t, "hellinger")
+
+
+# Invaded
+
+(emerg.in.SCBD <- beta.div(em.inv.h, method = "hellinger",
+                        sqrt.D = FALSE, samp = FALSE))
+
+inv.e.SCBD <- as.data.frame(emerg.in.SCBD$SCBD)
+write.csv(inv.e.SCBD, "Data/Emerging/SCBD_taxa18_invaded.csv")
+
+
+# Uninvaded
+(emerg.unin.SCBD <- beta.div(em.unin.h, method = "hellinger",
+                           sqrt.D = FALSE, samp = FALSE))
+
+uninv.e.SCBD <- as.data.frame(emerg.unin.SCBD$SCBD)
+write.csv(uninv.e.SCBD, "Data/Emerging/SCBD_taxa18_uninvaded.csv")
+
+
+# Treated
+(emerg.trt.SCBD <- beta.div(em.trt.h , method = "hellinger",
+                             sqrt.D = FALSE, samp = FALSE))
+
+trt.e.SCBD <- as.data.frame(emerg.trt.SCBD$SCBD)
+write.csv(trt.e.SCBD , "Data/Emerging/SCBD_taxa18_treated.csv")
+
+
+
+
+
+
+
+
+
+
 invert.18.ev %>% group_by(Treatment) %>% 
   summarise(meanLCBD = mean(LCBD),
             sdLCBD = sd(LCBD),
@@ -587,9 +679,6 @@ ggplot(invert.18.ev, aes(x = Treatment, y = LCBD)) +
   ylim(0, 0.1) +
   geom_hline(yintercept = 0.037,
              linetype = "dashed")
-
-
-
 
 
 
