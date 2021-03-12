@@ -82,7 +82,7 @@ plot(dispersionb)
 boxplot(dispersionb) # actually look really good!
 
 
-(adonis.pair(bugs.b, groups, nper = 1000, corr.method = "bonferroni"))
+(adonis.pair(bugs.b, groupsb, nper = 1000, corr.method = "bonferroni"))
 
 #              combination SumsOfSqs   MeanSqs  F.Model        R2     P.value P.value.corrected
 #1   Invaded <-> Restored 0.9649239 0.9649239 3.946800 0.2083096 0.000999001       0.002997003
@@ -254,8 +254,6 @@ vector.12 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv")
 vector.13 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 
 
-benth.scores <- benth.scores %>% mutate(Habitat = fct_recode(Habitat,
-                                             Treated = "Restored"))
 str(benth.scores)
 
 ## NMDS Axis 1, 2 
@@ -337,3 +335,142 @@ ggsave("Figures/Benthic_NMDS_panel.jpeg", NMS.benthic.panel,
        width = 11.9,
        units = "in")
 
+
+# Beta Diversity ----------------------------------------------------------
+library(adespatial)
+
+benthic <- read.csv("Data/Aquatic/benthic_inverts_relativized.csv") # occurrences <=2 removed, relativized
+
+# Invaded data
+aq.invaded <- benthic %>% filter(Habitat == "Invaded")
+aq.inv.taxa <- aq.invaded %>% select(Oligochaetae:Leptoceridae)
+aq.inv.env <- aq.invaded %>% select(ID:Collection.date)
+
+# Uninvaded data
+aq.uninvaded <- benthic %>% filter(Habitat == "Uninvaded")
+aq.uninv.taxa <- aq.uninvaded %>% select(Oligochaetae:Leptoceridae)
+aq.uninv.env <- aq.uninvaded %>% select(ID:Collection.date)
+
+# Treated data
+aq.treated <- benthic %>% filter(Habitat == "Treated")
+aq.trt.taxa <- aq.treated %>% select(Oligochaetae:Leptoceridae)
+aq.trt.env <- aq.treated %>% select(ID:Collection.date)
+
+
+# Dissimilarity Matrices --------------------------------------------------
+colnames(benthic)
+benthic.tx <- benthic %>% select(Oligochaetae:Leptoceridae)
+bent.env <- benthic %>% select(ID:Collection.date)
+
+
+benthic.bc <- vegdist(benthic.tx, method = "bray")
+inv.bc <- vegdist(aq.inv.taxa, method = "bray")
+unin.bc <- vegdist(aq.uninv.taxa, method = "bray")
+trt.bc <- vegdist(aq.trt.taxa, method = "bray")
+
+
+# Local Contribution to BD
+
+(benth.beta <- beta.div(benthic.bc, method = "percentdiff",
+                      sqrt.D = FALSE, samp = FALSE,
+                      nperm = 999))
+
+benth.beta$LCBD[benth.beta$LCBD > mean(benth.beta$LCBD)] # LCBD > average
+
+#6          7          8         10         16         17         18         19 
+#0.04838159 0.04357041 0.04138004 0.05279625 0.04708411 0.04976721 0.07507751 0.04368041 
+
+#20         21 
+#0.04246180 0.05326194
+
+
+bent.env$LCBD <- benth.beta$LCBD
+bent.env$LCBD.p <- benth.beta$p.LCBD
+write.csv(bent.env, "Data/Aquatic/LCBD_data.csv")
+
+LCBD.benth <- lm(LCBD ~ Habitat, data = bent.env)
+anova(LCBD.benth)
+
+#Analysis of Variance Table
+#
+#Response: LCBD
+#Df     Sum Sq    Mean Sq F value Pr(>F)
+#Habitat    2 0.00019935 9.9676e-05  0.9043 0.4194
+#Residuals 22 0.00242494 1.1022e-04  
+
+mean(bent.env$LCBD) # 0.04
+
+
+ggplot(bent.env, aes(x = Habitat, y = LCBD)) +
+  geom_jitter(data = bent.env,
+              aes(fill = Habitat, shape = Habitat),
+              size = 5,
+              stroke = 1.5,
+              width = 0.25) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Aquatic LCBD") +
+  scale_fill_viridis(discrete = TRUE) +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none") +
+  theme(axis.text = element_text(size = 14)) +
+  ylim(0, 0.1) +
+  geom_hline(yintercept = 0.04,
+             linetype = "dashed")
+
+
+
+
+## Each habitat alone
+
+(inv.beta <- beta.div(inv.bc, method = "percentdiff",
+                   sqrt.D = FALSE, samp = FALSE,
+                   nperm = 999))
+
+
+aq.inv.env$LCBD <- inv.beta$LCBD
+
+inv.beta$LCBD[inv.beta$LCBD > mean(inv.beta$LCBD)] # LCBD > average
+
+#1         2         3         7 
+#0.1635096 0.1573112 0.1288408 0.1386385 
+
+
+(unin.beta <- beta.div(unin.bc, method = "percentdiff",
+                      sqrt.D = FALSE, samp = FALSE,
+                      nperm = 999))
+
+
+aq.uninv.env$LCBD <- unin.beta$LCBD
+
+unin.beta$LCBD[unin.beta$LCBD > mean(unin.beta$LCBD)] # LCBD > average
+
+#1         3         5         6         7 
+#0.1388476 0.1303577 0.1395451 0.1416225 0.1307846 
+
+
+(trt.beta <- beta.div(trt.bc, method = "percentdiff",
+                       sqrt.D = FALSE, samp = FALSE,
+                       nperm = 999))
+
+
+aq.trt.env$LCBD <- trt.beta$LCBD
+
+trt.beta$LCBD[trt.beta$LCBD > mean(trt.beta$LCBD)] # LCBD > average
+
+#9 
+#0.3740378 
+
+LCBD.data <- rbind(aq.trt.env, aq.inv.env, aq.uninv.env)
+
+
+LCBD.anova <- lm(LCBD ~ Habitat, data = LCBD.data)
+Anova(LCBD.anova)
+
+#Anova Table (Type II tests)
+
+#Response: LCBD
+#Sum Sq Df F value Pr(>F)
+#Habitat   0.001111  2  0.1422 0.8683
+#Residuals 0.085978 22
