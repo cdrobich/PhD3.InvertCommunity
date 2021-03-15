@@ -33,8 +33,6 @@ benthic.env <- benthic %>% select(ID:Collection.date)
 
 # perMANOVA ---------------------------------------------------------------
 
-#### perMANOVA #####
-
 (per.treat <- adonis2(benthic.data ~ Habitat, data = benthic,
                      permutations = 999, method = "bray"))
 
@@ -45,7 +43,7 @@ benthic.env <- benthic %>% select(ID:Collection.date)
 #Total    24   7.7800 1.00000                  
 
 
-# homogeneity of groups dispersion
+### Betadisper; homogeneity of groups dispersion ####
 
 bugs.b <- vegdist(benthic.data, method = "bray")
 
@@ -98,7 +96,8 @@ permutest(dispersionb, pairwise = TRUE, permutations = 999)
 #Uninvaded 0.30650 0.55309  
 
 plot(dispersionb)
-boxplot(dispersionb) # actually look really good!
+boxplot(dispersionb,
+        xlab = " ") # actually look really good!
 
 
 (adonis.pair(bugs.b, groupsb, nper = 1000, corr.method = "bonferroni"))
@@ -546,9 +545,6 @@ write.csv(trt.d.SCBD, "Data/Aquatic/SCBD_taxa_treated.csv")
 
 # Combine data
 
-
-
-
 LCBD.data <- rbind(aq.trt.env, aq.inv.env, aq.uninv.env)
 
 
@@ -561,3 +557,190 @@ Anova(LCBD.anova)
 #Sum Sq Df F value Pr(>F)
 #Habitat   0.001111  2  0.1422 0.8683
 #Residuals 0.085978 22
+
+#### Beta diversity calculations ####
+library(betapart)
+
+aq.inv.taxa
+aq.uninv.taxa
+aq.trt.taxa
+
+
+aq.inv.taxa[aq.inv.taxa > 0] <- 1
+aq.uninv.taxa[aq.uninv.taxa > 0] <- 1
+aq.trt.taxa[aq.trt.taxa > 0] <- 1 
+
+inv.bd.aq <- as.data.frame(beta.multi(aq.inv.taxa, index.family = "sorensen"))
+inv.bd.aq$Habitat <- c("Invaded")
+
+unin.bd.aq <- as.data.frame(beta.multi(aq.uninv.taxa, index.family = "sorensen"))
+unin.bd.aq$Habitat <- c("Uninvaded")
+
+trt.bd.aq <- as.data.frame(beta.multi(aq.trt.taxa, index.family = "sorensen"))
+trt.bd.aq$Habitat <- c("Treated")
+
+beta <- rbind(trt.bd.aq, inv.bd.aq, unin.bd.aq)
+
+
+
+### Null model
+aq.inv.taxa
+aq.uninv.taxa
+aq.trt.taxa
+
+## Invaded null model
+
+library(picante)
+
+invaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(invaded.null.aq) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempma <- as.data.frame(randomizeMatrix(aq.inv.taxa, null.model = "trialswap")) #Randomize the data
+  inv.bv.a <- beta.multi(tempma, index.family = "sorensen")
+  invaded.null.aq[i,] <- data.frame(matrix(unlist(inv.bv.a), nrow = length(1), byrow = T)) 
+}
+
+inv.null.aq <- invaded.null.aq %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+inv.null.aq$Turn <- inv.bd.aq$beta.SIM
+inv.null.aq$Nest <- inv.bd.aq$beta.SNE
+inv.null.aq$Over <- inv.bd.aq$beta.SOR
+inv.null.aq$Habitat <- c("Invaded")
+
+
+# Uninvaded 
+
+
+uninvaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(uninvaded.null.aq) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempua <- as.data.frame(randomizeMatrix(aq.uninv.taxa, null.model = "trialswap")) #Randomize the data
+  unin.bv.a <- beta.multi(tempua, index.family = "sorensen")
+  uninvaded.null.aq[i,] <- data.frame(matrix(unlist(unin.bv.a), nrow = length(1), byrow = T)) 
+}
+
+unin.null.aq <- uninvaded.null.aq %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+unin.null.aq$Turn <- unin.bd.aq$beta.SIM
+unin.null.aq$Nest <- unin.bd.aq$beta.SNE
+unin.null.aq$Over <- unin.bd.aq$beta.SOR
+unin.null.aq$Habitat <- c("Uninvaded")
+
+
+
+
+# Treated
+
+treated.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(treated.null.aq) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempta <- as.data.frame(randomizeMatrix(aq.trt.taxa, null.model = "trialswap")) #Randomize the data
+  trt.bv.aq <- beta.multi(tempta, index.family = "sorensen")
+  treated.null.aq[i,] <- data.frame(matrix(unlist(trt.bv.aq), nrow = length(1), byrow = T)) 
+}
+
+treat.null.aq <- treated.null.aq %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+treat.null.aq$Turn <- trt.bd.aq$beta.SIM
+treat.null.aq$Nest <- trt.bd.aq$beta.SNE
+treat.null.aq$Over <- trt.bd.aq$beta.SOR
+treat.null.aq$Habitat <- c("Treated")
+
+
+bd.null.aq <- rbind(treat.null.aq, unin.null.aq,inv.null.aq)
+
+
+sumbdaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Over, 
+                             fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = S.avg - S.CI, ymax = S.avg + S.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+  geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Beta Diversity Sum"))) +
+  theme_classic()+
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+
+
+
+
+nestaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Nest, 
+                            fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = N.avg - N.CI, ymax = N.avg + N.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+  geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Nestedness"))) +
+  theme_classic()+
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+
+
+
+turnaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Turn, 
+                            fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = T.avg - T.CI, ymax = T.avg + T.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+  geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Turnover"))) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+
+
+
+aqua.beta <- ggarrange(sumbdaq, nestaq, turnaq,
+                        labels = "AUTO",
+                        nrow = 1)

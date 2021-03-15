@@ -487,6 +487,10 @@ invert.18.ev <- invert.18 %>% select(Site:N)
 # 2018 betadisper ---------------------------------------------------------
 ?betadisper
 
+invert.18 <- invert.18 %>% #rename the factors
+  mutate(Treatment = fct_recode(Treatment,
+                                "Treated" = "Restored")) 
+
 invert.b <- vegdist(invert.18.taxa, method = "bray")
 
 trt <- factor(invert.18$Treatment)
@@ -524,10 +528,8 @@ permutest(emerg.disp, pairwise = TRUE, permutations = 999)
 #Restored  0.72842               0.17
 #Uninvaded 0.44344  0.16809          
 
-
-
-
-boxplot(emerg.disp)
+boxplot(emerg.disp,
+        xlab = " ")
 
 
 # 2018 perMANOVA ----------------------------------------------------------
@@ -554,6 +556,9 @@ boxplot(emerg.disp)
 #1   Invaded <-> Restored 1.2464902 1.2464902 4.354111 0.2139180   0.002             0.006
 #2  Invaded <-> Uninvaded 0.4483599 0.4483599 1.418583 0.0814408   0.067             0.201
 #3 Restored <-> Uninvaded 0.9740588 0.9740588 3.190785 0.1662665   0.001             0.003
+
+
+
 
 
 
@@ -608,8 +613,13 @@ em.trt <- invert.18 %>% filter(Treatment == "Restored")
 colnames(em.trt)
 
 em.inv.t <- em.inv %>% select(Araneae:Crambidae)
+em.inv.e <- em.inv %>% select(Site:N)
+
 em.unin.t <- em.unin %>% select(Araneae:Crambidae)
+em.unin.e <- em.unin %>% select(Site:N)
+
 em.trt.t <- em.trt %>% select(Araneae:Crambidae)
+em.trt.e <- em.trt %>% select(Site:N)
 
 
 em.inv.h <- decostand(em.inv.t, "hellinger")
@@ -640,12 +650,6 @@ write.csv(uninv.e.SCBD, "Data/Emerging/SCBD_taxa18_uninvaded.csv")
 
 trt.e.SCBD <- as.data.frame(emerg.trt.SCBD$SCBD)
 write.csv(trt.e.SCBD , "Data/Emerging/SCBD_taxa18_treated.csv")
-
-
-
-
-
-
 
 
 
@@ -681,9 +685,195 @@ ggplot(invert.18.ev, aes(x = Treatment, y = LCBD)) +
              linetype = "dashed")
 
 
+# Beta diversity ----------------------------------------------------------
+library(betapart)
+
+em.inv.t 
+em.unin.t
+em.trt.t 
+
+em.inv.t[em.inv.t > 0] <- 1
+em.unin.t[em.unin.t > 0] <- 1
+em.trt.t[em.trt.t > 0] <- 1 
+
+inv.bd <- as.data.frame(beta.multi(em.inv.t, index.family = "sorensen"))
+inv.bd$Habitat <- c("Invaded")
+
+unin.bd <- as.data.frame(beta.multi(em.unin.t, index.family = "sorensen"))
+unin.bd$Habitat <- c("Uninvaded")
+
+trt.bd <- as.data.frame(beta.multi(em.trt.t, index.family = "sorensen"))
+trt.bd$Habitat <- c("Treated")
+
+beta <- rbind(trt.bd, inv.bd, unin.bd)
 
 
 
+### Null model
+em.inv.t
+em.unin.t
+em.trt.t
+
+em.inv.e
+
+## Invaded null model
+
+library(picante)
+
+invaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(invaded.null) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempm <- as.data.frame(randomizeMatrix(em.inv.t, null.model = "trialswap")) #Randomize the data
+  inv.bv <- beta.multi(tempm, index.family = "sorensen")
+  invaded.null[i,] <- data.frame(matrix(unlist(inv.bv), nrow = length(1), byrow = T)) 
+}
+
+inv.null <- invaded.null %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+inv.null$Turn <- inv.bd$beta.SIM
+inv.null$Nest <- inv.bd$beta.SNE
+inv.null$Over <- inv.bd$beta.SOR
+inv.null$Habitat <- c("Invaded")
+
+
+# Uninvaded 
+uninvaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(uninvaded.null) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempu <- as.data.frame(randomizeMatrix(em.unin.t, null.model = "trialswap")) #Randomize the data
+  unin.bv <- beta.multi(tempu, index.family = "sorensen")
+  uninvaded.null[i,] <- data.frame(matrix(unlist(unin.bv), nrow = length(1), byrow = T)) 
+}
+
+unin.null <- uninvaded.null %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+unin.null$Turn <- unin.bd$beta.SIM
+unin.null$Nest <- unin.bd$beta.SNE
+unin.null$Over <- unin.bd$beta.SOR
+unin.null$Habitat <- c("Uninvaded")
+
+# Treated
+
+treated.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+colnames(treated.null) <- c("Turnover","Nestedness","Sum")
+
+
+for (i in 1:999){ #for 1000 iterations
+  tempt <- as.data.frame(randomizeMatrix(em.trt.t, null.model = "trialswap")) #Randomize the data
+  trt.bv <- beta.multi(tempt, index.family = "sorensen")
+  treated.null[i,] <- data.frame(matrix(unlist(trt.bv), nrow = length(1), byrow = T)) 
+}
+
+treat.null <- treated.null %>% 
+  summarise(n = n(),
+            N.avg = mean(Nestedness),
+            N.sd = sd(Nestedness),
+            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            T.avg = mean(Turnover),
+            T.sd = sd(Turnover),
+            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            S.avg = mean(Sum),
+            S.sd = sd(Sum),
+            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+
+
+treat.null$Turn <- trt.bd$beta.SIM
+treat.null$Nest <- trt.bd$beta.SNE
+treat.null$Over <- trt.bd$beta.SOR
+treat.null$Habitat <- c("Treated")
+
+
+bd.null <- rbind(treat.null, unin.null,inv.null)
+
+
+sumbd <- ggplot(bd.null, aes(x = Habitat, y = Over, 
+                                fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = S.avg - S.CI, ymax = S.avg + S.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+    geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Beta Diversity Sum"))) +
+  theme_classic()+
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+  
+
+
+
+nest <- ggplot(bd.null, aes(x = Habitat, y = Nest, 
+                           fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = N.avg - N.CI, ymax = N.avg + N.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+  geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Nestedness"))) +
+  theme_classic()+
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+
+
+
+turn <- ggplot(bd.null, aes(x = Habitat, y = Turn, 
+                            fill = Habitat, shape = Habitat)) +
+  geom_errorbar(aes(ymin = T.avg - T.CI, ymax = T.avg + T.CI),
+                colour = "black",
+                size = 0.5,
+                width = 0.3,
+                position = position_dodge(0.6)) +
+  geom_point(position = position_dodge(0.6), size = 5) +
+  labs(x = " ",
+       y = expression(paste("Turnover"))) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_viridis(discrete = TRUE)
+
+
+
+emerg.beta <- ggarrange(sumbd, nest, turn,
+                        labels = c("D","E","F"),
+                        nrow = 1)
+
+
+aqem.beta <- aqua.beta + emerg.beta +
+  plot_layout(nrow = 2)
+
+ggsave("Figures/aquaitc_emerging_betadiversity.jpeg",
+       aqem.beta)
 
 
 # 2018 NMDS ---------------------------------------------------------------
