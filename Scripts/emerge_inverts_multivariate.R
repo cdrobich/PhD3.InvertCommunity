@@ -707,7 +707,7 @@ trt.bd$Habitat <- c("Treated")
 
 beta <- rbind(trt.bd, inv.bd, unin.bd)
 
-
+write.csv(beta, "Data/Emerging/beta_diversity_em.csv")
 
 ### Null model
 em.inv.t

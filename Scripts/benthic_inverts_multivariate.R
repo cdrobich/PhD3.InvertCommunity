@@ -579,8 +579,8 @@ unin.bd.aq$Habitat <- c("Uninvaded")
 trt.bd.aq <- as.data.frame(beta.multi(aq.trt.taxa, index.family = "sorensen"))
 trt.bd.aq$Habitat <- c("Treated")
 
-beta <- rbind(trt.bd.aq, inv.bd.aq, unin.bd.aq)
-
+beta.aq <- rbind(trt.bd.aq, inv.bd.aq, unin.bd.aq)
+write.csv(beta.aq, "Data/Emerging/beta_diversity_aquatic.csv")
 
 
 ### Null model
