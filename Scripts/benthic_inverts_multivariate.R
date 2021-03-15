@@ -284,7 +284,8 @@ benthic.12 <- ggplot(data = benth.scores,
                  fill = Habitat, 
                  shape = Habitat,
                  stroke = 1.5),
-             size = 5) + # sites as points
+             size = 7,
+             alpha = 0.7) + # sites as points
   stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
                                         colour = Habitat), 
                size = 1, level = 0.90) + # a 95% CI ellipses
@@ -298,7 +299,8 @@ benthic.12 <- ggplot(data = benth.scores,
   geom_label_repel(data = vector.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
-                  size = 5) +
+                  size = 5,
+                  force = 2) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) 
@@ -312,8 +314,9 @@ benthic.13 <- ggplot(data = benth.scores,
   geom_point(data = benth.scores, 
              aes(x = NMDS1, y = NMDS3, 
                  fill = Habitat, shape = Habitat), 
-             size = 5,
-             stroke = 1.5) +
+             size = 7,
+             stroke = 1.5,
+             alpha = 0.7) +
   stat_ellipse(data = benth.scores, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Habitat), size = 1, level = 0.9) +
@@ -328,7 +331,8 @@ benthic.13 <- ggplot(data = benth.scores,
   geom_label_repel(data = vector.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
-                  size = 5) +
+                  size = 5, 
+                  force = 2) +
   scale_fill_viridis(discrete = TRUE) +
   scale_colour_viridis(discrete = TRUE) +
   scale_shape_manual(values = c(21, 24, 22)) 
@@ -592,12 +596,12 @@ aq.trt.taxa
 
 library(picante)
 
-invaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+invaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(invaded.null.aq) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempma <- as.data.frame(randomizeMatrix(aq.inv.taxa, null.model = "trialswap")) #Randomize the data
+  tempma <- as.data.frame(randomizeMatrix(aq.inv.taxa, null.model = "frequency")) #Randomize the data
   inv.bv.a <- beta.multi(tempma, index.family = "sorensen")
   invaded.null.aq[i,] <- data.frame(matrix(unlist(inv.bv.a), nrow = length(1), byrow = T)) 
 }
@@ -606,13 +610,13 @@ inv.null.aq <- invaded.null.aq %>%
   summarise(n = n(),
             N.avg = mean(Nestedness),
             N.sd = sd(Nestedness),
-            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            N.CI = qnorm(0.95)*(N.sd/sqrt(8)), # 95% CI
             T.avg = mean(Turnover),
             T.sd = sd(Turnover),
-            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            T.CI = qnorm(0.95)*(T.sd/sqrt(8)), # specify correct sample size
             S.avg = mean(Sum),
             S.sd = sd(Sum),
-            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+            S.CI = qnorm(0.95)*(S.sd/sqrt(8)))
 
 
 inv.null.aq$Turn <- inv.bd.aq$beta.SIM
@@ -624,12 +628,12 @@ inv.null.aq$Habitat <- c("Invaded")
 # Uninvaded 
 
 
-uninvaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+uninvaded.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(uninvaded.null.aq) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempua <- as.data.frame(randomizeMatrix(aq.uninv.taxa, null.model = "trialswap")) #Randomize the data
+  tempua <- as.data.frame(randomizeMatrix(aq.uninv.taxa, null.model = "frequency")) #Randomize the data
   unin.bv.a <- beta.multi(tempua, index.family = "sorensen")
   uninvaded.null.aq[i,] <- data.frame(matrix(unlist(unin.bv.a), nrow = length(1), byrow = T)) 
 }
@@ -638,13 +642,13 @@ unin.null.aq <- uninvaded.null.aq %>%
   summarise(n = n(),
             N.avg = mean(Nestedness),
             N.sd = sd(Nestedness),
-            N.CI = qnorm(0.95)*(N.sd/sqrt(9)), # 95% CI
+            N.CI = qnorm(0.95)*(N.sd/sqrt(8)), # 95% CI
             T.avg = mean(Turnover),
             T.sd = sd(Turnover),
-            T.CI = qnorm(0.95)*(T.sd/sqrt(9)), # specify correct sample size
+            T.CI = qnorm(0.95)*(T.sd/sqrt(8)), # specify correct sample size
             S.avg = mean(Sum),
             S.sd = sd(Sum),
-            S.CI = qnorm(0.95)*(S.sd/sqrt(9)))
+            S.CI = qnorm(0.95)*(S.sd/sqrt(8)))
 
 
 unin.null.aq$Turn <- unin.bd.aq$beta.SIM
@@ -657,12 +661,12 @@ unin.null.aq$Habitat <- c("Uninvaded")
 
 # Treated
 
-treated.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+treated.null.aq <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(treated.null.aq) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempta <- as.data.frame(randomizeMatrix(aq.trt.taxa, null.model = "trialswap")) #Randomize the data
+  tempta <- as.data.frame(randomizeMatrix(aq.trt.taxa, null.model = "frequency")) #Randomize the data
   trt.bv.aq <- beta.multi(tempta, index.family = "sorensen")
   treated.null.aq[i,] <- data.frame(matrix(unlist(trt.bv.aq), nrow = length(1), byrow = T)) 
 }
@@ -688,6 +692,9 @@ treat.null.aq$Habitat <- c("Treated")
 
 bd.null.aq <- rbind(treat.null.aq, unin.null.aq,inv.null.aq)
 
+write.csv(bd.null.aq, "Data/Aquatic/beta_diversity_null_true.csv")
+
+colnames(bd.null.aq)
 
 sumbdaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Over, 
                              fill = Habitat, shape = Habitat)) +
@@ -696,13 +703,19 @@ sumbdaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Over,
                 size = 0.5,
                 width = 0.3,
                 position = position_dodge(0.6)) +
-  geom_point(position = position_dodge(0.6), size = 5) +
+  geom_point(alpha = 0.7, size = 7,
+             stroke = 1.5) +
+  geom_point(aes(y = S.avg),
+             fill = "black",
+             size = 3) +
   labs(x = " ",
        y = expression(paste("Beta Diversity Sum"))) +
-  theme_classic()+
+  theme_classic(14)+
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.5, 0.75) +
+  theme(axis.text = element_text(size = 14))
 
 
 
@@ -714,13 +727,19 @@ nestaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Nest,
                 size = 0.5,
                 width = 0.3,
                 position = position_dodge(0.6)) +
-  geom_point(position = position_dodge(0.6), size = 5) +
+  geom_point(aes(y = N.avg),
+             fill = "black",
+             size = 3) +
+  geom_point(alpha = 0.7, size = 7,
+             stroke = 1.5) +
   labs(x = " ",
        y = expression(paste("Nestedness"))) +
-  theme_classic()+
+  theme_classic(14)+
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.0, 0.2) +
+  theme(axis.text = element_text(size = 14))
 
 
 
@@ -731,13 +750,19 @@ turnaq <- ggplot(bd.null.aq, aes(x = Habitat, y = Turn,
                 size = 0.5,
                 width = 0.3,
                 position = position_dodge(0.6)) +
-  geom_point(position = position_dodge(0.6), size = 5) +
+  geom_point(aes(y = T.avg),
+             fill = "black",
+             size = 3) +
+  geom_point(alpha = 0.7, size = 7,
+             stroke = 1.5) +
   labs(x = " ",
        y = expression(paste("Turnover"))) +
-  theme_classic() +
+  theme_classic(14) +
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.3, 0.75)+
+  theme(axis.text = element_text(size = 14))
 
 
 

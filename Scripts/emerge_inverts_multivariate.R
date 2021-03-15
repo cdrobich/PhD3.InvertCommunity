@@ -687,6 +687,8 @@ ggplot(invert.18.ev, aes(x = Treatment, y = LCBD)) +
 
 # Beta diversity ----------------------------------------------------------
 library(betapart)
+citation("betapart")
+citation("picante")
 
 em.inv.t 
 em.unin.t
@@ -699,33 +701,33 @@ em.trt.t[em.trt.t > 0] <- 1
 inv.bd <- as.data.frame(beta.multi(em.inv.t, index.family = "sorensen"))
 inv.bd$Habitat <- c("Invaded")
 
+
 unin.bd <- as.data.frame(beta.multi(em.unin.t, index.family = "sorensen"))
 unin.bd$Habitat <- c("Uninvaded")
 
 trt.bd <- as.data.frame(beta.multi(em.trt.t, index.family = "sorensen"))
 trt.bd$Habitat <- c("Treated")
 
-beta <- rbind(trt.bd, inv.bd, unin.bd)
+beta.em <- rbind(trt.bd, inv.bd, unin.bd)
 
-write.csv(beta, "Data/Emerging/beta_diversity_em.csv")
+write.csv(beta.em, "Data/Emerging/beta_diversity_em.csv")
 
 ### Null model
 em.inv.t
 em.unin.t
 em.trt.t
 
-em.inv.e
 
 ## Invaded null model
 
 library(picante)
 
-invaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+invaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(invaded.null) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempm <- as.data.frame(randomizeMatrix(em.inv.t, null.model = "trialswap")) #Randomize the data
+  tempm <- as.data.frame(randomizeMatrix(em.inv.t, null.model = "frequency")) #Randomize the data
   inv.bv <- beta.multi(tempm, index.family = "sorensen")
   invaded.null[i,] <- data.frame(matrix(unlist(inv.bv), nrow = length(1), byrow = T)) 
 }
@@ -750,12 +752,12 @@ inv.null$Habitat <- c("Invaded")
 
 
 # Uninvaded 
-uninvaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+uninvaded.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(uninvaded.null) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempu <- as.data.frame(randomizeMatrix(em.unin.t, null.model = "trialswap")) #Randomize the data
+  tempu <- as.data.frame(randomizeMatrix(em.unin.t, null.model = "frequency")) #Randomize the data
   unin.bv <- beta.multi(tempu, index.family = "sorensen")
   uninvaded.null[i,] <- data.frame(matrix(unlist(unin.bv), nrow = length(1), byrow = T)) 
 }
@@ -780,12 +782,12 @@ unin.null$Habitat <- c("Uninvaded")
 
 # Treated
 
-treated.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(1000)))
+treated.null <- data.frame(matrix(as.numeric(0), ncol=(3), nrow=(999)))
 colnames(treated.null) <- c("Turnover","Nestedness","Sum")
 
 
 for (i in 1:999){ #for 1000 iterations
-  tempt <- as.data.frame(randomizeMatrix(em.trt.t, null.model = "trialswap")) #Randomize the data
+  tempt <- as.data.frame(randomizeMatrix(em.trt.t, null.model = "frequency")) #Randomize the data
   trt.bv <- beta.multi(tempt, index.family = "sorensen")
   treated.null[i,] <- data.frame(matrix(unlist(trt.bv), nrow = length(1), byrow = T)) 
 }
@@ -809,58 +811,77 @@ treat.null$Over <- trt.bd$beta.SOR
 treat.null$Habitat <- c("Treated")
 
 
-bd.null <- rbind(treat.null, unin.null,inv.null)
+bd.null.em <- rbind(treat.null, unin.null,inv.null)
+
+write.csv(bd.null.em, "Data/Emerging/beta_diversity_null_true.csv")
 
 
-sumbd <- ggplot(bd.null, aes(x = Habitat, y = Over, 
+sumbd <- ggplot(bd.null.em, aes(x = Habitat, y = Over, 
                                 fill = Habitat, shape = Habitat)) +
   geom_errorbar(aes(ymin = S.avg - S.CI, ymax = S.avg + S.CI),
                 colour = "black",
                 size = 0.5,
                 width = 0.3,
                 position = position_dodge(0.6)) +
-    geom_point(position = position_dodge(0.6), size = 5) +
+    geom_point(size = 7,
+               alpha = 0.7,
+               stroke = 1.5) +
+  geom_point(aes(y = S.avg),
+             fill = "black",
+             size = 3) +
   labs(x = " ",
        y = expression(paste("Beta Diversity Sum"))) +
-  theme_classic()+
+  theme_classic(14)+
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.5, 0.75) +
+  theme(axis.text = element_text(size = 14))
   
 
 
 
-nest <- ggplot(bd.null, aes(x = Habitat, y = Nest, 
+nest <- ggplot(bd.null.em, aes(x = Habitat, y = Nest, 
                            fill = Habitat, shape = Habitat)) +
   geom_errorbar(aes(ymin = N.avg - N.CI, ymax = N.avg + N.CI),
                 colour = "black",
                 size = 0.5,
-                width = 0.3,
-                position = position_dodge(0.6)) +
-  geom_point(position = position_dodge(0.6), size = 5) +
+                width = 0.3) +
+  geom_point(alpha = 0.7, size = 7,
+             stroke = 1.5) +
+  geom_point(aes(y = N.avg),
+             fill = "black",
+             size = 3) +
   labs(x = " ",
        y = expression(paste("Nestedness"))) +
-  theme_classic()+
+  theme_classic(14)+
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.00, 0.2)+
+  theme(axis.text = element_text(size = 14))
 
 
 
-turn <- ggplot(bd.null, aes(x = Habitat, y = Turn, 
+turn <- ggplot(bd.null.em, aes(x = Habitat, y = Turn, 
                             fill = Habitat, shape = Habitat)) +
   geom_errorbar(aes(ymin = T.avg - T.CI, ymax = T.avg + T.CI),
                 colour = "black",
                 size = 0.5,
-                width = 0.3,
-                position = position_dodge(0.6)) +
-  geom_point(position = position_dodge(0.6), size = 5) +
+                width = 0.3) +
+  geom_point(alpha = 0.7, size = 7,
+             stroke = 1.5) +
+  geom_point(aes(y = T.avg),
+             fill = "black",
+             size = 3) +
   labs(x = " ",
        y = expression(paste("Turnover"))) +
-  theme_classic() +
+  theme_classic(14) +
   theme(legend.position = "none") +
   scale_shape_manual(values = c(21, 24, 22)) +
-  scale_fill_viridis(discrete = TRUE)
+  scale_fill_viridis(discrete = TRUE) +
+  ylim(0.3, 0.75) +
+  theme(axis.text = element_text(size = 14))
 
 
 
@@ -868,6 +889,7 @@ emerg.beta <- ggarrange(sumbd, nest, turn,
                         labels = c("D","E","F"),
                         nrow = 1)
 
+library(patchwork)
 
 aqem.beta <- aqua.beta + emerg.beta +
   plot_layout(nrow = 2)
@@ -1058,7 +1080,8 @@ invert.1218 <- ggplot(data = nmds.scores18,
   geom_point(data = nmds.scores18, 
              aes(x = NMDS1, y = NMDS2, 
                  shape = Treatment, fill = Treatment),
-             size = 4, stroke = 1.5) +
+             size = 7, stroke = 1.5,
+             alpha = 0.7) +
   stat_ellipse(data = nmds.scores18, 
                aes(x = NMDS1,y = NMDS2,
                    colour = Treatment), 
@@ -1070,7 +1093,8 @@ invert.1218 <- ggplot(data = nmds.scores18,
   geom_label_repel(data = vectors.1218, 
                    aes(x = MDS1, y = MDS2, label = taxa),
                    color = "black",
-                   size = 5) +
+                   size = 5,
+                   force = 2) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
@@ -1089,7 +1113,8 @@ invert.1318 <- ggplot(data = nmds.scores18,
   geom_point(data = nmds.scores18, 
              aes(x = NMDS1, y = NMDS3, 
                  fill = Treatment, shape = Treatment), 
-             size = 4, stroke = 1.5) +
+             size = 7, stroke = 1.5,
+             alpha = 0.7) +
   stat_ellipse(data = nmds.scores18, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Treatment), 
@@ -1102,7 +1127,8 @@ invert.1318 <- ggplot(data = nmds.scores18,
   geom_label_repel(data = vectors.1318, 
                    aes(x = MDS1, y = MDS3, label = taxa),
                    color="black",
-                   size = 5) +
+                   size = 5,
+                   force = 2) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
   scale_fill_manual(values = fill) +

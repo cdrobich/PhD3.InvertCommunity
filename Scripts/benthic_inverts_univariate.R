@@ -546,8 +546,9 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Abundance") +
@@ -567,8 +568,9 @@ rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxanomic Richness") +
@@ -585,8 +587,9 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +

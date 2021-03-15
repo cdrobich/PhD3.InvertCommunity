@@ -619,7 +619,8 @@ inv.nms <- ggplot(data = inv.scores,
                  shape = Type,
                  stroke = 1.5),
              size = 7,
-             fill = "#440C53") +
+             fill = "#440C53",
+             alpha = 0.7) +
   geom_segment(data = inv.segment, 
                aes(x = NMDS1a, xend = NMDS1e, y = NMDS2a, yend = NMDS2e), 
                arrow = arrow(length = unit(0.5, "cm")),
@@ -632,7 +633,8 @@ inv.nms <- ggplot(data = inv.scores,
   geom_label_repel(data = inv.vector, 
                    aes(x = MDS1, y = MDS2, label = Taxa),
                    color = "black",
-                   size = 5) +
+                   size = 5,
+                   force = 2) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + 
   xlab("NMDS 1") +
@@ -655,9 +657,6 @@ unin.scores <- read.csv("Data/Emerging/Procrustes/uninvaded_NMDS_scores.csv")
 unin.segment <- read.csv("Data/Emerging/Procrustes/NMDS_unin_segment_score.csv")
 unin.vector <- read.csv("Data/Emerging/Procrustes/NMDS_correlated_vector12_uninvaded.csv")
 
-
-
-
 unin.nms <- ggplot(data = unin.scores,
                   aes(x = NMDS1, y = NMDS2)) +
   geom_point(data = unin.scores, 
@@ -666,7 +665,8 @@ unin.nms <- ggplot(data = unin.scores,
                  shape = Type,
                  stroke = 1.5),
              size = 7,
-             fill = "#FDE825") +
+             fill = "#FDE825",
+             alpha = 0.7) +
   geom_segment(data = unin.segment, 
                aes(x = NMDS1a, xend = NMDS1e, y = NMDS2a, yend = NMDS2e), 
                arrow = arrow(length = unit(0.5, "cm")),
@@ -679,7 +679,7 @@ unin.nms <- ggplot(data = unin.scores,
   geom_label_repel(data = unin.vector, 
                    aes(x = MDS1, y = MDS2, label = Taxa),
                    color = "black",
-                   size = 5) +
+                   size = 5, force = 2) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + 
   xlab("NMDS 1") +
@@ -712,7 +712,8 @@ trt.nms <- ggplot(data = trt.scores,
                  shape = Type,
                  stroke = 1.5),
              size = 7,
-             fill = "#24908C") +
+             fill = "#24908C",
+             alpha = 0.7) +
   geom_segment(data = trt.segment, 
                aes(x = NMDS1a, xend = NMDS1e, y = NMDS2a, yend = NMDS2e), 
                arrow = arrow(length = unit(0.5, "cm")),
@@ -725,7 +726,8 @@ trt.nms <- ggplot(data = trt.scores,
   geom_label_repel(data = trt.vector, 
                    aes(x = MDS1, y = MDS2, label = Taxa),
                    color = "black",
-                   size = 5) +
+                   size = 5,
+                   force = 2) +
   theme_minimal() + # no background
   theme(panel.border = element_rect(fill = NA)) + 
   xlab("NMDS 1") +

@@ -717,8 +717,9 @@ abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Abundance") +
@@ -738,8 +739,9 @@ pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +
@@ -759,8 +761,9 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   geom_boxplot(size = 1) +
   geom_jitter(data = invert.2018,
               aes(fill = Treatment, shape = Treatment),
-              size = 5,
-              stroke = 1.5) +
+              size = 7,
+              stroke = 1.5,
+              alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxonomic Richness") +
