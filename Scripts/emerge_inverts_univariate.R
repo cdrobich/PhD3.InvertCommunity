@@ -24,6 +24,7 @@ library(sjPlot)
 library(performance)
 library(see)
 
+library(lmPerm)
 citation("performance")
 
 # Data Import -------------------------------------------------------------
@@ -489,6 +490,30 @@ check_model(ab.lm)
 check_normality(ab.lm) # good
 check_heteroscedasticity(ab.lm) # good
 
+citation("lme4")
+citation("performance")
+
+abun.perm.e <- lmp(abundance ~ Treatment, data = invert.2018, 
+                 perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(abun.perm.e)
+Anova(abun.perm.e)
+
+#Anova Table (Type II tests)
+#
+#Response: abundance
+#             Sum Sq Df F value    Pr(>F)    
+#Treatment1 23848314  2  16.582 2.999e-05 ***
+#Residuals  17257902 24  
+
+
+perm.em.ab <- HSD.test(abun.perm.e, "Treatment")
+
+#abundance groups
+#Treated   2580.4444      a
+#Uninvaded  761.4444      b
+#Invaded    449.0000      b
+
 
 ## Linear model for Pielous 
 
@@ -540,6 +565,26 @@ check_model(pie.lm)
 check_normality(pie.lm) # good
 check_heteroscedasticity(pie.lm) # good
 
+## Permutation analysis
+pie.perm.e <- lmp(J ~ Treatment, data = invert.2018, 
+                   perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(pie.perm.e)
+Anova(pie.perm.e)
+
+#Anova Table (Type II tests)
+#
+#Response: J
+#            Sum Sq Df F value    Pr(>F)    
+#Treatment1 0.68411  2  11.914 0.0002549 ***
+#Residuals  0.68904 24 
+
+perm.pie.t <- HSD.test(pie.perm.e, "Treatment")
+
+#J groups
+#Invaded   0.4940827      a
+#Uninvaded 0.4481745      a
+#Treated   0.1358119      b
 
 # Null models -------------------------------------------------------------
  
