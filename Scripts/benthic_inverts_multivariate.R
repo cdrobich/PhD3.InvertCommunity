@@ -27,7 +27,7 @@ colnames(benthic)
 
 benthic.data <- benthic %>% select(Oligochaetae:Leptoceridae)
 benthic.env <- benthic %>% select(ID:Collection.date)
-
+benthic.vector <- benthic %>% select(Water_Depth:Leptoceridae)
 
 # Multivariate Analyses ---------------------------------------------------
 
@@ -183,7 +183,7 @@ write.csv(scores,"Data/Aquatic/NMDS/NMDS_benthic_inverts_scores.csv") # save thi
 
 ### Vectors correlated with Axis 1 & 2 
 
-alltaxa <- envfit(nms.invert, benthic.data,
+alltaxa <- envfit(nms.invert, benthic.vector,
                  choices = c(1,2)) #produces a list with r2, p value, and NMDS coordinates
 
 all.taxa.df <- data.frame((alltaxa$vectors)$arrows,
@@ -191,12 +191,12 @@ all.taxa.df <- data.frame((alltaxa$vectors)$arrows,
                           (alltaxa$vectors)$pvals) #take list and make into dataframe
 
 
-corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.25)
+corr.spp12 <- all.taxa.df %>% filter(X.alltaxa.vectors..r > 0.3)
 corr.spp12$species <- rownames(corr.spp12)
 
 corr.species12 <- corr.spp12$species # string of the Family names
 
-axis12.vectors <- benthic.data %>% select(all_of(corr.species12)) # make a matrix of just those
+axis12.vectors <- benthic.vector %>% select(all_of(corr.species12)) # make a matrix of just those
 
 
 corrtaxa12 <- envfit(nms.invert$points, axis12.vectors, 
@@ -213,19 +213,19 @@ write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv") # sav
 
 #### Vectors correlated with axis 1 & 3 
 
-alltaxa.13 <- envfit(nms.invert, benthic.data, 
+alltaxa.13 <- envfit(nms.invert, benthic.vector, 
                      permutations = 999, choices = c(1,3)) 
 
 all.taxa.df.13 <- data.frame((alltaxa.13$vectors)$arrows,
                           (alltaxa.13$vectors)$r,
                           (alltaxa.13$vectors)$pvals)
 
-corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.25)
+corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.3)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
 
-axis13.vectors <- benthic.data %>% select(all_of(corr.species13)) # make a matrix of just those
+axis13.vectors <- benthic.vector %>% select(all_of(corr.species13)) # make a matrix of just those
 
 
 corrtaxa13 <- envfit(nms.invert$points, axis13.vectors, 
@@ -247,10 +247,11 @@ write.csv(species.13, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 
 col_vec <- c("#9970ab", "#1b7837", "#2166ac")
 
-ordiplot(nms.invert, choices = c(1,2), 
+fig <- ordiplot(nms.invert, choices = c(1,2), 
          type = "points",
          display = "sites")
 
+text(fig, "sites", col="blue", cex=0.9)
 
 ordihull(nms.invert, groups = benthic.env$Habitat, # ellipse hull
          col = col_vec)
@@ -260,6 +261,7 @@ ordiellipse(nms.invert, groups = benthic.env$Habitat, # st error of centroid ell
             col = col_vec)
 
 plot(alltaxa, p.max = 0.013, col = "black")
+
 
 
 
@@ -273,6 +275,20 @@ vector.13 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 
 
 str(benth.scores)
+
+
+
+fill = c("Invaded" = "#440C53",
+         "Treated" = "#24908C",
+         "Uninvaded" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Uninvaded" = "#FDE825")
+
+shape = c("Invaded" = 21,
+          "Treated" = 24,
+          "Uninvaded" = 22)
 
 ## NMDS Axis 1, 2 
 
@@ -301,9 +317,9 @@ benthic.12 <- ggplot(data = benth.scores,
                   color="black",
                   size = 5,
                   force = 2) +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) 
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) 
 
 benthic.12
 
@@ -333,9 +349,9 @@ benthic.13 <- ggplot(data = benth.scores,
                   color="black",
                   size = 5, 
                   force = 2) +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_colour_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) 
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) 
 
 benthic.13
 

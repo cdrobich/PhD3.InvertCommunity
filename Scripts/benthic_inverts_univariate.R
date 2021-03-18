@@ -540,6 +540,17 @@ uni.panel.td <- ggarrange(rich, domin,
 
 
 # Boxplots ----------------------------------------------------------------
+fill = c("Invaded" = "#440C53",
+         "Treated" = "#24908C",
+         "Remnant" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Remnant" = "#FDE825")
+
+shape = c("Invaded" = 21,
+          "Treated" = 24,
+          "Remnant" = 22)
 
 abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   stat_boxplot(geom = "errorbar") +
@@ -552,12 +563,12 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Abundance") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
   theme(legend.position = "none") +
-  annotate("text", x = 2, y = 8000,
+  annotate("text", x = 3, y = 8000,
            label = c("*"),
            size = 15) +
   theme(axis.text = element_text(size = 16))
@@ -574,8 +585,8 @@ rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxanomic Richness") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
   ylim(0, 30) +
@@ -593,8 +604,8 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
   ylim(0, 1) +

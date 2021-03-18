@@ -33,8 +33,6 @@ invert.env <- invert %>% select(Site:N)
 invert.rel <- decostand(invert.data, "max", 2, na.rm = NULL) # relativize by column max
 write.csv(invert.rel, "Data/Emerging/emerging_invert_relativized.csv")
 
-##### perMANVOA ####
-
 invert.rel <- read.csv("Data/Emerging/emerging_invert_relativized.csv")
 
 # Two-way perMANOVA -------------------------------------------------------
@@ -481,7 +479,8 @@ str(invert.18)
 colnames(invert.18)
 
 invert.18.taxa <- invert.18 %>% select(Araneae:Crambidae)
-invert.18.ev <- invert.18 %>% select(Site:N)
+invert.18.ev <- invert.18 %>% select(Site:ZIZPALUS)
+invert.18.vectors <- invert.18 %>% select(Canopy.Height:Crambidae)
 
 
 # 2018 betadisper ---------------------------------------------------------
@@ -977,8 +976,9 @@ write.csv(scores18,"Data/Emerging/NMDS/NMDS_emerging_2018_NMDSscores.csv") # sav
 
 ### Vectors correlated with Axis 1 & 2 
 
-alltaxa12.2018 <- envfit(nms.invert18, invert.18.taxa,
-                    choices = c(1,2)) #produces a list with r2, p value, and NMDS coordinates
+alltaxa12.2018 <- envfit(nms.invert18, invert.18.vectors,
+                    choices = c(1,2),
+                    na.rm = TRUE) #produces a list with r2, p value, and NMDS coordinates
 
 all.taxa.df.2018 <- data.frame((alltaxa12.2018$vectors)$arrows,
                           (alltaxa12.2018$vectors)$r,
@@ -989,8 +989,9 @@ write.csv(all.taxa.df.2018, "Data/Emerging/NMDS/NMDS_emerg_vectors_2018_axis12.c
 
 #### Vectors correlated with axis 1 & 3 
 
-alltaxa13.2018 <- envfit(nms.invert18, invert.18.taxa, 
-                     permutations = 999, choices = c(1,3)) 
+alltaxa13.2018 <- envfit(nms.invert18, invert.18.vectors, 
+                     permutations = 999, choices = c(1,3),
+                     na.rm = TRUE) 
 
 
 all.taxa13.df.2018 <- data.frame((alltaxa13.2018$vectors)$arrows,
@@ -998,7 +999,6 @@ all.taxa13.df.2018 <- data.frame((alltaxa13.2018$vectors)$arrows,
                             (alltaxa13.2018$vectors)$pvals)
 
 write.csv(all.taxa13.df.2018, "Data/Emerging/NMDS/NMDS_emerging_vectors_2018_axis13.csv")
-
 
 
 ## Picking the vectors we want for the figure based on fit (r > 0.2)
@@ -1009,23 +1009,24 @@ nmds.axis1318 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_vectors_2018_axis13.
 colnames(nmds.axis1218)
 
 # axis 1, 2
-corr.sp.18 <- nmds.axis1218 %>% filter(X.alltaxa12.2018.vectors..r > 0.25) 
+corr.sp.18 <- nmds.axis1218 %>% filter(X.alltaxa12.2018.vectors..r > 0.3) 
 target12.18 <- corr.sp.18$X # string of the Family names
 
-axis12.vectors.18 <- invert.18.taxa %>% select(all_of(target12.18)) # make a matrix of just those
+axis12.vectors.18 <- invert.18.vectors %>% select(all_of(target12.18)) # make a matrix of just those
 
 # axis 1, 3
 
-corr.sp13.18 <- nmds.axis1318 %>% filter(X.alltaxa13.2018.vectors..r > 0.25) 
+corr.sp13.18 <- nmds.axis1318 %>% filter(X.alltaxa13.2018.vectors..r > 0.3) 
 target13.18 <- corr.sp13.18$X # string of the Family names
 
-axis13.vectors.18 <-invert.18.taxa %>% select(all_of(target13.18)) # make a matrix of just those
+axis13.vectors.18 <- invert.18.vectors %>% select(all_of(target13.18)) # make a matrix of just those
 
 
 # fit them to the nms
 # axis 1, 2
 (nmds.vectors.12.18 <- envfit(nms.invert18$points, axis12.vectors.18,
-                           permutations = 999, choices = c(1,2)))                        
+                           permutations = 999, choices = c(1,2),
+                           na.rm = TRUE))                        
 
 
 corr.vectors.12.18 <- as.data.frame(nmds.vectors.12.18 $vectors$arrows*sqrt(nmds.vectors.12.18$vectors$r)) #scaling vectors
@@ -1035,7 +1036,8 @@ write.csv(corr.vectors.12.18, "Data/Emerging/NMDS/NMDS_emerging_correlatedvector
 
 # axis 1, 3
 (nmds.vectors.13.18 <- envfit(nms.invert18$points, axis13.vectors.18,
-                           permutations = 999, choices = c(1,3)))                        
+                           permutations = 999, choices = c(1,3),
+                           na.rm = TRUE))                        
 
 
 corr.vectors.13.18 <- as.data.frame(nmds.vectors.13.18$vectors$arrows*sqrt(nmds.vectors.13.18$vectors$r)) #scaling vectors
@@ -1157,11 +1159,12 @@ ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
 ggarrange(nmds.emerging,nms.aquatic,
           nrow = 2)
 
+library(patchwork)
 
 invert.1218 <- invert.1218 + ggtitle("B.    Emerging Invertebrates")
 
 
-nmds.panel <- benthic.12 + benthic.13 + invert.1218 + invert.1318
+(nmds.panel <- benthic.12 + benthic.13 + invert.1218 + invert.1318)
 
 
 ggsave("Figures/emergaquat_NMDS_panel.jpeg",

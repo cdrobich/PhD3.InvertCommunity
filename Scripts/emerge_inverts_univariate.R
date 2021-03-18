@@ -493,6 +493,8 @@ check_heteroscedasticity(ab.lm) # good
 citation("lme4")
 citation("performance")
 
+# Permutational abundance anova 
+
 abun.perm.e <- lmp(abundance ~ Treatment, data = invert.2018, 
                  perm = "Prob", Ca = 0.0001, maxIter = 999)
 
@@ -757,6 +759,19 @@ panel2 <- ggarrange(riche, simpson,
 
 # Boxplots ----------------------------------------------------------------
 
+fill = c("Invaded" = "#440C53",
+         "Treated" = "#24908C",
+         "Remnant" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Remnant" = "#FDE825")
+
+shape = c("Invaded" = 21,
+          "Treated" = 24,
+          "Remnant" = 22)
+
+
 abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(size = 1) +
@@ -768,12 +783,12 @@ abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Abundance") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none")+ 
   theme(legend.position = "none") +
-  annotate("text", x = 2, y = 4500,
+  annotate("text", x = 3, y = 4500,
            label = c("*"),
            size = 15) +
   theme(axis.text = element_text(size = 16)) 
@@ -796,7 +811,7 @@ pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
   theme(legend.position = "none") +
   ylim(0, 1) +
   theme(legend.position = "none") +
-  annotate("text", x = 2, y = 0.8,
+  annotate("text", x = 3, y = 0.8,
            label = c("*"),
            size = 15) +
   theme(axis.text = element_text(size = 16))
@@ -817,7 +832,7 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   theme(panel.border = element_rect(fill = NA)) +
   ylim(0, 50) +
   theme(legend.position = "none") +
-  annotate("text", x = 2, y = 45,
+  annotate("text", x = 3, y = 45,
            label = c("*"),
            size = 15) +
   theme(axis.text = element_text(size = 16))

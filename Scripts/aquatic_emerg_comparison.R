@@ -256,7 +256,7 @@ taxa.axis12df.inv <- tibble::rownames_to_column(taxa.axis12df.inv, "Taxa")
 
 colnames(taxa.axis12df.inv)
 
-corrspp.axis12.inv <- taxa.axis12df.inv %>% filter(X.taxa.axis12.inv.vectors..r > 0.2)
+corrspp.axis12.inv <- taxa.axis12df.inv %>% filter(X.taxa.axis12.inv.vectors..r > 0.3)
 target12.taxa.inv <- corrspp.axis12.inv$Taxa # string of the Family names
 
 
@@ -364,7 +364,7 @@ taxa.axis12df.unin <- tibble::rownames_to_column(taxa.axis12df.unin, "Taxa")
 
 colnames(taxa.axis12df.unin)
 
-corrspp.axis12.unin <- taxa.axis12df.unin %>% filter(X.taxa.axis12.unin.vectors..r > 0.2)
+corrspp.axis12.unin <- taxa.axis12df.unin %>% filter(X.taxa.axis12.unin.vectors..r > 0.3)
 target12.taxa.unin <- corrspp.axis12.unin$Taxa # string of the Family names
 
 
@@ -473,7 +473,7 @@ taxa.axis12df.trt <- tibble::rownames_to_column(taxa.axis12df.trt, "Taxa")
 
 colnames(taxa.axis12df.trt)
 
-corrspp.axis12.trt <- taxa.axis12df.trt %>% filter(X.taxa.axis12.trt.vectors..r > 0.2)
+corrspp.axis12.trt <- taxa.axis12df.trt %>% filter(X.taxa.axis12.trt.vectors..r > 0.3)
 target12.taxa.trt <- corrspp.axis12.trt$Taxa # string of the Family names
 
 
@@ -586,7 +586,7 @@ taxa.axis12df <- tibble::rownames_to_column(taxa.axis12df, "Taxa")
 
 colnames(taxa.axis12df)
 
-corrspp.axis12 <- taxa.axis12df %>% filter(X.taxa.axis12.vectors..r > 0.25)
+corrspp.axis12 <- taxa.axis12df %>% filter(X.taxa.axis12.vectors..r > 0.3)
 target12.taxa <- corrspp.axis12$Taxa # string of the Family names
 
 
@@ -688,7 +688,7 @@ unin.nms <- ggplot(data = unin.scores,
                      labels = c("Aquatic",
                                 "Emerging"),
                      values = c(21, 24, 22)) +
-  ggtitle("Uninvaded sites") +
+  ggtitle("Remnant marsh sites") +
   ylim(-1, 1) +
   xlim(-1, 1) +
   theme(legend.position = "bottom")
