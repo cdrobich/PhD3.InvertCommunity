@@ -8,6 +8,7 @@ library(ggpubr) # for arranging figures
 library(ggrepel) # labels on nmds
 
 library(viridis) # colours
+library(patchwork)
 
 # pairwise perMANOVA comparison
 library(devtools)
@@ -71,7 +72,7 @@ groups <- factor(invert$TrtYr)
 #No. of Negative Eigenvalues: 20
 #
 #Average distance to median:
-# Invaded_2017   Invaded_2018   Treated_2017   Treated_2018 Uninvaded_2017 
+#Invaded_2017   Invaded_2018   Treated_2017   Treated_2018 Uninvaded_2017 
 #0.40914        0.14508        0.14913        0.07226        0.13264 
 #Uninvaded_2018 
 #0.10442 
@@ -484,11 +485,6 @@ invert.18.vectors <- invert.18 %>% select(Canopy.Height:Crambidae)
 
 
 # 2018 betadisper ---------------------------------------------------------
-?betadisper
-
-invert.18 <- invert.18 %>% #rename the factors
-  mutate(Treatment = fct_recode(Treatment,
-                                "Treated" = "Restored")) 
 
 invert.b <- vegdist(invert.18.taxa, method = "bray")
 
@@ -1052,10 +1048,6 @@ nmds.scores18 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_2018_NMDSscores.csv"
 
 unique(nmds.scores18$Treatment)
 
-nmds.scores18 <- nmds.scores18 %>% #rename the factors
-  mutate(Treatment = fct_recode(Treatment,
-                              "Treated" = "Restored")) 
-
 
 #vectors r > 0.2
 vectors.1218 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12_2018.csv") 
@@ -1064,15 +1056,15 @@ vectors.1318 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axi
 
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Uninvaded" = "#FDE825")
+         "Remnant" = "#FDE825")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Uninvaded" = "#FDE825")
+           "Remnant" = "#FDE825")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
-          "Uninvaded" = 22)
+          "Remnant" = 22)
 
 
 ## NMDS Axis 1, 2 

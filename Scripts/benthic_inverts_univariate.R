@@ -620,7 +620,7 @@ boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
           nrow = 2)
 
 
-ggsave("Figures/aquatic_invert_ANCOVApanels_2.jpeg", 
+ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.jpeg", 
        boxplots,
        width = 14,
        height = 9,

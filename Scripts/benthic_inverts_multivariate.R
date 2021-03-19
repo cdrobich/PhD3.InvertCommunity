@@ -280,15 +280,15 @@ str(benth.scores)
 
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Uninvaded" = "#FDE825")
+         "Remnant" = "#FDE825")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Uninvaded" = "#FDE825")
+           "Remnant" = "#FDE825")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
-          "Uninvaded" = 22)
+          "Remnant" = 22)
 
 ## NMDS Axis 1, 2 
 
@@ -322,6 +322,8 @@ benthic.12 <- ggplot(data = benth.scores,
   scale_shape_manual(values = shape) 
 
 benthic.12
+
+citation("vegan")
 
 ## NMDS Axis 1, 3
 

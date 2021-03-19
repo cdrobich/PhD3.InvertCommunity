@@ -805,8 +805,8 @@ pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
   ylim(0, 1) +
@@ -827,8 +827,8 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxonomic Richness") +
-  scale_fill_viridis(discrete = TRUE) +
-  scale_shape_manual(values = c(21, 24, 22)) +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   ylim(0, 50) +
   theme(legend.position = "none") +
@@ -838,7 +838,7 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   theme(axis.text = element_text(size = 16))
 
 
-emerg.boxplots <- ggarrange(abund.box, riche.box, pielou.box,
+(emerg.boxplots <- ggarrange(abund.box, riche.box, pielou.box,
           nrow = 1,
-          labels = c("D","E","F"))
+          labels = c("D","E","F")))
 
