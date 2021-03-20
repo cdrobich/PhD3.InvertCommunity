@@ -838,7 +838,7 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   theme(axis.text = element_text(size = 16))
 
 
-(emerg.boxplots <- ggarrange(abund.box, riche.box, pielou.box,
-          nrow = 1,
-          labels = c("D","E","F")))
+(emerg.boxplots <- abund.box + riche.box + pielou.box)
 
+
+abund.box <- abund.box + ggtitle("Emerging invertebrates")

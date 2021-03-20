@@ -1134,12 +1134,15 @@ invert.1318 <- ggplot(data = nmds.scores18,
 invert.1318
 
 
+invert.1218 <- invert.1218 + ggtitle("B.  Emerging Invertebrates")
+
+invert.1218 + invert.1318
+
+
 (NMS.emerging.panel18 <- ggarrange(invert.1218, invert.1318,
                                  common.legend = TRUE,
                                  legend = "none"))
 
-nmds.emerging <- annotate_figure(NMS.emerging.panel18,
-                                 top = "Emerging Invertebrates")
 
 ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
        dpi = 300,
@@ -1147,9 +1150,6 @@ ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
        width = 14.5,
        units = "in")
 
-
-ggarrange(nmds.emerging,nms.aquatic,
-          nrow = 2)
 
 library(patchwork)
 

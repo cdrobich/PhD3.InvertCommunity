@@ -29,6 +29,10 @@ benthic.data <- benthic %>% select(Oligochaetae:Leptoceridae)
 benthic.env <- benthic %>% select(ID:Collection.date)
 benthic.vector <- benthic %>% select(Water_Depth:Leptoceridae)
 
+
+
+bth.tx <- as.data.frame(sapply(benthic.data, function(col) sum(col))) # how many unique values in column
+
 # Multivariate Analyses ---------------------------------------------------
 
 # perMANOVA ---------------------------------------------------------------
@@ -323,8 +327,6 @@ benthic.12 <- ggplot(data = benth.scores,
 
 benthic.12
 
-citation("vegan")
-
 ## NMDS Axis 1, 3
 
 benthic.13 <- ggplot(data = benth.scores,
@@ -359,7 +361,10 @@ benthic.13
 
 # putting both figures together
 
-benthic.12 <- benthic.12 + ggtitle("A.    Aquatic Invertebrates")
+benthic.12 <- benthic.12 + ggtitle("A.   Aquatic Invertebrates")
+
+benthic.12 + benthic.13
+
 
 
 (NMS.benthic.panel <- ggarrange(benthic.12, benthic.13,

@@ -611,13 +611,18 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
   ylim(0, 1) +
   theme(axis.text = element_text(size = 16))
 
+abun.a <- abun.a + ggtitle("Aquatic Invertebrates")
 
-aquatic.panel <- ggarrange(abun.a, rich.a, piel.a,
-          nrow = 1,
-          labels = 'AUTO')
+aquatic.panel <- abun.a + rich.a + piel.a
 
 boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
           nrow = 2)
+
+
+
+
+abun.a + abund.box 
+
 
 
 ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.jpeg", 
