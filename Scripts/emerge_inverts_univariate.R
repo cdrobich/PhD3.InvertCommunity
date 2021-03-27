@@ -791,7 +791,8 @@ abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
   annotate("text", x = 3, y = 4500,
            label = c("*"),
            size = 15) +
-  theme(axis.text = element_text(size = 16)) 
+  theme(axis.text = element_text(size = 16)) +
+  ylim(0, 6000)
 
 
 pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
@@ -838,7 +839,9 @@ riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
   theme(axis.text = element_text(size = 16))
 
 
+abund.box <- abund.box + ggtitle("Emerging invertebrates")
+
+
 (emerg.boxplots <- abund.box + riche.box + pielou.box)
 
 
-abund.box <- abund.box + ggtitle("Emerging invertebrates")

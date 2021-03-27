@@ -364,6 +364,9 @@ ab.perm <- HSD.test(abun.perm, "Habitat")
 #Uninvaded 6.048435      b
 #Invaded   5.894747      b
 
+?p.adjust
+
+
 ## Richness
 
 rich.aov <- lm(sqrich ~ Habitat, data = benthic.uni)
@@ -552,6 +555,7 @@ shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
 
+
 abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(size = 1) +
@@ -571,8 +575,8 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   annotate("text", x = 3, y = 8000,
            label = c("*"),
            size = 15) +
-  theme(axis.text = element_text(size = 16))
-
+  theme(axis.text = element_text(size = 16)) +
+  ylim(0, 12000)
 
 rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
   stat_boxplot(geom = "errorbar") +
