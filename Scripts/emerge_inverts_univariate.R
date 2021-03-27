@@ -782,7 +782,7 @@ abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
               alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
-       y = "Abundance") +
+       y = (expression(paste("Density per 1","", m^2)))) +
   scale_fill_manual(values = fill) +
   scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +

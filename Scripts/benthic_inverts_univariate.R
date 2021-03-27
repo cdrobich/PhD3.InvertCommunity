@@ -562,7 +562,7 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
               alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
-       y = "Abundance") +
+       y = (expression(paste("Density per 0.25"," ", m^2)))) +
   scale_fill_manual(values = colour) +
   scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
@@ -613,7 +613,8 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
 
 abun.a <- abun.a + ggtitle("Aquatic Invertebrates")
 
-aquatic.panel <- abun.a + rich.a + piel.a
+aquatic.panel <- +
+  plot_annotation(tag_levels = 'A')
 
 boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
           nrow = 2)
@@ -621,12 +622,14 @@ boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
 
 
 
-abun.a + abund.box 
+boxplots2 <- abun.a + rich.a + piel.a + abund.box + riche.box + pielou.box +
+  plot_annotation(tag_levels = 'A')
+  
 
 
 
 ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.jpeg", 
-       boxplots,
+       boxplots2,
        width = 14,
        height = 9,
        units = "in")
