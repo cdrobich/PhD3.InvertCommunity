@@ -64,8 +64,6 @@ invert.univariate <- invert.uni
 
 write.csv(invert.univariate, "Data/Emerging/emerging_invertebrate_univariate.csv")
 
-
-# Histograms ---------------------------------------------------------------
 invert <- read.csv("Data/Emerging/emerging_invertebrate_univariate.csv")
 
 invert$Year <- as.factor(invert$Year)
@@ -73,7 +71,11 @@ invert$Factor <- as.factor(invert$Factor)
 invert$logAb <- log(invert$abundance + 1)
 invert$sqRich <- sqrt(invert$rich)
 
+
+invert.2017 <- invert %>% filter(Year == "2017")
 invert.2018 <- invert %>% filter(Year == "2018")
+# Histograms ---------------------------------------------------------------
+
 
 ab.water <- lm(logAb ~ Treatment * Depth, data = invert.2018)
 Anova(ab.water)
@@ -587,6 +589,107 @@ perm.pie.t <- HSD.test(pie.perm.e, "Treatment")
 #Invaded   0.4940827      a
 #Uninvaded 0.4481745      a
 #Treated   0.1358119      b
+
+
+# 2017 invert lmperm -----------------------------------------------------
+
+invert.2017
+
+# richness 
+s.perm.7 <- lmp(rich ~ Treatment, data = invert.2017, 
+                 perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(s.perm.7)
+Anova(s.perm.7)
+
+#Anova Table (Type II tests)
+#
+#Response: rich
+#           Sum Sq Df F value   Pr(>F)   
+#Treatment1 379.56  2  7.7053 0.002601 **
+#Residuals  591.11 24                    
+
+s.perm.7hsd <- HSD.test(s.perm.7, "Treatment")
+
+#$means
+#rich      std r Min Max Q25 Q50 Q75
+#Invaded 22.33333 5.567764 9  10  29  21  24  26
+#Remnant 16.77778 5.093569 9  10  23  12  17  22
+#Treated 13.22222 4.116363 9   8  20  11  13  16
+
+
+#$groups
+#rich groups
+#Invaded 22.33333      a
+#Remnant 16.77778     ab
+#Treated 13.22222      b
+
+
+## abundance
+
+ab.perm.7 <- lmp(abundance ~ Treatment, data = invert.2017, 
+                  perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(ab.perm.7)
+Anova(ab.perm.7)
+
+#Anova Table (Type II tests)
+#
+#Response: abundance
+#            Sum Sq Df F value  Pr(>F)  
+#Treatment1 2466358  2   4.521 0.02156 *
+#Residuals  6546424 24
+
+ab.perm.7hsd <- HSD.test(ab.perm.7, "Treatment")
+
+#$means
+#abundance      std r Min  Max Q25 Q50 Q75
+#Invaded  316.5556 195.6624 9 101  668 216 267 274
+#Remnant  268.3333 201.6191 9  51  720 157 220 330
+#Treated  932.2222 859.8657 9 149 2979 465 725 937
+
+
+#$groups
+#abundance groups
+#Treated  932.2222      a
+#Invaded  316.5556      b
+#Remnant  268.3333      b
+
+
+## Pielous
+pie.perm.7 <- lmp(J ~ Treatment, data = invert.2017, 
+                  perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(pie.perm.7)
+Anova(pie.perm.7)
+
+#Anova Table (Type II tests)
+#
+#Response: J
+#            Sum Sq Df F value    Pr(>F)    
+#Treatment1 0.71353  2  12.119 0.0002301 ***
+#Residuals  0.70652 24  
+
+perm.pie.t7 <- HSD.test(pie.perm.7, "Treatment")
+
+#$groups
+#J groups
+#Invaded 0.5421213      a
+#Remnant 0.4477526      a
+#Treated 0.1599113      b
+
+#$means
+#J        std r        Min       Max        Q25       Q50       Q75
+#Invaded 0.5421213 0.12535814 9 0.35930656 0.7193549 0.43863071 0.5528734 0.6107609
+#Remnant 0.4477526 0.25459609 9 0.08036814 0.8530565 0.25863566 0.5657589 0.6033578
+#Treated 0.1599113 0.08821076 9 0.07092270 0.3429365 0.09192041 0.1424748 0.1761373
+
+
+
+
+
+
+
 
 # Null models -------------------------------------------------------------
  
