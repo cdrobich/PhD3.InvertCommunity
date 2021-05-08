@@ -443,6 +443,24 @@ check_model(abun.glmm)
 
 # Linear models -----------------------------------------------------------
 
+
+
+# lmperm richness
+
+s.perm.8 <- lmp(rich ~ Treatment, data = invert.2018, 
+                perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+summary(s.perm.8)
+Anova(s.perm.8)
+
+#Response: rich
+#            Sum Sq Df F value   Pr(>F)   
+#Treatment1 562.67  2  7.1983 0.003557 **
+#Residuals  938.00 24  
+
+
+
+
 ## Linear model for Abundance
 
 ab.lmm <- lmer(logAb ~ Factor + (1|N),
@@ -612,7 +630,7 @@ Anova(s.perm.7)
 s.perm.7hsd <- HSD.test(s.perm.7, "Treatment")
 
 #$means
-#rich      std r Min Max Q25 Q50 Q75
+#        rich      std     r Min Max Q25 Q50 Q75
 #Invaded 22.33333 5.567764 9  10  29  21  24  26
 #Remnant 16.77778 5.093569 9  10  23  12  17  22
 #Treated 13.22222 4.116363 9   8  20  11  13  16
@@ -673,13 +691,13 @@ Anova(pie.perm.7)
 perm.pie.t7 <- HSD.test(pie.perm.7, "Treatment")
 
 #$groups
-#J groups
+#        J groups
 #Invaded 0.5421213      a
 #Remnant 0.4477526      a
 #Treated 0.1599113      b
 
 #$means
-#J        std r        Min       Max        Q25       Q50       Q75
+#         J        std r        Min       Max        Q25       Q50       Q75
 #Invaded 0.5421213 0.12535814 9 0.35930656 0.7193549 0.43863071 0.5528734 0.6107609
 #Remnant 0.4477526 0.25459609 9 0.08036814 0.8530565 0.25863566 0.5657589 0.6033578
 #Treated 0.1599113 0.08821076 9 0.07092270 0.3429365 0.09192041 0.1424748 0.1761373
