@@ -212,7 +212,7 @@ species.12 <- as.data.frame(corrtaxa12$vectors$arrows*sqrt(corrtaxa12$vectors$r)
 species.12$species <- rownames(species.12)
 
 
-write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12.csv") # save vector scores as csv
+write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12_r.csv") # save vector scores as csv
 
 
 #### Vectors correlated with axis 1 & 3 
@@ -224,7 +224,7 @@ all.taxa.df.13 <- data.frame((alltaxa.13$vectors)$arrows,
                           (alltaxa.13$vectors)$r,
                           (alltaxa.13$vectors)$pvals)
 
-corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.3)
+corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.2)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
@@ -240,7 +240,7 @@ corrtaxa13
 species.13 <- as.data.frame(corrtaxa13$vectors$arrows*sqrt(corrtaxa13$vectors$r)) #scaling vectors so they correspond with r2
 species.13$species <- rownames(species.13)
 
-write.csv(species.13, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
+write.csv(species.13, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13r.2.csv")
 
 
 # Base R plots ------------------------------------------------------------
@@ -379,6 +379,112 @@ ggsave("Figures/Benthic_NMDS_panel.jpeg", NMS.benthic.panel,
        height = 7.33,
        width = 11.9,
        units = "in")
+
+
+
+
+benth.scores <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_inverts_scores.csv")
+vector.12r <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12_r.2.csv")
+vector.13r <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13r.2.csv")
+
+
+str(benth.scores)
+
+
+
+fill = c("Invaded" = "#440C53",
+         "Treated" = "#24908C",
+         "Remnant" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Remnant" = "#FDE825")
+
+shape = c("Invaded" = 21,
+          "Treated" = 24,
+          "Remnant" = 22)
+
+## NMDS Axis 1, 2 
+
+b12_r2 <- ggplot(data = benth.scores,
+                     aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = benth.scores, 
+             aes(x = NMDS1, 
+                 y = NMDS2, 
+                 fill = Habitat, 
+                 shape = Habitat,
+                 stroke = 1.5),
+             size = 7,
+             alpha = 0.7) + # sites as points
+  stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
+                                        colour = Habitat), 
+               size = 1, level = 0.90) + # a 95% CI ellipses
+  geom_segment(data = vector.12r , aes(x = 0, xend = MDS1, y = 0, yend = MDS2), # adding in the vectors, c
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") + # can add in geom_label or geom_text for labels
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  theme(legend.position = "none") +
+  geom_label_repel(data = vector.12r , 
+                   aes(x = MDS1, y = MDS2, label = species),
+                   color="black",
+                   size = 5,
+                   force = 2) +
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) 
+
+b12_r2 
+
+## NMDS Axis 1, 3
+
+b13_r2  <- ggplot(data = benth.scores,
+                     aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = benth.scores, 
+             aes(x = NMDS1, y = NMDS3, 
+                 fill = Habitat, shape = Habitat), 
+             size = 7,
+             stroke = 1.5,
+             alpha = 0.7) +
+  stat_ellipse(data = benth.scores, 
+               aes(x = NMDS1,y = NMDS3,
+                   colour = Habitat), size = 1, level = 0.9) +
+  geom_segment(data = vector.13r, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
+  theme_minimal() +
+  theme(panel.border = element_rect(fill = NA)) +
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  theme(legend.position = "none") +
+  geom_label_repel(data = vector.13r, 
+                   aes(x = MDS1, y = MDS3, label = species),
+                   color="black",
+                   size = 5, 
+                   force = 2) +
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) 
+
+b13_r2
+
+# putting both figures together
+
+b12_r2 + b13_r2
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Beta Diversity ----------------------------------------------------------

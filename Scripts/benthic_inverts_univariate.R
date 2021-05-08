@@ -12,6 +12,7 @@ library(rstatix)
 library(performance)
 library(see)
 
+library(patchwork)
 # Load Data ---------------------------------------------------------------
 
 benthic <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
@@ -588,7 +589,7 @@ rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
               alpha = 0.7) +
   theme_classic(14) +
   labs(x = " ",
-       y = "Taxanomic Richness") +
+       y = "Taxonomic Richness") +
   scale_fill_manual(values = colour) +
   scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
@@ -617,7 +618,7 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
 
 abun.a <- abun.a + ggtitle("Aquatic Invertebrates")
 
-aquatic.panel <- +
+aquatic.panel <- abun.a + rich.a + piel.a +
   plot_annotation(tag_levels = 'A')
 
 boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
