@@ -558,13 +558,11 @@ shape = c("Invaded" = 21,
 
 
 abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
+  geom_boxplot(lwd = 0.75) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = (expression(paste("Density per 0.25"," ", m^2)))) +
@@ -580,13 +578,11 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
   ylim(0, 12000)
 
 rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
+  geom_boxplot(lwd = 0.75) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxonomic Richness") +
@@ -599,13 +595,11 @@ rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
 
 
 piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
+  geom_boxplot(lwd = 0.75) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +
@@ -630,8 +624,6 @@ boxplots <- ggarrange(aquatic.panel, emerg.boxplots,
 boxplots2 <- abun.a + rich.a + piel.a + abund.box + riche.box + pielou.box +
   plot_annotation(tag_levels = 'A')
   
-
-
 
 ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.jpeg", 
        boxplots2,

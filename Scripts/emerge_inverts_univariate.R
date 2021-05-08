@@ -759,9 +759,12 @@ panel2 <- ggarrange(riche, simpson,
 
 # Boxplots ----------------------------------------------------------------
 
-fill = c("Invaded" = "#440C53",
-         "Treated" = "#24908C",
-         "Remnant" = "#FDE825")
+fills = c("Invaded_2017" = "#440C53",
+         "Invaded_2018" = "#440C53",
+         "Treated_2017" = "#24908C",
+         "Treated_2018" = "#24908C",
+         "Remnant_2017" = "#FDE825",
+         "Remnant_2018" = "#FDE825")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
@@ -772,71 +775,71 @@ shape = c("Invaded" = 21,
           "Remnant" = 22)
 
 
-abund.box <- ggplot(invert.2018, aes(x = Treatment, y = abundance)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
-  geom_jitter(data = invert.2018,
-              aes(fill = Treatment, shape = Treatment),
+
+
+
+abund.box <- ggplot(invert, aes(x = Treatment, y = abundance,
+                                fill = TrtYr,
+                                shape = Year)) +
+  geom_boxplot(position = position_dodge(0.8),
+               fill = "white",
+               lwd = 0.75) +
+  geom_jitter(position = position_dodge(0.8),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = (expression(paste("Density per 1","", m^2)))) +
-  scale_fill_manual(values = fill) +
-  scale_shape_manual(values = shape) +
+  scale_fill_manual(values = fills) +
+  scale_shape_manual(values = c(21,24)) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none")+ 
   theme(legend.position = "none") +
-  annotate("text", x = 3, y = 4500,
-           label = c("*"),
-           size = 15) +
   theme(axis.text = element_text(size = 16)) +
   ylim(0, 6000)
 
 
-pielou.box <- ggplot(invert.2018, aes(x = Treatment, y = J)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
-  geom_jitter(data = invert.2018,
-              aes(fill = Treatment, shape = Treatment),
+pielou.box <- ggplot(invert, aes(x = Treatment, y = J,
+                                 fill = TrtYr,
+                                 shape = Year)) +
+  geom_boxplot(position = position_dodge(0.8),
+               show.legend = FALSE,
+               fill = "white",
+               lwd = 0.75) +
+  geom_jitter(position = position_dodge(0.8),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = "Pielou's Evenness (J)") +
-  scale_fill_manual(values = fill) +
-  scale_shape_manual(values = shape) +
+  scale_fill_manual(values = fills) +
+  scale_shape_manual(values = c(21,24)) +
   theme(panel.border = element_rect(fill = NA)) +
-  theme(legend.position = "none") +
   ylim(0, 1) +
-  theme(legend.position = "none") +
-  annotate("text", x = 3, y = 0.8,
-           label = c("*"),
-           size = 15) +
-  theme(axis.text = element_text(size = 16))
+  theme(axis.text = element_text(size = 16)) +
+  guides(fill = "none")
 
-riche.box <- ggplot(invert.2018, aes(x = Treatment, y = rich)) +
-  stat_boxplot(geom = "errorbar") +
-  geom_boxplot(size = 1) +
-  geom_jitter(data = invert.2018,
-              aes(fill = Treatment, shape = Treatment),
+
+
+riche.box <- ggplot(invert, aes(x = Treatment, y = rich,
+                                fill = TrtYr,
+                                shape = Year)) +
+  geom_boxplot(position = position_dodge(0.8),
+               fill = "white",
+               lwd = 0.75) +
+  geom_jitter(position = position_dodge(0.8),
               size = 7,
-              stroke = 1.5,
-              alpha = 0.7) +
+              stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
        y = "Taxonomic Richness") +
-  scale_fill_manual(values = fill) +
-  scale_shape_manual(values = shape) +
+  scale_fill_manual(values = fills) +
+  scale_shape_manual(values = c(21,24)) +
   theme(panel.border = element_rect(fill = NA)) +
   ylim(0, 50) +
-  theme(legend.position = "none") +
-  annotate("text", x = 3, y = 45,
-           label = c("*"),
-           size = 15) +
-  theme(axis.text = element_text(size = 16))
+  theme(axis.text = element_text(size = 16),
+        legend.position = "none") 
+
 
 
 abund.box <- abund.box + ggtitle("Emerging invertebrates")
