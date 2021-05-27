@@ -473,7 +473,67 @@ ggsave("Figures/emerg_aquatic_NMDS_panel.TIFF", NMDS.aquatic.benthic,
 
 
 
-# 2018 Emerging Invertebrates ---------------------------------------------
+
+# 2017 Emerging Invertebrates ---------------------------------------------
+
+invert.17 <- read.csv("Data/Emerging/emerging_2017_rares_relativized.csv")
+
+colnames(invert.17)
+
+invert.17.taxa <- invert.17 %>% select(Araneae:Gracillariid)
+invert.17.ev <- invert.17 %>% select(Site:N)
+
+invert.b7 <- vegdist(invert.17.taxa, method = "bray")
+
+trt7 <- factor(invert.17$Treatment)
+
+(emerg.disp7 <- betadisper(invert.b7, trt7)) 
+
+#Average distance to median:
+#Invaded   Treated Uninvaded 
+#0.5388    0.5294    0.5524 
+
+permutest(emerg.disp7, pairwise = TRUE, permutations = 999)
+
+#Permutation test for homogeneity of multivariate dispersions
+#Permutation: free
+#Number of permutations: 999
+
+#Response: Distances
+#         Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)
+#Groups     2 0.002417 0.0012083 0.1535    999  0.859
+#Residuals 24 0.188947 0.0078728                     
+
+#Pairwise comparisons:
+#  (Observed p-value below diagonal, permuted p-value above diagonal)
+#Invaded Treated Uninvaded
+#Invaded           0.81600     0.699
+#Treated   0.84487             0.612
+#Uninvaded 0.70203 0.59426     
+
+boxplot(emerg.disp7)
+
+## perMANOVA
+
+(inv.17.p <- adonis2(invert.17.taxa ~ Treatment,
+                     data = invert.17,
+                     permutations = 999, method = "bray"))
+
+#           Df SumOfSqs      R2      F Pr(>F)    
+#Treatment  2   1.5143 0.15847 2.2598  0.001 ***
+#Residual  24   8.0412 0.84153                  
+#Total     26   9.5555 1.00000 
+
+(adonis.pair(invert.b7, trt7, 
+             nper = 999, corr.method = "bonferroni"))
+
+#   combination          SumsOfSqs   MeanSqs  F.Model         R2 P.value P.value.corrected
+#1 Invaded <-> Treated   0.9896879 0.9896879 3.005805 0.15815195   0.001             0.003
+#2 Invaded <-> Uninvaded 0.4883282 0.4883282 1.437161 0.08241942   0.069             0.207
+#3 Treated <-> Uninvaded 0.7934265 0.7934265 2.360669 0.12857205   0.002             0.006
+
+
+## 2018 Emerging Invertebrates ---------------------------------------------
 
 invert.18 <- read.csv("Data/Emerging/emerging_2018.csv") # rares and relativized in PC-Ord
 str(invert.18)
@@ -551,11 +611,6 @@ boxplot(emerg.disp,
 #1   Invaded <-> Restored 1.2464902 1.2464902 4.354111 0.2139180   0.002             0.006
 #2  Invaded <-> Uninvaded 0.4483599 0.4483599 1.418583 0.0814408   0.067             0.201
 #3 Restored <-> Uninvaded 0.9740588 0.9740588 3.190785 0.1662665   0.001             0.003
-
-
-
-
-
 
 
 # 2018 LCBD ---------------------------------------------------------------
@@ -893,6 +948,258 @@ ggsave("Figures/aquaitc_emerging_betadiversity.jpeg",
        aqem.beta)
 
 
+
+# 2017 NMDS ---------------------------------------------------------------
+k_vec <- 1:10 #dimensions 1 - 10
+stress <- numeric(length(k_vec)) # stress of each model put here
+dune_dij <- metaMDSdist(invert.17.taxa)
+
+set.seed(25)
+
+for(i in seq_along(k_vec)) {
+  sol <- metaMDSiter(dune_dij, k = i, 
+                     trace = FALSE)
+  stress[i] <- sol$stress
+}
+
+plot(stress) # 3D makes sense
+
+
+set.seed(120) 
+
+nms.invert17 <- metaMDS(invert.17.taxa, distance = "bray", # species data, bray-curtis dissimilarity
+                        autotransform = FALSE,  # NMDS will do autotransformations for you
+                        k = 3, trymax = 1000)   # k = number of axes
+nms.invert17
+
+
+#Call:
+# metaMDS(comm = invert.17.taxa, distance = "bray", k = 3, trymax = 1000,      autotransform = FALSE) 
+
+#global Multidimensional Scaling using monoMDS
+
+#Data:     invert.17.taxa 
+#Distance: bray 
+
+#Dimensions: 3 
+#Stress:     0.1723474 
+#Stress type 1, weak ties
+#Two convergent solutions found after 20 tries
+#Scaling: centring, PC rotation, halfchange scaling 
+#Species: expanded scores based on ‘invert.17.taxa’
+
+
+layout(matrix(1:2, ncol = 2))
+plot(nms.invert17, main = "Invertebrate NMDS plot"); stressplot(nms.invert17, main = "Shepard plot")
+layout(1)
+
+ordiplot(nms.invert17, type = "n")
+orditorp(nms.invert17, display = "species")
+orditorp(nms.invert17, display = "sites")
+
+
+
+# how many iterations of the NMDS
+nms.invert17$iters # 97
+
+# Goodness of fit
+(g <- goodness(nms.invert17)) # smaller the number the better the fit
+sum(g^2)
+nms.invert17$stress^2  # 0.02970362
+
+1-nms.invert17$stress^2 # 0.9702964 #analogous to square correlation coefficient
+
+
+## extract the scores for plotting 
+scr17 <- as.data.frame(scores(nms.invert17, display = "sites")) # extract NMDS scores
+colnames(scr17)
+
+# adding categorical info to scores
+invert.17.ev$NMDS1 <- scr17$NMDS1
+invert.17.ev$NMDS2 <- scr17$NMDS2
+invert.17.ev$NMDS3 <- scr17$NMDS3
+
+scores17 <- invert.17.ev %>% select(Site,Treatment,NMDS1:NMDS3)
+
+write.csv(scores17,"Data/Emerging/NMDS/NMDS_emerging_2017_NMDSscores.csv") # save this as a csv
+
+
+### Vectors correlated with Axis 1 & 2 
+
+alltaxa12.2017 <- envfit(nms.invert17, invert.17.taxa,
+                         choices = c(1,2),
+                         na.rm = TRUE) #produces a list with r2, p value, and NMDS coordinates
+
+all.taxa.df.2017 <- data.frame((alltaxa12.2017$vectors)$arrows,
+                               (alltaxa12.2017$vectors)$r,
+                               (alltaxa12.2017$vectors)$pvals) #take list and make into data frame
+
+write.csv(all.taxa.df.2017, "Data/Emerging/NMDS/NMDS_emerg_vectors_2017_axis12.csv") # save vector scores as csv
+
+
+#### Vectors correlated with axis 1 & 3 
+
+alltaxa13.2017 <- envfit(nms.invert17, invert.17.taxa, 
+                         permutations = 999, choices = c(1,3),
+                         na.rm = TRUE) 
+
+
+all.taxa13.df.2017 <- data.frame((alltaxa13.2017$vectors)$arrows,
+                                 (alltaxa13.2017$vectors)$r,
+                                 (alltaxa13.2017$vectors)$pvals)
+
+write.csv(all.taxa13.df.2017, "Data/Emerging/NMDS/NMDS_emerging_vectors_2017_axis13.csv")
+
+
+## Picking the vectors we want for the figure based on fit (r > 0.2)
+
+nmds.axis1217 <- read.csv("Data/Emerging/NMDS/NMDS_emerg_vectors_2017_axis12.csv")
+nmds.axis1317 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_vectors_2017_axis13.csv")
+
+colnames(nmds.axis1217)
+
+# axis 1, 2
+corr.sp.17 <- nmds.axis1217 %>% filter(X.alltaxa12.2017.vectors..r > 0.3) 
+target12.17 <- corr.sp.17$X # string of the Family names
+
+axis12.vectors.17 <- invert.17.taxa %>% select(all_of(target12.17)) # make a matrix of just those
+
+# axis 1, 3
+
+corr.sp13.17 <- nmds.axis1317 %>% filter(X.alltaxa13.2017.vectors..r > 0.3) 
+target13.17 <- corr.sp13.17$X # string of the Family names
+
+axis13.vectors.17 <- invert.17.taxa %>% select(all_of(target13.17)) # make a matrix of just those
+
+
+# fit them to the nms
+# axis 1, 2
+(nmds.vectors.12.17 <- envfit(nms.invert17$points, axis12.vectors.17,
+                              permutations = 999, choices = c(1,2),
+                              na.rm = TRUE))                        
+
+
+corr.vectors.12.17 <- as.data.frame(nmds.vectors.12.17 $vectors$arrows*sqrt(nmds.vectors.12.17$vectors$r)) #scaling vectors
+corr.vectors.12.17$taxa <- rownames(corr.vectors.12.17) # add Family as a column
+
+write.csv(corr.vectors.12.17, "Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12_2017.csv")
+
+# axis 1, 3
+(nmds.vectors.13.17 <- envfit(nms.invert17$points, axis13.vectors.17,
+                              permutations = 999, choices = c(1,3),
+                              na.rm = TRUE))                        
+
+
+corr.vectors.13.17 <- as.data.frame(nmds.vectors.13.17$vectors$arrows*sqrt(nmds.vectors.13.17$vectors$r)) #scaling vectors
+corr.vectors.13.17$taxa <- rownames(corr.vectors.13.17) # add Family as a column
+
+write.csv(corr.vectors.13.17, "Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13_2017.csv")
+
+
+# 2017 NMDS Figure --------------------------------------------------------
+
+nmds.scores17 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_2017_NMDSscores.csv") #points
+
+
+#vectors r > 0.3
+vectors.1217 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12_2017.csv") 
+vectors.1317 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13_2017.csv")
+
+
+fill = c("Invaded" = "#440C53",
+         "Treated" = "#24908C",
+         "Uninvaded" = "#FDE825")
+
+colour = c("Invaded" = "#440C53",
+           "Treated" = "#24908C",
+           "Uninvaded" = "#FDE825")
+
+shape = c("Invaded" = 21,
+          "Treated" = 24,
+          "Uninvaded" = 22)
+
+unique(nmds.scores17$Treatment)
+
+## NMDS Axis 1, 2 
+
+invert.1217 <- ggplot(data = nmds.scores17,
+                      aes(x = NMDS1, y = NMDS2)) +
+  geom_point(data = nmds.scores17, 
+             aes(x = NMDS1, y = NMDS2, 
+                 shape = Treatment, fill = Treatment),
+             size = 7, stroke = 1.5,
+             alpha = 0.7) +
+  stat_ellipse(data = nmds.scores17, 
+               aes(x = NMDS1,y = NMDS2,
+                   colour = Treatment), 
+               size = 1, level = 0.9) +
+  geom_segment(data = vectors.1217, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS2),
+               arrow = arrow(length = unit(0.5, "cm")),
+               colour = "black") +
+  geom_label_repel(data = vectors.1217, 
+                   aes(x = MDS1, y = MDS2, label = taxa),
+                   color = "black",
+                   size = 5,
+                   force = 2) +
+  theme_minimal() + # no background
+  theme(panel.border = element_rect(fill = NA)) + # full square around figure
+  xlab("NMDS 1") +
+  ylab("NMDS 2") +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
+  scale_colour_manual(values = colour) +
+  theme(legend.position = "none") +
+  ggtitle("2017 Emerging Invertebrates")
+
+invert.1217
+
+## NMDS Axis 1, 3
+
+invert.1317 <- ggplot(data = nmds.scores17,
+                      aes(x = NMDS1, y = NMDS3)) +
+  geom_point(data = nmds.scores17, 
+             aes(x = NMDS1, y = NMDS3, 
+                 fill = Treatment, shape = Treatment), 
+             size = 7, stroke = 1.5,
+             alpha = 0.7) +
+  stat_ellipse(data = nmds.scores17, 
+               aes(x = NMDS1,y = NMDS3,
+                   colour = Treatment), 
+               size = 1, level = 0.9) +
+  geom_segment(data = vectors.1317, 
+               aes(x = 0, xend = MDS1, y = 0, yend = MDS3),
+               arrow = arrow(length = unit(0.5, "cm")), colour = "black") +
+  theme_minimal() +
+  theme(panel.border = element_rect(fill = NA)) +
+  geom_label_repel(data = vectors.1317, 
+                   aes(x = MDS1, y = MDS3, label = taxa),
+                   color="black",
+                   size = 5,
+                   force = 2) +
+  xlab("NMDS 1") +
+  ylab("NMDS 3") +
+  scale_fill_manual(values = fill) +
+  scale_shape_manual(values = shape) +
+  scale_colour_manual(values = colour) +
+  theme(legend.position = "none")
+
+
+invert.1317
+
+
+
+invert.1217 + invert.1317
+
+
+
+
+
+
+
+
+
+
 # 2018 NMDS ---------------------------------------------------------------
 
 
@@ -972,7 +1279,7 @@ write.csv(scores18,"Data/Emerging/NMDS/NMDS_emerging_2018_NMDSscores.csv") # sav
 
 ### Vectors correlated with Axis 1 & 2 
 
-alltaxa12.2018 <- envfit(nms.invert18, invert.18.vectors,
+alltaxa12.2018 <- envfit(nms.invert18, invert.18.taxa,
                     choices = c(1,2),
                     na.rm = TRUE) #produces a list with r2, p value, and NMDS coordinates
 
@@ -985,7 +1292,7 @@ write.csv(all.taxa.df.2018, "Data/Emerging/NMDS/NMDS_emerg_vectors_2018_axis12.c
 
 #### Vectors correlated with axis 1 & 3 
 
-alltaxa13.2018 <- envfit(nms.invert18, invert.18.vectors, 
+alltaxa13.2018 <- envfit(nms.invert18, invert.18.taxa, 
                      permutations = 999, choices = c(1,3),
                      na.rm = TRUE) 
 
@@ -1008,14 +1315,14 @@ colnames(nmds.axis1218)
 corr.sp.18 <- nmds.axis1218 %>% filter(X.alltaxa12.2018.vectors..r > 0.3) 
 target12.18 <- corr.sp.18$X # string of the Family names
 
-axis12.vectors.18 <- invert.18.vectors %>% select(all_of(target12.18)) # make a matrix of just those
+axis12.vectors.18 <- invert.18.taxa %>% select(all_of(target12.18)) # make a matrix of just those
 
 # axis 1, 3
 
 corr.sp13.18 <- nmds.axis1318 %>% filter(X.alltaxa13.2018.vectors..r > 0.3) 
 target13.18 <- corr.sp13.18$X # string of the Family names
 
-axis13.vectors.18 <- invert.18.vectors %>% select(all_of(target13.18)) # make a matrix of just those
+axis13.vectors.18 <- invert.18.taxa %>% select(all_of(target13.18)) # make a matrix of just those
 
 
 # fit them to the nms
@@ -1046,26 +1353,28 @@ write.csv(corr.vectors.13.18, "Data/Emerging/NMDS/NMDS_emerging_correlatedvector
 
 nmds.scores18 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_2018_NMDSscores.csv") #points
 
-unique(nmds.scores18$Treatment)
 
-
-#vectors r > 0.2
+#vectors r > 0.3
 vectors.1218 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12_2018.csv") 
 vectors.1318 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13_2018.csv")
 
 
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
+         "Uninvaded" = "#FDE825",
          "Remnant" = "#FDE825")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
+           "Uninvaded" = "#FDE825",
            "Remnant" = "#FDE825")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
+          "Uninvaded" = 22,
           "Remnant" = 22)
 
+unique(nmds.scores17$Treatment)
 
 ## NMDS Axis 1, 2 
 
@@ -1096,7 +1405,8 @@ invert.1218 <- ggplot(data = nmds.scores18,
   scale_fill_manual(values = fill) +
   scale_shape_manual(values = shape) +
   scale_colour_manual(values = colour) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ggtitle("2018 Emerging Invertebrates")
 
 invert.1218
 
@@ -1128,44 +1438,27 @@ invert.1318 <- ggplot(data = nmds.scores18,
   scale_fill_manual(values = fill) +
   scale_shape_manual(values = shape) +
   scale_colour_manual(values = colour) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
 
 
 invert.1318
 
 
-invert.1218 <- invert.1218 + ggtitle("B.  Emerging Invertebrates")
 
 invert.1218 + invert.1318
 
 
-(NMS.emerging.panel18 <- ggarrange(invert.1218, invert.1318,
-                                 common.legend = TRUE,
-                                 legend = "none"))
+# Put NMDS together -------------------------------------------------------
 
 
-ggsave("Figures/Emerging_NMDS_panel.TIFF", NMS.emerging.panel,
-       dpi = 300,
-       height = 8.19,
-       width = 14.5,
+NDMS <- benthic.12 + benthic.13 + invert.1217 + 
+  invert.1317 + invert.1218 + invert.1318 +
+  plot_layout(ncol = 2)
+
+NDMS
+
+ggsave("Figures/NMDS_allyears.TIFF",
+       height = 13,
+       width = 11,
        units = "in")
-
-
-library(patchwork)
-
-invert.1218 <- invert.1218 + ggtitle("B.    Emerging Invertebrates")
-
-
-(nmds.panel <- benthic.12 + benthic.13 + invert.1218 + invert.1318)
-
-
-ggsave("Figures/emergaquat_NMDS_panel.jpeg",
-       nmds.panel,
-       dpi = 300,
-       height = 10,
-       width = 13.2,
-       units = "in")
-
-
-
 

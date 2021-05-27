@@ -315,7 +315,6 @@ benthic.12 <- ggplot(data = benth.scores,
   theme(panel.border = element_rect(fill = NA)) + # full square around figure
   xlab("NMDS 1") +
   ylab("NMDS 2") +
-  theme(legend.position = "none") +
   geom_label_repel(data = vector.12, 
                   aes(x = MDS1, y = MDS2, label = species),
                   color="black",
@@ -323,7 +322,9 @@ benthic.12 <- ggplot(data = benth.scores,
                   force = 2) +
   scale_fill_manual(values = fill) +
   scale_colour_manual(values = colour) +
-  scale_shape_manual(values = shape) 
+  scale_shape_manual(values = shape) +
+  ggtitle("2018 Aquatic Invertebrates") +
+  theme(legend.position = "none") 
 
 benthic.12
 
@@ -347,7 +348,6 @@ benthic.13 <- ggplot(data = benth.scores,
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  theme(legend.position = "none") +
   geom_label_repel(data = vector.13, 
                   aes(x = MDS1, y = MDS3, label = species),
                   color="black",
@@ -361,7 +361,6 @@ benthic.13
 
 # putting both figures together
 
-benthic.12 <- benthic.12 + ggtitle("A.   Aquatic Invertebrates")
 
 benthic.12 + benthic.13
 
