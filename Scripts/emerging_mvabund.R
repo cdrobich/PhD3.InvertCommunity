@@ -5,17 +5,59 @@ library(tidyverse)
 library(vegan)
 library(mvabund)
 library(patchwork)
+library(lubridate)
+library(plotrix)
+library(patchwork)
 
 # Data --------------------------------------------------------------------
-
-inverts <- inverts.time %>% 
-  pivot_longer(Araneae:Crambidae, names_to = "Family", values_to = "count")
-
-write.csv(inverts, "Data/Emerging/emerging_time_long.csv")
-
 inverts <- read.csv("Data/Emerging/emerging_time_long.csv")
 
 inverts.time <- read.csv("Data/Emerging/ermerging_time_rares.csv")
+
+
+## For line plots 
+
+inverts17 <- inverts %>% 
+  filter(Year == "2017") %>% 
+  mutate(Date = dmy(Date)) %>% 
+  filter(count > 0)
+
+
+inverts17s <- inverts17 %>% 
+  group_by(Date, Time, Treatment) %>% 
+  summarize(mean = mean(count),
+            std = sd(count),
+            str = std.error(count))
+
+inverts18 <- inverts %>% 
+  filter(Year == "2018") %>% 
+  mutate(Date = dmy(Date)) %>% 
+  filter(count > 0)
+
+inverts18s <- inverts18 %>% 
+  group_by(Date, Time, Treatment) %>% 
+  summarize(mean = mean(count),
+            std = sd(count),
+            str = std.error(count))
+
+
+## Chironomid line plots
+
+chiro17s <- inverts17 %>% 
+  filter(Family == "Chironomidae") %>% 
+  group_by(Date, Time, Treatment) %>% 
+  summarize(mean = mean(count),
+            std = sd(count),
+            str = std.error(count))
+
+
+chiro18s <- inverts18 %>% 
+  filter(Family == "Chironomidae") %>% 
+  group_by(Date, Time, Treatment) %>% 
+  summarize(mean = mean(count),
+            std = sd(count),
+            str = std.error(count))
+  
 
 # multivariate GLM --------------------------------------------------------
 
@@ -95,6 +137,9 @@ shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
 
+
+# geom_smooth figures -----------------------------------------------------
+
 str(inverts)
 unique(inverts$Treatment)
 
@@ -147,17 +192,6 @@ ggsave("Figures/Chironomidae_bothyears.TIFF",
        chiros)
 
 ### All counts
-
-inverts17 <- inverts %>% 
-  filter(Year == "2017") %>% 
-  mutate(Date = dmy(Date)) %>% 
-  filter(count > 0)
-
-inverts18 <- inverts %>% 
-  filter(Year == "2018") %>% 
-  mutate(Date = dmy(Date)) %>% 
-  filter(count > 0)
-
 
 total7 <- ggplot(inverts17, aes(x = Date, y = count, 
                      fill = Treatment,
@@ -215,11 +249,8 @@ ggsave("Figures/total_chiro_bothyears.TIFF",
        panel)
 
 
-inverts17s <- inverts17 %>% 
-  group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
-            std = sd(count),
-            str = std.error(count))
+
+# Line plots --------------------------------------------------------------
 
 
 in17 <- ggplot(inverts17s, aes(x = Date, y = mean,
@@ -243,14 +274,9 @@ in17 <- ggplot(inverts17s, aes(x = Date, y = mean,
         strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
         legend.text = element_text(size = 11),
-        legend.position = "none") +
-  ggtitle("2017")
+        legend.position = "none") 
 
-inverts18s <- inverts18 %>% 
-  group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
-            std = sd(count),
-            str = std.error(count))
+
 
 in18 <- ggplot(inverts18s, aes(x = Date, y = mean,
                                shape = Treatment,
@@ -272,10 +298,69 @@ in18 <- ggplot(inverts18s, aes(x = Date, y = mean,
   theme(axis.text = element_text(size = 12),
         strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
-        legend.text = element_text(size = 11)) +
-  ggtitle("2018")
+        legend.text = element_text(size = 11)) 
 
-inv178 <- in17 + in18
+inv178 <- in17 + in18 +
+  plot_annotation(tag_levels = "A")
 
 ggsave("Figures/invert_density_bothyears.TIFF",
        inv178)
+
+
+
+chirol17 <- ggplot(chiro17s, aes(x = Date, y = mean,
+                       shape = Treatment,
+                       group = Treatment,
+                       fill = Treatment)) +
+  geom_errorbar(aes(ymin = mean - str, ymax = mean + str,
+                    colour = Treatment), 
+                width = 0.5) +
+  geom_line(aes(colour = Treatment)) +
+  geom_point(size = 4, stroke = 1.5) +
+  scale_x_date(date_labels = "%d-%b-%y",
+               date_breaks = "1 week") +
+  labs(y = (expression(paste("Chironomidae density per 1 ","", m^2))),
+       x = ' ') +
+  theme_bw() +
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.text = element_text(size = 11),
+        legend.position = "none") 
+
+
+chirol18 <- ggplot(chiro18s, aes(x = Date, y = mean,
+                     shape = Treatment,
+                     group = Treatment,
+                     fill = Treatment)) +
+  geom_errorbar(aes(ymin = mean - str, ymax = mean + str,
+                    colour = Treatment), 
+                width = 0.5) +
+  geom_line(aes(colour = Treatment)) +
+  geom_point(size = 4, stroke = 1.5) +
+  scale_x_date(date_labels = "%d-%b-%y",
+               date_breaks = "2 week") +
+  labs(y = (expression(paste("Chironomidae density per 1 ","", m^2))),
+       x = ' ') +
+  theme_bw() +
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.text = element_text(size = 11),
+        legend.position = "none") 
+
+
+
+
+line.panel <- in17 + in18 +
+  chirol17 + chirol18 +
+  plot_annotation(tag_levels = "A")
+
+ggsave("Figures/lineplots_panel_20172018.tiff",
+       line.panel)
