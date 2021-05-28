@@ -482,6 +482,7 @@ colnames(invert.17)
 
 invert.17.taxa <- invert.17 %>% select(Araneae:Gracillariid)
 invert.17.ev <- invert.17 %>% select(Site:N)
+invert.17.vectors <- invert.17 %>% select(Avg_Can:Gracillariid)
 
 invert.b7 <- vegdist(invert.17.taxa, method = "bray")
 
@@ -1000,7 +1001,7 @@ orditorp(nms.invert17, display = "sites")
 
 
 # how many iterations of the NMDS
-nms.invert17$iters # 97
+nms.invert17$iters # 121
 
 # Goodness of fit
 (g <- goodness(nms.invert17)) # smaller the number the better the fit
@@ -1026,7 +1027,7 @@ write.csv(scores17,"Data/Emerging/NMDS/NMDS_emerging_2017_NMDSscores.csv") # sav
 
 ### Vectors correlated with Axis 1 & 2 
 
-alltaxa12.2017 <- envfit(nms.invert17, invert.17.taxa,
+alltaxa12.2017 <- envfit(nms.invert17, invert.17.vectors,
                          choices = c(1,2),
                          na.rm = TRUE) #produces a list with r2, p value, and NMDS coordinates
 
@@ -1039,7 +1040,7 @@ write.csv(all.taxa.df.2017, "Data/Emerging/NMDS/NMDS_emerg_vectors_2017_axis12.c
 
 #### Vectors correlated with axis 1 & 3 
 
-alltaxa13.2017 <- envfit(nms.invert17, invert.17.taxa, 
+alltaxa13.2017 <- envfit(nms.invert17, invert.17.vectors, 
                          permutations = 999, choices = c(1,3),
                          na.rm = TRUE) 
 
@@ -1062,14 +1063,14 @@ colnames(nmds.axis1217)
 corr.sp.17 <- nmds.axis1217 %>% filter(X.alltaxa12.2017.vectors..r > 0.3) 
 target12.17 <- corr.sp.17$X # string of the Family names
 
-axis12.vectors.17 <- invert.17.taxa %>% select(all_of(target12.17)) # make a matrix of just those
+axis12.vectors.17 <- invert.17.vectors %>% select(all_of(target12.17)) # make a matrix of just those
 
 # axis 1, 3
 
 corr.sp13.17 <- nmds.axis1317 %>% filter(X.alltaxa13.2017.vectors..r > 0.3) 
 target13.17 <- corr.sp13.17$X # string of the Family names
 
-axis13.vectors.17 <- invert.17.taxa %>% select(all_of(target13.17)) # make a matrix of just those
+axis13.vectors.17 <- invert.17.vectors %>% select(all_of(target13.17)) # make a matrix of just those
 
 
 # fit them to the nms
@@ -1193,13 +1194,6 @@ invert.1217 + invert.1317
 
 
 
-
-
-
-
-
-
-
 # 2018 NMDS ---------------------------------------------------------------
 
 
@@ -1304,7 +1298,7 @@ all.taxa13.df.2018 <- data.frame((alltaxa13.2018$vectors)$arrows,
 write.csv(all.taxa13.df.2018, "Data/Emerging/NMDS/NMDS_emerging_vectors_2018_axis13.csv")
 
 
-## Picking the vectors we want for the figure based on fit (r > 0.2)
+## Picking the vectors we want for the figure based on fit (r > 0.3)
 
 nmds.axis1218 <- read.csv("Data/Emerging/NMDS/NMDS_emerg_vectors_2018_axis12.csv")
 nmds.axis1318 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_vectors_2018_axis13.csv")
@@ -1458,7 +1452,7 @@ NDMS <- benthic.12 + benthic.13 + invert.1217 +
 NDMS
 
 ggsave("Figures/NMDS_allyears.TIFF",
-       height = 13,
-       width = 11,
+       height = 15,
+       width = 15,
        units = "in")
 

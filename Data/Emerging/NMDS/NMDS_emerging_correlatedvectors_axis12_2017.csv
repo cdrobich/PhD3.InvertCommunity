@@ -1,11 +1,14 @@
 ,MDS1,MDS2,taxa
-Carabidae,-0.45407859,-0.407950757,Carabidae
-Erotylidae,-0.568604932,0.09525719,Erotylidae
-Culicidae,-0.612061538,0.227812777,Culicidae
-Dolichopodid,-0.628996684,0.212777959,Dolichopodidae
-Agromyzidae,0.494532108,-0.284607228,Agromyzidae
-Ichneumonida,-0.402211297,-0.525012162,Ichneumonidae
-Hemerobiidae,-0.60774794,0.205051745,Hemerobiidae
-Hydroptilida,0.5771991,0.355939065,Hydroptilidae
-Leptoceridae,0.494453876,-0.324573655,Leptoceridae
-Phryganeidae,0.156645576,0.547355238,Phryganeidae
+Avg_Can,-0.716626912,-0.455020759,Canopy height
+OpenWater,0.864923691,0.209876003,OpenWater
+St.Dead,-0.630943966,-0.177307346,Standing dead
+PHRAUSTR,-0.518329632,-0.260142276,PHRAUSTR
+Carabidae,-0.445254001,0.435066015,Carabidae
+Erotylidae,-0.537154623,-0.116182307,Erotylidae
+Chironomidae,0.575155274,-0.087033261,Chironomidae
+Culicidae,-0.652996577,-0.115652943,Culicidae
+Dolichopodid,-0.603016615,-0.241728321,Dolichopodidae
+Agromyzidae,0.650086037,0.091913832,Agromyzidae
+Ichneumonida,-0.407564295,0.540997005,Ichneumonidae
+Hemerobiidae,-0.589872818,-0.219172144,Hemerobiidae
+Leptoceridae,0.651642261,0.131172476,Leptoceridae

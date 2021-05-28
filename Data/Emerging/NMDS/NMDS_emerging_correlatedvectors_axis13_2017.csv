@@ -1,9 +1,15 @@
 ,MDS1,MDS3,taxa
-Carabidae,-0.431644133,-0.528925271,Carabidae
-Erotylidae,-0.545033282,0.297009478,Erotylidae
-Culicidae,-0.619295211,-0.14036665,Culicidae
-Dolichopodid,-0.617394173,-0.289344547,Dolichopodidae
-Drosophilida,-0.433395978,0.336157634,Drosophilidae
-Hemerobiidae,-0.617359093,-0.06635161,Hemerobiidae
-Thysanoptera,0.302927525,0.477248242,Thysanoptera
-Hydroptilida,0.569230828,-0.377381019,Hydroptilidae
+Avg_Can,-0.774202284,0.035341161,Canopy height
+OpenWater,0.873410512,0.097437694,OpenWater
+St.Dead,-0.613642614,-0.39039305,Standing Dead
+PHRAUSTR,-0.504792989,0.308356978,PHRAUSTR
+Carabidae,-0.304552135,0.653437532,Carabidae
+Erotylidae,-0.518624303,-0.334439731,Erotylidae
+Chironomidae,0.575452818,0.076230443,Chironomidae
+Culicidae,-0.657251681,-0.002676258,Culicidae
+Dolichopodid,-0.581291217,0.335341463,Dolichopodidae
+Agromyzidae,0.631765094,0.307630186,Agromyzidae
+Drosophilida,-0.42732662,-0.376855726,Drosophilidae
+Hemerobiidae,-0.606613235,0.033447433,Hemerobiidae
+Lestidae,0.460033644,0.315594449,Lestidae
+Leptoceridae,0.644697051,0.218939277,Leptoceridae
