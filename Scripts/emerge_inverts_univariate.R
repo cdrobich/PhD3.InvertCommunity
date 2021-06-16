@@ -27,6 +27,7 @@ library(see)
 library(lmPerm)
 citation("performance")
 
+library(patchwork)
 # Data Import -------------------------------------------------------------
 
 invert <- read.csv("Data/Emerging/emerging_invertebrates.csv")
@@ -74,6 +75,17 @@ invert$sqRich <- sqrt(invert$rich)
 
 invert.2017 <- invert %>% filter(Year == "2017")
 invert.2018 <- invert %>% filter(Year == "2018")
+
+
+colnames(invert)
+
+summary <- invert %>% group_by(Treatment) %>% 
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = list(Mean = mean, SD = sd, SE = std.error), na.rm = TRUE,
+    .names = "{col}_{fn}"
+  ))
+
 # Histograms ---------------------------------------------------------------
 
 
@@ -880,22 +892,20 @@ panel2 <- ggarrange(riche, simpson,
 
 # Boxplots ----------------------------------------------------------------
 
-fills = c("Invaded_2017" = "#440C53",
-         "Invaded_2018" = "#440C53",
+fills = c("Invaded_2017" = "#440c53",
+         "Invaded_2018" = "#440c53",
          "Treated_2017" = "#24908C",
          "Treated_2018" = "#24908C",
-         "Remnant_2017" = "#FDE825",
-         "Remnant_2018" = "#FDE825")
+         "Remnant_2017" = "#3A518B",
+         "Remnant_2018" = "#3A518B")
 
-colour = c("Invaded" = "#440C53",
+colour = c("Invaded" = "#440c53",
            "Treated" = "#24908C",
-           "Remnant" = "#FDE825")
+           "Remnant" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
-
-
 
 
 
@@ -963,7 +973,7 @@ riche.box <- ggplot(invert, aes(x = Treatment, y = rich,
 
 
 
-abund.box <- abund.box + ggtitle("Emerging invertebrates")
+abund.box <- abund.box + ggtitle("Emergence trap invertebrates")
 
 
 (emerg.boxplots <- abund.box + riche.box + pielou.box)

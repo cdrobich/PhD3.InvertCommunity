@@ -1,7 +1,7 @@
 ,MDS1,MDS3,taxa,Order
-Canopy.Height,-0.666607312,-0.11524524,Canopy.Height,
-Water.Temp,0.733153301,0.206523693,Water.Temp,
-Standing.Dead,-0.673881953,-0.174692012,Standing.Dead,
+Canopy.Height,-0.666607312,-0.11524524,Canopy height,
+Water.Temp,0.733153301,0.206523693,Water temperature,
+Standing.Dead,-0.673881953,-0.174692012,Standing dead,
 Anthicidae,-0.503017996,-0.321668313,Anthicidae,Coleoptera
 Erotylidae,-0.493701017,-0.32221327,Erotylidae,Coleoptera
 Cecidomyiidae,-0.51089817,-0.289767429,Cecidomyiidae,Diptera

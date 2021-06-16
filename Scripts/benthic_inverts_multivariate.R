@@ -212,8 +212,8 @@ species.12 <- as.data.frame(corrtaxa12$vectors$arrows*sqrt(corrtaxa12$vectors$r)
 species.12$species <- rownames(species.12)
 
 
-write.csv(species.12, "Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12_r.csv") # save vector scores as csv
-
+# save vector scores as csv
+write.csv(species.12, "Data/Aquatic/NMDS/NMDS_aquatic_vectors12_plants.csv")
 
 #### Vectors correlated with axis 1 & 3 
 
@@ -224,7 +224,7 @@ all.taxa.df.13 <- data.frame((alltaxa.13$vectors)$arrows,
                           (alltaxa.13$vectors)$r,
                           (alltaxa.13$vectors)$pvals)
 
-corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.2)
+corr.spp13 <- all.taxa.df.13 %>% filter(X.alltaxa.13.vectors..r > 0.3)
 corr.spp13$species <- rownames(corr.spp13)
 
 corr.species13 <- corr.spp13$species # string of the Family names
@@ -281,18 +281,19 @@ vector.13 <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13.csv")
 str(benth.scores)
 
 
-
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Remnant" = "#FDE825")
+         "Remnant" = "#3A518B")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Remnant" = "#FDE825")
+           "Remnant" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
+
+
 
 ## NMDS Axis 1, 2 
 
@@ -304,8 +305,7 @@ benthic.12 <- ggplot(data = benth.scores,
                  fill = Habitat, 
                  shape = Habitat,
                  stroke = 1.5),
-             size = 7,
-             alpha = 0.7) + # sites as points
+             size = 7) + # sites as points
   stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
                                         colour = Habitat), 
                size = 1, level = 0.90) + # a 95% CI ellipses
@@ -336,8 +336,7 @@ benthic.13 <- ggplot(data = benth.scores,
              aes(x = NMDS1, y = NMDS3, 
                  fill = Habitat, shape = Habitat), 
              size = 7,
-             stroke = 1.5,
-             alpha = 0.7) +
+             stroke = 1.5) +
   stat_ellipse(data = benth.scores, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Habitat), size = 1, level = 0.9) +
@@ -381,27 +380,15 @@ ggsave("Figures/Benthic_NMDS_panel.jpeg", NMS.benthic.panel,
 
 
 
+# NMDS figure with veg vectors --------------------------------------------
 
 benth.scores <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_inverts_scores.csv")
-vector.12r <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis12_r.2.csv")
+vector.12r <- read.csv("Data/Aquatic/NMDS/NMDS_aquatic_vectors12_plants.csv")
 vector.13r <- read.csv("Data/Aquatic/NMDS/NMDS_benthic_vectors_axis13r.2.csv")
 
 
 str(benth.scores)
 
-
-
-fill = c("Invaded" = "#440C53",
-         "Treated" = "#24908C",
-         "Remnant" = "#FDE825")
-
-colour = c("Invaded" = "#440C53",
-           "Treated" = "#24908C",
-           "Remnant" = "#FDE825")
-
-shape = c("Invaded" = 21,
-          "Treated" = 24,
-          "Remnant" = 22)
 
 ## NMDS Axis 1, 2 
 
@@ -413,8 +400,7 @@ b12_r2 <- ggplot(data = benth.scores,
                  fill = Habitat, 
                  shape = Habitat,
                  stroke = 1.5),
-             size = 7,
-             alpha = 0.7) + # sites as points
+             size = 7) + # sites as points
   stat_ellipse(data = benth.scores, aes(x = NMDS1,y = NMDS2,
                                         colour = Habitat), 
                size = 1, level = 0.90) + # a 95% CI ellipses
@@ -444,8 +430,7 @@ b13_r2  <- ggplot(data = benth.scores,
              aes(x = NMDS1, y = NMDS3, 
                  fill = Habitat, shape = Habitat), 
              size = 7,
-             stroke = 1.5,
-             alpha = 0.7) +
+             stroke = 1.5) +
   stat_ellipse(data = benth.scores, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Habitat), size = 1, level = 0.9) +
@@ -456,7 +441,7 @@ b13_r2  <- ggplot(data = benth.scores,
   theme(panel.border = element_rect(fill = NA)) +
   xlab("NMDS 1") +
   ylab("NMDS 3") +
-  theme(legend.position = "none") +
+  theme(legend.position = "right") +
   geom_label_repel(data = vector.13r, 
                    aes(x = MDS1, y = MDS3, label = species),
                    color="black",
@@ -470,14 +455,17 @@ b13_r2
 
 # putting both figures together
 
-b12_r2 + b13_r2
+b12_r2 <- b12_r2 + ggtitle("Aquatic invertebrates")
+
+NMDS.aquatic <- b12_r2 + b13_r2
 
 
 
-
-
-
-
+ggsave("Figures/Aquatic_NMDS_panel.jpeg", NMDS.aquatic,
+       dpi = 300,
+       height = 7.33,
+       width = 11.9,
+       units = "in")
 
 
 

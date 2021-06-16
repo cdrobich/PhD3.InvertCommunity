@@ -1106,18 +1106,18 @@ nmds.scores17 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_2017_NMDSscores.csv"
 vectors.1217 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis12_2017.csv") 
 vectors.1317 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axis13_2017.csv")
 
-
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Uninvaded" = "#FDE825")
+         "Uninvaded" = "#3A518B")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Uninvaded" = "#FDE825")
+           "Uninvaded" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
           "Uninvaded" = 22)
+
 
 unique(nmds.scores17$Treatment)
 
@@ -1128,8 +1128,7 @@ invert.1217 <- ggplot(data = nmds.scores17,
   geom_point(data = nmds.scores17, 
              aes(x = NMDS1, y = NMDS2, 
                  shape = Treatment, fill = Treatment),
-             size = 7, stroke = 1.5,
-             alpha = 0.7) +
+             size = 7, stroke = 1.5) +
   stat_ellipse(data = nmds.scores17, 
                aes(x = NMDS1,y = NMDS2,
                    colour = Treatment), 
@@ -1151,7 +1150,7 @@ invert.1217 <- ggplot(data = nmds.scores17,
   scale_shape_manual(values = shape) +
   scale_colour_manual(values = colour) +
   theme(legend.position = "none") +
-  ggtitle("2017 Emerging Invertebrates")
+  ggtitle("2017 Emergence trap invertebrates")
 
 invert.1217
 
@@ -1162,8 +1161,7 @@ invert.1317 <- ggplot(data = nmds.scores17,
   geom_point(data = nmds.scores17, 
              aes(x = NMDS1, y = NMDS3, 
                  fill = Treatment, shape = Treatment), 
-             size = 7, stroke = 1.5,
-             alpha = 0.7) +
+             size = 7, stroke = 1.5) +
   stat_ellipse(data = nmds.scores17, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Treatment), 
@@ -1355,13 +1353,13 @@ vectors.1318 <- read.csv("Data/Emerging/NMDS/NMDS_emerging_correlatedvectors_axi
 
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Uninvaded" = "#FDE825",
-         "Remnant" = "#FDE825")
+         "Uninvaded" = "#3A518B",
+         "Remnant" = "#3A518B")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Uninvaded" = "#FDE825",
-           "Remnant" = "#FDE825")
+           "Uninvaded" = "#3A518B",
+           "Remnant" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
@@ -1377,8 +1375,7 @@ invert.1218 <- ggplot(data = nmds.scores18,
   geom_point(data = nmds.scores18, 
              aes(x = NMDS1, y = NMDS2, 
                  shape = Treatment, fill = Treatment),
-             size = 7, stroke = 1.5,
-             alpha = 0.7) +
+             size = 7, stroke = 1.5) +
   stat_ellipse(data = nmds.scores18, 
                aes(x = NMDS1,y = NMDS2,
                    colour = Treatment), 
@@ -1400,7 +1397,7 @@ invert.1218 <- ggplot(data = nmds.scores18,
   scale_shape_manual(values = shape) +
   scale_colour_manual(values = colour) +
   theme(legend.position = "none") +
-  ggtitle("2018 Emerging Invertebrates")
+  ggtitle("2018 Emergence trap invertebrates")
 
 invert.1218
 
@@ -1411,8 +1408,7 @@ invert.1318 <- ggplot(data = nmds.scores18,
   geom_point(data = nmds.scores18, 
              aes(x = NMDS1, y = NMDS3, 
                  fill = Treatment, shape = Treatment), 
-             size = 7, stroke = 1.5,
-             alpha = 0.7) +
+             size = 7, stroke = 1.5) +
   stat_ellipse(data = nmds.scores18, 
                aes(x = NMDS1,y = NMDS3,
                    colour = Treatment), 
@@ -1445,7 +1441,7 @@ invert.1218 + invert.1318
 # Put NMDS together -------------------------------------------------------
 
 
-NDMS <- benthic.12 + benthic.13 + invert.1217 + 
+NDMS <- b12_r2 + b13_r2 + invert.1217 + 
   invert.1317 + invert.1218 + invert.1318 +
   plot_layout(ncol = 2)
 

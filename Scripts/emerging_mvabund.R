@@ -25,7 +25,7 @@ inverts17 <- inverts %>%
 
 inverts17s <- inverts17 %>% 
   group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
+  summarise(mean = mean(count),
             std = sd(count),
             str = std.error(count))
 
@@ -36,7 +36,7 @@ inverts18 <- inverts %>%
 
 inverts18s <- inverts18 %>% 
   group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
+  summarise(mean = mean(count),
             std = sd(count),
             str = std.error(count))
 
@@ -46,7 +46,7 @@ inverts18s <- inverts18 %>%
 chiro17s <- inverts17 %>% 
   filter(Family == "Chironomidae") %>% 
   group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
+  summarise(mean = mean(count),
             std = sd(count),
             str = std.error(count))
 
@@ -54,7 +54,7 @@ chiro17s <- inverts17 %>%
 chiro18s <- inverts18 %>% 
   filter(Family == "Chironomidae") %>% 
   group_by(Date, Time, Treatment) %>% 
-  summarize(mean = mean(count),
+  summarise(mean = mean(count),
             std = sd(count),
             str = std.error(count))
   
@@ -127,15 +127,16 @@ mv.output8 <- as.data.frame(output8$uni.p)
 # Figures -----------------------------------------------------------------
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Remnant" = "#FDE825")
+         "Remnant" = "#3A518B")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Remnant" = "#FDE825")
+           "Remnant" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
+
 
 
 # geom_smooth figures -----------------------------------------------------
@@ -286,6 +287,7 @@ in18 <- ggplot(inverts18s, aes(x = Date, y = mean,
                     colour = Treatment), 
                 width = 0.5) +
   geom_line(aes(colour = Treatment)) +
+  ylim(0, 300) +
   geom_point(size = 4, stroke = 1.5) +
   scale_x_date(date_labels = "%d-%b-%y",
                date_breaks = "2 week") +
@@ -298,7 +300,10 @@ in18 <- ggplot(inverts18s, aes(x = Date, y = mean,
   theme(axis.text = element_text(size = 12),
         strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
-        legend.text = element_text(size = 11)) 
+        legend.text = element_text(size = 11)) +
+  labs(colour = "Habitat",
+       fill = "Habitat",
+       shape = "Habitat")
 
 inv178 <- in17 + in18 +
   plot_annotation(tag_levels = "A")

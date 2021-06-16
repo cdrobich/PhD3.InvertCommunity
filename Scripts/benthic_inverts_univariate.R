@@ -13,6 +13,8 @@ library(performance)
 library(see)
 
 library(patchwork)
+library(lmPerm)
+library(plotrix)
 # Load Data ---------------------------------------------------------------
 
 benthic <- read.csv("Data/Aquatic/aquatic_inverts_rares2.csv") # occurrences <= 2 removed
@@ -40,6 +42,9 @@ benthic.uni$D1 <- D1
 benthic.uni$J <- J
 
 benthic.uni1 <- benthic.uni
+
+benthic.uni <- benthic.uni %>% 
+  mutate(dens.m = (abundance * 4))
 
 write.csv(benthic.uni, "Data/Aquatic/benthic_invertebrates_univariate.csv")
 
@@ -82,9 +87,13 @@ sum <- summary %>% t %>% as.data.frame
 #J_SD           0.15016095 0.10256570 0.05272685
 #J_SE           0.05308991 0.03418857 0.01864176
 
+
+
 # Histograms --------------------------------------------------------------
 
 benthic.uni <- read.csv("Data/Aquatic/benthic_invertebrates_univariate.csv")
+
+benthic.uni <- benthic.uni 
 
 
 ab.water.b <- lm(logAb ~ Habitat * Depth, data = benthic.uni)
@@ -313,8 +322,7 @@ plot(pie.lm)
 
 # ANOVAs ------------------------------------------------------------------
 
-library(lmPerm)
-citation("lmPerm")
+
 
 ### Abundance
 
@@ -366,6 +374,31 @@ ab.perm <- HSD.test(abun.perm, "Habitat")
 #Invaded   5.894747      b
 
 ?p.adjust
+
+
+
+abun.perm2 <- lmp(dens.m ~ Habitat, data = benthic.uni, 
+                 perm = "Prob", Ca = 0.0001, maxIter = 999)
+
+
+summary(abun.perm2)
+Anova(abun.perm2, type = "3")
+
+
+#Response: dens.m
+#Sum Sq Df F value   Pr(>F)    
+#(Intercept)  859032075  1 16.6080 0.000502 ***
+#  Habitat1     755292596  2  7.3012 0.003699 ** 
+#  Residuals   1137929644 22   
+
+
+ab.perm2 <- HSD.test(abun.perm2, "Habitat")
+
+#dens.m groups
+#Treated 13498.67      a
+#Invaded  2335.50      b
+#Remnant  1778.50      b
+
 
 
 ## Richness
@@ -546,18 +579,22 @@ uni.panel.td <- ggarrange(rich, domin,
 # Boxplots ----------------------------------------------------------------
 fill = c("Invaded" = "#440C53",
          "Treated" = "#24908C",
-         "Remnant" = "#FDE825")
+         "Remnant" = "#3A518B")
 
 colour = c("Invaded" = "#440C53",
            "Treated" = "#24908C",
-           "Remnant" = "#FDE825")
+           "Remnant" = "#3A518B")
 
 shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
 
 
-abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
+
+colnames(benthic.uni)
+
+
+abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = dens.m)) +
   geom_boxplot(lwd = 0.75) +
   geom_jitter(data = benthic.uni,
               aes(fill = Habitat, shape = Habitat),
@@ -565,17 +602,14 @@ abun.a <- ggplot(benthic.uni, aes(x = Habitat, y = abundance)) +
               stroke = 1.5) +
   theme_classic(14) +
   labs(x = " ",
-       y = (expression(paste("Density per 0.25"," ", m^2)))) +
+       y = (expression(paste("Density per 1"," ", m^2)))) +
   scale_fill_manual(values = colour) +
   scale_shape_manual(values = shape) +
   theme(panel.border = element_rect(fill = NA)) +
   theme(legend.position = "none") +
   theme(legend.position = "none") +
-  annotate("text", x = 3, y = 8000,
-           label = c("*"),
-           size = 15) +
   theme(axis.text = element_text(size = 16)) +
-  ylim(0, 12000)
+  ylim(0, 45000)
 
 rich.a <- ggplot(benthic.uni, aes(x = Habitat, y = rich)) +
   geom_boxplot(lwd = 0.75) +
@@ -610,7 +644,7 @@ piel.a <- ggplot(benthic.uni, aes(x = Habitat, y = J)) +
   ylim(0, 1) +
   theme(axis.text = element_text(size = 16))
 
-abun.a <- abun.a + ggtitle("Aquatic Invertebrates")
+abun.a <- abun.a + ggtitle("Aquatic invertebrates")
 
 aquatic.panel <- abun.a + rich.a + piel.a +
   plot_annotation(tag_levels = 'A')
@@ -625,7 +659,7 @@ boxplots2 <- abun.a + rich.a + piel.a + abund.box + riche.box + pielou.box +
   plot_annotation(tag_levels = 'A')
   
 
-ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.jpeg", 
+ggsave("Figures/aquatic_invert_BOXPLOTpanels_2.tiff", 
        boxplots2,
        width = 14,
        height = 9,
