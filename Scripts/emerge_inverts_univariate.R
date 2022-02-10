@@ -907,7 +907,9 @@ shape = c("Invaded" = 21,
           "Treated" = 24,
           "Remnant" = 22)
 
+str(invert)
 
+invert$Year <- as.factor(invert$Year)
 
 abund.box <- ggplot(invert, aes(x = Treatment, y = abundance,
                                 fill = TrtYr,
@@ -969,7 +971,7 @@ riche.box <- ggplot(invert, aes(x = Treatment, y = rich,
   theme(panel.border = element_rect(fill = NA)) +
   ylim(0, 50) +
   theme(axis.text = element_text(size = 16),
-        legend.position = "none") 
+        legend.position = "none")
 
 
 
@@ -979,3 +981,78 @@ abund.box <- abund.box + ggtitle("Emergence trap invertebrates")
 (emerg.boxplots <- abund.box + riche.box + pielou.box)
 
 
+# National Phrag conference  ----------------------------------------------
+
+rich <- ggplot(invert, aes(x = Treatment, y = rich,
+                           fill = Treatment)) +
+  geom_boxplot(aes(fill = Treatment),
+               colour = "white",
+               lwd = 0.75) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Taxonomic Richness") +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(panel.border = element_rect(fill = NA)) +
+  ylim(0, 50) +
+  theme(axis.text = element_text(size = 16),
+        legend.position = "none") +
+  theme(axis.title.y = element_text(colour = "white"),
+        legend.title = element_blank(),
+        axis.text.y = element_text(colour = "white"),
+        axis.text.x = element_text(colour = "white"),
+        axis.line = element_line(colour = "white")) +
+  theme(panel.background = element_rect(
+    fill = 'black'),
+    plot.background = element_rect(fill = 'black'))
+
+
+pi <- ggplot(invert, aes(x = Treatment, y = J)) +
+  geom_boxplot(aes(fill = Treatment),
+               colour = "white",
+               lwd = 0.75) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = "Pielou's Evenness (J)") +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(panel.border = element_rect(fill = NA),
+        legend.position = "none") +
+  ylim(0, 1) +
+  theme(axis.text = element_text(size = 16)) +
+  guides(fill = "none") +
+  theme(axis.title.y = element_text(colour = "white"),
+        legend.title = element_blank(),
+        axis.text.y = element_text(colour = "white"),
+        axis.text.x = element_text(colour = "white"),
+        axis.line = element_line(colour = "white")) +
+  theme(panel.background = element_rect(
+    fill = 'black'),
+    plot.background = element_rect(fill = 'black'))
+
+
+dens <- ggplot(invert, aes(x = Treatment, y = abundance)) +
+  geom_boxplot(aes(fill = Treatment),
+               colour = "white",
+               lwd = 0.75) +
+  theme_classic(14) +
+  labs(x = " ",
+       y = (expression(paste("Density per 1","", m^2)))) +
+  scale_fill_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(panel.border = element_rect(fill = NA)) +
+  theme(legend.position = "none")+ 
+  theme(legend.position = "none") +
+  theme(axis.text = element_text(size = 16)) +
+  ylim(0, 6000) +
+  theme(axis.title.y = element_text(colour = "white"),
+        legend.title = element_blank(),
+        axis.text.y = element_text(colour = "white"),
+        axis.text.x = element_text(colour = "white"),
+        axis.line = element_line(colour = "white")) +
+  theme(panel.background = element_rect(
+    fill = 'black'),
+    plot.background = element_rect(fill = 'black'))
+
+
+dens + rich + pi

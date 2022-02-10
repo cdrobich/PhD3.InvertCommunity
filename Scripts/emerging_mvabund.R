@@ -185,7 +185,15 @@ chiro18 <- ggplot(inv.2018, aes(x = Date, y = Chironomidae + 1,
         axis.title = element_text(size = 14),
         legend.text = element_text(size = 11),
         legend.position = "none") +
-  ggtitle("2018")
+  ggtitle("2018") 
+theme(axis.title.y = element_text(colour = "white"),
+      legend.title = element_blank(),
+      axis.text.y = element_text(colour = "white"),
+      axis.text.x = element_text(colour = "white"),
+      axis.line = element_line(colour = "white")) +
+  theme(panel.background = element_rect(
+    fill = 'black'),
+    plot.background = element_rect(fill = 'black'))
 
 chiros <- chiro17 + chiro18
 
@@ -369,3 +377,36 @@ line.panel <- in17 + in18 +
 
 ggsave("Figures/lineplots_panel_20172018.tiff",
        line.panel)
+
+
+# National Phrag figures (black background) -------------------------------
+
+
+
+ggplot(inv.2018, aes(x = Date, y = Chironomidae + 1, 
+                     fill = Treatment,
+                     shape = Treatment)) +
+  scale_y_log10() +
+  scale_x_date(date_labels = "%d-%b-%y",
+               date_breaks = "2 week") +
+  labs(y = (expression(paste("Chironomidae density per 1 ","", m^2))),
+       x = ' ') +
+  theme_classic() +
+  geom_smooth(aes(colour = Treatment,
+                  size = 0.8)) +  
+  scale_fill_manual(values = fill) +
+  scale_colour_manual(values = colour) +
+  scale_shape_manual(values = shape) +
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 11),
+        legend.position = "none") +
+theme(axis.title.y = element_text(colour = "white"),
+      legend.title = element_blank(),
+      axis.text.y = element_text(colour = "white"),
+      axis.text.x = element_text(colour = "white"),
+      axis.line = element_line(colour = "white")) +
+  theme(panel.background = element_rect(
+    fill = 'black'),
+    plot.background = element_rect(fill = 'black'))
